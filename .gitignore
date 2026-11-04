@@ -1,3 +1,5 @@
+# build/scratch
+out/
 node_modules/
 recon/
 .env
