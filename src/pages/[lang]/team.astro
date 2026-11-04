@@ -17,7 +17,7 @@ const team = rows.map((m) => {
   return { ...t0, photo: m.photo, name: t0.name ?? m.name };
 });
 
-// Первые 2 — директор и учредитель (всегда видны), остальные — специалисты (скрыты до нажатия).
+// Первые 2 — директор и учредитель (всегда видны, крупные карточки), остальные — специалисты (скрыты до нажатия).
 const LEADERS = 2;
 const leaders = team.slice(0, LEADERS);
 const specialists = team.slice(LEADERS);
@@ -31,11 +31,11 @@ const hasMore = specialists.length > 0;
         <p class="section-lead">{t("page.team_lead")}</p>
       </div>
 
-      {/* Группа 1: директор + учредитель — всегда видны */}
-      <div class="grid grid-4 team-grid leaders-grid">
+      {/* Группа 1: директор + учредитель — первая строка, крупные карточки (2 в ряд) */}
+      <div class="grid grid-2 team-grid leaders-grid">
         {leaders.map((m) => (
-          <article class="member">
-            <Figure id={m.photo} label="Фото сотрудника" alt={m.name} class="photo" width={300} height={240} />
+          <article class="member leader">
+            <Figure id={m.photo} label="Фото сотрудника" alt={m.name} class="photo" width={420} height={330} />
             <div class="member-body">
               <h3>{m.name}</h3>
               <p class="role">{m.position}</p>
@@ -44,7 +44,7 @@ const hasMore = specialists.length > 0;
         ))}
       </div>
 
-      {/* Группа 2: остальные специалисты — скрыты до нажатия «все специалисты» */}
+      {/* Группа 2: остальные специалисты — скрыты до нажатия «все специалистов» */}
       {hasMore && (
         <>
           <div class="team-cta">
@@ -52,7 +52,7 @@ const hasMore = specialists.length > 0;
           </div>
           <div class:list={["grid grid-4 team-grid specialists-grid", { hidden: true }]}>
             <div class="section-head-specialists">
-              <h2 class="section-title">Ключевые инструкторы</h2>
+              <h2 class="section-title">Ключевые специалисты</h2>
             </div>
             {specialists.map((m) => (
               <article class:list={["member", { "is-hidden": true }]}>
@@ -89,7 +89,7 @@ const hasMore = specialists.length > 0;
     overflow: hidden;
   }
   img.photo {
-    height: 240px;
+    height: 100%;
     width: 100%;
     object-fit: cover;
   }
@@ -97,7 +97,12 @@ const hasMore = specialists.length > 0;
   .member-body h3 { font-size: calc(18px * var(--ts-heading)); line-height: 1.3; color: #ea8c00; margin-bottom: 6px; }
   .role { color: var(--muted); font-size: 14px; margin-top: 0; margin-bottom: 16px; }
 
-  /* Заголовок второй группы («Ключевые инструкторы») — серый, как на референсе */
+  /* Лидеры — крупные карточки в первой строке */
+  .member.leader .photo { min-height: 330px; }
+  .member.leader .member-body h3 { font-size: calc(20px * var(--ts-heading)); margin-bottom: 8px; }
+  .member.leader .member-body .role { font-size: 15px; margin-bottom: 20px; }
+
+  /* Заголовок второй группы («Ключевые специалисты») — серый, как на референсе */
   .section-head-specialists { text-align: left; margin: 48px 0 24px 0; }
   .section-head-specialists .section-title { font-size: calc(22px * var(--ts-heading)); color: var(--muted); font-weight: 600; }
 
