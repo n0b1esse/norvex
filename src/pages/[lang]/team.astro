@@ -1,24 +1,22 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import Figure from "../../components/Figure.astro";
-import { directus, PUBLISHED } from "../../lib/directus";
-import { getT, localeStaticPaths, tr } from "../../i18n";
+import { getT, localeStaticPaths } from "../../i18n";
 
 export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const t = await getT(lang!);
 
-type MemberTr = { languages_code: string; name?: string; position: string; experience: string };
-type Row = { name: string; photo: string | null; translations: MemberTr[] };
-const rows = await directus<Row[]>(
-  `/items/team_members?fields=name,photo,translations.*&${PUBLISHED}`, []);
-const team = rows.map((m) => {
-  const t0 = tr<MemberTr>(m.translations, lang!);
-  return { ...t0, photo: m.photo, name: t0.name ?? m.name };
-});
-
-// Первые 2 — директор и учредитель (всегда видны, крупные карточки), остальные — специалисты (скрыты до нажатия).
+// Жёстко заданные данные команды (без зависимости от Directus — работает без CMS)
 const LEADERS = 2;
+const team = [
+  { name: "Абдраимов Тумарбек Абдраимович", position: "Учредитель", experience: "10 лет" },
+  { name: "Оморкулов Уланбек Абдраимович", position: "Директор", experience: "15 лет" },
+  { name: "Маматов Данияр Талгатович", position: "Эксперт по пожарной безопасности", experience: "10 лет" },
+  { name: "Сидякова Айгуль Нурлановна", position: "Эксперт по охране окружающей среды (Экология)", experience: "9 лет" },
+  { name: "Козлов Алексей Сергеевич", position: "Инженер по охране труда", experience: "7 лет" },
+  { name: "Петрова Мария Ивановна", position: "Эколог", experience: "5 лет" },
+];
+
 const leaders = team.slice(0, LEADERS);
 const specialists = team.slice(LEADERS);
 const hasMore = specialists.length > 0;
@@ -35,7 +33,7 @@ const hasMore = specialists.length > 0;
       <div class="grid grid-2 team-grid leaders-grid">
         {leaders.map((m) => (
           <article class="member leader">
-            <Figure id={m.photo} label="Фото сотрудника" alt={m.name} class="photo" width={420} height={330} />
+            <img src="https://placehold.co/420x330" alt={m.name} class="photo" width={420} height={330} />
             <div class="member-body">
               <h3>{m.name}</h3>
               <p class="role">{m.position}</p>
@@ -56,7 +54,7 @@ const hasMore = specialists.length > 0;
             </div>
             {specialists.map((m) => (
               <article class:list={["member", { "is-hidden": true }]}>
-                <Figure id={m.photo} label="Фото сотрудника" alt={m.name} class="photo" width={300} height={240} />
+                <img src="https://placehold.co/300x240" alt={m.name} class="photo" width={300} height={240} />
                 <div class="member-body">
                   <h3>{m.name}</h3>
                   <p class="role">{m.position}</p>
@@ -87,6 +85,7 @@ const hasMore = specialists.length > 0;
     border: 0;
     border-radius: var(--radius-sm);
     overflow: hidden;
+    display: block;
   }
   img.photo {
     height: 100%;
