@@ -1,0 +1,213 @@
+/* ===== NORVEX design system ===== */
+:root {
+  --navy-900: #0c2743;
+  --navy-800: #103257;
+  --navy-700: #16406e;
+  --navy: #14335c;          /* headings */
+  --green-500: #2aa54a;
+  --green-600: #239240;
+  --green-700: #1c7d36;
+  --ink: #36465a;           /* body text */
+  --muted: #6b7a8d;
+  --bg: #f3f6f9;
+  --surface: #ffffff;
+  --border: #e5eaf1;
+  --radius: 14px;
+  --radius-sm: 9px;
+  --shadow-sm: 0 1px 3px rgba(16, 50, 87, .06), 0 1px 2px rgba(16, 50, 87, .04);
+  --shadow: 0 10px 30px rgba(16, 50, 87, .08);
+  --container: 1200px;
+  --nav-h: 76px;
+  /* Typography scale multipliers (default 1). Overridden per-site from
+     site_settings by Layout.astro; bounded 0.8–1.4 in the CMS. */
+  --ts-hero: 1;
+  --ts-heading: 1;
+  --ts-body: 1;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: "Manrope", -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--ink);
+  background: var(--surface);
+  line-height: 1.6;
+  font-size: calc(16px * var(--ts-body));
+  -webkit-font-smoothing: antialiased;
+  /* Sticky footer: fill the viewport so a short page still pins the footer to the
+     bottom (no white gap below it). <main> grows to take the slack. */
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+/* <main> grows to fill the slack so the footer stays pinned on short pages. To stop
+   a short page's last (coloured) section from leaving a band of main's white bg above
+   the footer, opt that section in with `.fill-to-footer` so it stretches to the footer.
+   White last sections don't need it (their stretch is invisible). Keyed on an explicit
+   class rather than `:last-child` so no page is silently stretched by accident. */
+body > main { flex: 1 0 auto; display: flex; flex-direction: column; }
+.fill-to-footer { flex: 1 0 auto; }
+img, svg { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; padding: 0; }
+h1, h2, h3, h4 { color: var(--navy); line-height: 1.15; font-weight: 800; }
+
+.container { width: 100%; max-width: var(--container); margin-inline: auto; padding-inline: 24px; }
+.section { padding-block: 80px; }
+.bg-soft { background: var(--bg); }
+
+/* Section heading w/ green underline */
+.section-head { text-align: center; margin-bottom: 48px; }
+.section-head.left { text-align: left; }
+.section-title { font-size: calc(clamp(26px, 3.4vw, 38px) * var(--ts-heading)); }
+.section-title .accent { color: var(--green-500); }
+.section-head .bar { width: 56px; height: 4px; border-radius: 4px; background: var(--green-500); margin: 16px auto 0; }
+.section-head.left .bar { margin-inline: 0; }
+.section-lead { color: var(--muted); max-width: 620px; margin: 18px auto 0; font-size: calc(17px * var(--ts-body)); }
+.section-head.left .section-lead { margin-inline: 0; }
+
+/* Buttons */
+.btn {
+  position: relative; overflow: hidden;
+  display: inline-flex; align-items: center; gap: 10px; justify-content: center;
+  font-weight: 700; font-size: 15px; padding: 13px 26px; border-radius: 8px;
+  cursor: pointer; border: 2px solid transparent; transition: .18s ease; white-space: nowrap;
+  /* overflow:hidden (for the shine sweep) zeroes a flex item's automatic min-size,
+     letting flex parents squeeze the button and clip its label — flex:none stops that. */
+  flex: none;
+}
+.btn svg { width: 18px; height: 18px; }
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--green-500); color: #fff; }
+.btn-primary:hover { background: var(--green-600); }
+/* One-pass diagonal "shine" sweep across the primary CTA on hover. */
+.btn-primary::after {
+  content: ""; position: absolute; top: 0; left: -120%; width: 60%; height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,.35), transparent);
+  transform: skewX(-18deg); pointer-events: none;
+}
+.btn-primary:hover::after { transition: left .6s ease; left: 140%; }
+@media (prefers-reduced-motion: reduce) { .btn-primary::after { display: none; } }
+.btn-outline { background: transparent; color: #fff; border-color: rgba(255,255,255,.6); }
+.btn-outline:hover { border-color: #fff; background: rgba(255,255,255,.08); }
+.btn-outline-green { background: transparent; color: var(--green-600); border-color: var(--green-500); }
+.btn-outline-green:hover { background: var(--green-500); color: #fff; }
+.btn-ghost-disabled { background: transparent; color: var(--green-600); border-color: var(--green-500); opacity: .45; cursor: not-allowed; }
+/* On the narrowest phones let a long localized CTA label wrap instead of overflowing
+   its container — flex:none + white-space:nowrap can't otherwise shrink the button. */
+@media (max-width: 480px) { .btn { white-space: normal; } }
+
+/* Cards — content cards lift + gain a green border accent on hover. Uses the
+   `translate` property (not `transform`) so it composes with cards that already
+   carry a transform (e.g. the offset stats band). The form/consult/stats
+   surfaces are cards for styling only, so they're excluded from the lift. */
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: translate .22s ease, box-shadow .22s ease, border-color .22s ease;
+}
+.card:not(.form):not(.consult):not(.stats):hover {
+  translate: 0 -6px; box-shadow: var(--shadow); border-color: rgba(42,165,74,.35);
+}
+
+/* Icon badges */
+/* flex: none so a badge never shrinks when it sits next to long text in a flex row
+   (otherwise a circle gets squished into an ellipse, e.g. EN/KY hero features). */
+.icon-badge { display: inline-flex; align-items: center; justify-content: center; color: var(--green-500); flex: none; }
+.icon-circle { width: 64px; height: 64px; border-radius: 50%; border: 1.5px solid rgba(42,165,74,.4); }
+.icon-circle.on-dark { border-color: rgba(255,255,255,.25); color: #fff; }
+.icon-circle.on-dark svg .accent { color: var(--green-500); }
+
+/* Image placeholder */
+.placeholder {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  background: linear-gradient(135deg, #e8eef5, #dde6f0);
+  border: 1.5px dashed #b9c6d6; border-radius: var(--radius); color: #8194a8;
+  font-size: 14px; font-weight: 600; text-align: center; padding: 20px; min-height: 180px;
+}
+.placeholder.on-dark { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.22); color: rgba(255,255,255,.7); }
+.placeholder svg { width: 40px; height: 40px; opacity: .7; }
+
+/* Shared base for CMS images (Figure.astro); pages add sizing via their own class. */
+.cms-img { display: block; width: 100%; object-fit: cover; border-radius: var(--radius); }
+
+/* Full-bleed page hero: cover photo + navy gradient overlay (same treatment as
+   the home hero). Pages add only their <img class="hero-bg"> and per-page tweaks
+   (e.g. min-height) in their own scoped <style>. */
+.page-hero {
+  position: relative; isolation: isolate; overflow: hidden;
+  background: var(--navy-900); color: #fff; padding-block: 84px 76px;
+}
+.page-hero .hero-bg {
+  position: absolute; inset: 0; z-index: 0;
+  width: 100%; height: 100%; object-fit: cover; object-position: right center;
+}
+.page-hero::after {
+  content: ""; position: absolute; inset: 0; z-index: 1;
+  background:
+    radial-gradient(70% 100% at 16% 28%, rgba(42,165,74,.16), transparent 62%),
+    linear-gradient(100deg,
+      var(--navy-900) 0%, rgba(12,39,67,.95) 30%, rgba(12,39,67,.66) 55%,
+      rgba(12,39,67,.40) 80%, rgba(12,39,67,.30) 100%);
+}
+.page-hero > .container { position: relative; z-index: 2; display: flex; align-items: center; min-height: 600px; }
+.page-hero .hero-text { max-width: 600px; }
+.page-hero h1 { color: #fff; font-size: calc(clamp(32px, 4.5vw, 50px) * var(--ts-hero)); }
+.page-hero .hero-text p { margin-top: 20px; font-size: calc(17px * var(--ts-body)); color: rgba(255,255,255,.86); max-width: 500px; }
+
+@media (max-width: 900px) {
+  .page-hero > .container { min-height: auto; }
+  .page-hero::after { background: linear-gradient(180deg, rgba(12,39,67,.84), rgba(12,39,67,.94)); }
+}
+
+/* Generic grids */
+.grid { display: grid; gap: 28px; }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+@media (max-width: 992px) {
+  .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .section { padding-block: 56px; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+}
+
+/* Calmer taps on touch devices (no grey flash). */
+a, button { -webkit-tap-highlight-color: transparent; }
+
+/* Branded, visible keyboard focus everywhere (reuses the form's green glow).
+   :where() keeps specificity at 0 so elements with their own radius/ring win. */
+:where(a, button, input, textarea, [tabindex]):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(42, 165, 74, .4);
+  border-radius: 6px;
+}
+
+/* Honor "Reduce Motion": kill smooth scroll + collapse transitions/animations. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Scroll-reveal: elements fade/rise in as they enter the viewport. Hidden ONLY
+   when JS is active (html.js), so no-JS visitors always see full content. The
+   IntersectionObserver lives in Layout.astro; --i staggers items within a group. */
+.js .reveal {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity .6s ease, transform .6s cubic-bezier(.2,.7,.2,1);
+  transition-delay: calc(var(--i, 0) * 70ms);
+}
+.js .reveal.is-visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .js .reveal { opacity: 1; transform: none; transition: none; }
+}

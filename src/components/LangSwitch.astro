@@ -1,0 +1,85 @@
+---
+// Language switcher: a circular flag for the current language; click it to reveal the
+// other languages as flags. Flags are SVGs in /public/flags (emoji flags render as bare
+// letters on Windows, so we vendor proper circular SVGs from the circle-flags set).
+import { LOCALES, LOCALE_LABEL, lp, type Locale } from "../i18n";
+
+interface Props { lang: Locale; switchPath?: string; }
+const { lang, switchPath = "" } = Astro.props;
+
+// Locale → flag file. English uses the UK flag (swap to us.svg for the US flag).
+const FLAG: Record<Locale, string> = { ru: "/flags/ru.svg", en: "/flags/gb.svg", ky: "/flags/kg.svg" };
+const others = LOCALES.filter((l) => l !== lang);
+---
+<div class="lang-switch" data-lang-switch>
+  <button type="button" class="lang-current" data-lang-toggle aria-haspopup="true" aria-expanded="false"
+    aria-label={`Язык: ${LOCALE_LABEL[lang]}. Выбрать другой язык`}>
+    <img class="flag" src={FLAG[lang]} alt={LOCALE_LABEL[lang]} width="28" height="28" />
+    <svg class="caret" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
+      <polyline points="6 9 12 15 18 9" fill="none" stroke="currentColor"
+        stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </button>
+  <div class="lang-menu" role="menu">
+    {others.map((l) => (
+      <a href={lp(l, switchPath)} class="lang-opt" role="menuitem" hreflang={l}>
+        <img class="flag" src={FLAG[l]} alt="" width="24" height="24" />
+        <span>{LOCALE_LABEL[l]}</span>
+      </a>
+    ))}
+  </div>
+</div>
+
+<style>
+  .lang-switch { position: relative; flex: none; }
+  .lang-current {
+    display: inline-flex; align-items: center; gap: 5px; padding: 3px;
+    background: none; border: 0; cursor: pointer; color: var(--muted); border-radius: 999px;
+  }
+  .lang-current:hover { color: var(--navy); }
+  .flag {
+    width: 28px; height: 28px; border-radius: 50%; object-fit: cover; display: block;
+    box-shadow: 0 0 0 1px rgba(16, 50, 87, .14);
+  }
+  .caret { transition: transform .2s ease; }
+  .lang-switch.open .caret { transform: rotate(180deg); }
+
+  .lang-menu {
+    position: absolute; top: calc(100% + 8px); right: 0; min-width: 116px; z-index: 60;
+    background: #fff; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow);
+    padding: 6px; opacity: 0; visibility: hidden; transform: translateY(6px); transition: .16s ease;
+  }
+  .lang-switch.open .lang-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+  .lang-opt {
+    display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px;
+    font-weight: 700; font-size: 14px; color: var(--ink);
+  }
+  .lang-opt .flag { width: 22px; height: 22px; }
+  .lang-opt:hover { background: var(--bg); color: var(--green-600); }
+  /* The switcher lives in the header bar at every breakpoint (never inside the burger
+     drawer), so the menu is always the absolute overlay above — right-aligned so it
+     can't run off-screen when the switcher sits near the right edge on mobile. */
+</style>
+
+<script>
+  const switches = Array.from(document.querySelectorAll<HTMLElement>("[data-lang-switch]"));
+  const closeAll = (except?: HTMLElement) => {
+    for (const el of switches) {
+      if (el === except) continue;
+      el.classList.remove("open");
+      el.querySelector("[data-lang-toggle]")?.setAttribute("aria-expanded", "false");
+    }
+  };
+  for (const el of switches) {
+    const btn = el.querySelector("[data-lang-toggle]");
+    btn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = el.classList.toggle("open");
+      btn.setAttribute("aria-expanded", String(open));
+      closeAll(el);
+    });
+  }
+  // Dismiss on outside click or Escape.
+  document.addEventListener("click", () => closeAll());
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); });
+</script>

@@ -1,0 +1,125 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Icon from "../../components/Icon.astro";
+
+import { directus, asset } from "../../lib/directus";
+import { getT, lp, localeStaticPaths, tr } from "../../i18n";
+
+export const getStaticPaths = localeStaticPaths;
+const { lang } = Astro.params;
+const t = await getT(lang!);
+
+type About = {
+  title: string; intro: string;
+  stats: { value: string; label: string }[];
+  advantages: { icon: string; label: string }[];
+};
+const raw = await directus<{ image?: string | null; translations: (About & { languages_code: string })[] }>(
+  "/items/about_page?fields=image,translations.*", { translations: [] });
+const about = tr<About>(raw.translations, lang!);
+const stats = about.stats ?? [];
+const why = about.advantages ?? [];
+// Render "NORVEX" in the accent color without storing markup in the CMS.
+const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accent">NORVEX</span>');
+const aboutImg = asset(raw.image);
+---
+<Layout lang={lang} title={t("seo.about.title")} description={t("seo.about.desc")}>
+  <section class="page-hero">
+    {aboutImg && <img class="hero-bg" src={aboutImg} alt="" aria-hidden="true" />}
+    <div class="container">
+      <div class="hero-text">
+        <h1>{about.title}</h1>
+        <p>{about.intro}</p>
+        <a href={lp(lang, "/services")} class="btn btn-primary">{t("cta.about_more")} <Icon name="chevron-right" size={18} /></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats-wrap">
+    <div class="container">
+      <div class="stats card">
+        {stats.map((s, i) => (
+          <div class="stat reveal" style={`--i:${i}`}>
+            <div class="stat-num">{s.value}</div>
+            <div class="stat-label">{s.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2 class="section-title" set:html={whyTitleHtml}></h2>
+        <div class="bar"></div>
+      </div>
+      <div class="why-grid">
+        {why.map((w, i) => (
+          <div class="why-item reveal" style={`--i:${i}`}>
+            <span class="icon-badge"><Icon name={w.icon} size={30} /></span>
+            <span>{w.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  /* Hero uses the shared .page-hero treatment in global.css; below is the
+     About-page tweak: extra paragraph spacing for the CTA that sits below it. */
+  .page-hero .hero-text p { margin: 22px 0 30px; max-width: 520px; }
+
+  .stats-wrap { background: var(--bg); }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); padding: 36px 20px; transform: translateY(-40px); }
+  .stat { text-align: center; padding: 8px 20px; }
+  .stat:not(:last-child) { border-right: 1px solid var(--border); }
+  .stat-num { font-size: clamp(34px, 4vw, 48px); font-weight: 800; color: var(--navy); }
+  .stat-label { color: var(--muted); margin-top: 6px; font-size: 15px; }
+
+  .why-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 36px 28px; }
+  .why-item { display: flex; flex-direction: column; gap: 14px; align-items: center; text-align: center; }
+  .why-item span:last-child { font-weight: 700; color: var(--navy); font-size: 16px; }
+
+  @media (max-width: 900px) {
+    .stats { grid-template-columns: repeat(2, 1fr); gap: 24px 0; transform: translateY(-30px); }
+    .stat:nth-child(2) { border-right: 0; }
+    .why-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .stats { grid-template-columns: 1fr; }
+    .stat:not(:last-child) { border-right: 0; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+    .why-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+  // Count the stat numbers up from 0 when the band scrolls into view. The final
+  // CMS value is server-rendered, so no-JS / reduced-motion users see it as-is.
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const nums = document.querySelectorAll(".stat-num");
+  if (!reduce && "IntersectionObserver" in window && nums.length) {
+    const run = (el) => {
+      const raw = el.textContent.trim();
+      if (raw.includes("/")) return;                        // e.g. "24/7" — leave alone
+      const m = raw.match(/^(\D*)([\d.,]+)(.*)$/s);
+      if (!m) return;
+      const end = parseFloat(m[2].replace(/[\s,]/g, ""));
+      if (!isFinite(end)) return;
+      const dec = (m[2].split(".")[1] || "").length;
+      let t0;
+      const step = (now) => {
+        t0 ??= now;
+        const p = Math.min((now - t0) / 1100, 1);
+        el.textContent = m[1] + (end * (1 - Math.pow(1 - p, 3))).toFixed(dec) + m[3];
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    };
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { run(e.target); io.unobserve(e.target); } });
+    }, { threshold: 0.5 });
+    nums.forEach((el) => io.observe(el));
+  }
+</script>

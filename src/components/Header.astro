@@ -1,0 +1,163 @@
+---
+import Logo from "./Logo.astro";
+import Icon from "./Icon.astro";
+import LangSwitch from "./LangSwitch.astro";
+import { directus, PUBLISHED } from "../lib/directus";
+import { getT, lp, tr, type Locale } from "../i18n";
+
+const { lang } = Astro.props as { lang: Locale };
+const t = await getT(lang);
+
+const full = Astro.url.pathname.replace(/\/$/, "");
+const rest = full.replace(new RegExp(`^/${lang}`), "") || "/";
+const is = (p: string) => (p === "/" ? rest === "/" : rest.startsWith(p));
+const switchPath = rest === "/" ? "" : rest;
+
+type Item = { slug: string; translations: { languages_code: string; title: string }[] };
+const serviceItems = await directus<Item[]>(`/items/services?fields=slug,translations.languages_code,translations.title&${PUBLISHED}`, []);
+const modelItems = await directus<Item[]>(`/items/cooperation_models?fields=slug,translations.languages_code,translations.title&${PUBLISHED}`, []);
+const services = serviceItems.map((s) => [tr<{ title: string }>(s.translations, lang).title, lp(lang, `/services#${s.slug}`)]);
+const models = modelItems.map((m) => [tr<{ title: string }>(m.translations, lang).title, lp(lang, `/cooperation#${m.slug}`)]);
+---
+<header class="site-header">
+  <div class="bar">
+    <div class="logo-slot"><Logo height={60} href={lp(lang)} /></div>
+
+    <nav class="nav" data-nav>
+      <a href={lp(lang)} class:list={["nav-link", { active: is("/") }]}>{t("nav.home")}</a>
+      <a href={lp(lang, "/about")} class:list={["nav-link", { active: is("/about") }]}>{t("nav.about")}</a>
+
+      <div class="nav-item has-menu">
+        <a href={lp(lang, "/services")} class:list={["nav-link", { active: is("/services") }]}>
+          {t("nav.services")} <Icon name="chevron-down" size={16} />
+        </a>
+        <div class="dropdown">
+          {services.map(([label, href]) => <a href={href}>{label}</a>)}
+        </div>
+      </div>
+
+      <div class="nav-item has-menu">
+        <a href={lp(lang, "/cooperation")} class:list={["nav-link", { active: is("/cooperation") }]}>
+          {t("nav.cooperation")} <Icon name="chevron-down" size={16} />
+        </a>
+        <div class="dropdown">
+          {models.map(([label, href]) => <a href={href}>{label}</a>)}
+        </div>
+      </div>
+
+      <a href={lp(lang, "/team")} class:list={["nav-link", { active: is("/team") }]}>{t("nav.team")}</a>
+      <a href={lp(lang, "/documents")} class:list={["nav-link", { active: is("/documents") }]}>{t("nav.documents")}</a>
+      <a href={lp(lang, "/contacts")} class:list={["nav-link", { active: is("/contacts") }]}>{t("nav.contacts")}</a>
+
+      <div class="nav-mobile-extra">
+        <a href={lp(lang, "/contacts")} class="btn btn-primary">{t("cta.consult")}</a>
+      </div>
+    </nav>
+
+    <div class="header-right">
+      <LangSwitch lang={lang} switchPath={switchPath} />
+      <a href={lp(lang, "/contacts")} class="btn btn-primary cta">{t("cta.consult")}</a>
+      <button class="burger" aria-label="Menu" aria-expanded="false" data-burger>
+        <Icon name="menu" />
+      </button>
+    </div>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky; top: 0; z-index: 50; background: #fff;
+    border-bottom: 1px solid var(--border); box-shadow: 0 1px 0 rgba(16,50,87,.03);
+    transition: box-shadow .2s ease, background .2s ease;
+  }
+  /* Condense + lift once scrolled. Shrinking --nav-h flows to both the bar
+     height and the mobile drawer's top offset/height (they read the var). */
+  .site-header.scrolled {
+    --nav-h: 72px; background: rgba(255,255,255,.92);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    box-shadow: 0 6px 20px rgba(16,50,87,.10);
+  }
+  /* Full-width 3-column bar: logo pinned to the left corner, nav dead-centred, actions
+     (language switcher + consult CTA) pinned to the right corner. The bar spans the
+     viewport (only the page content below is capped at 1200px) so the logo and actions
+     really sit in the corners, and there's room to centre the nav cleanly. Side columns
+     grow equally (flex:1 1 0) so the nav lands at the true page centre. The full nav only
+     shows above 1340px (burger below that), guaranteeing it always fits without colliding. */
+  .bar {
+    display: flex; align-items: center; gap: 20px; height: var(--nav-h);
+    padding-inline: clamp(20px, 3.2vw, 56px); transition: height .2s ease;
+  }
+  .logo-slot { display: flex; align-items: center; flex: 1 1 0; }
+  .nav { display: flex; align-items: center; gap: 2px; flex: 0 0 auto; justify-content: center; }
+  .nav-link {
+    display: inline-flex; align-items: center; gap: 4px; padding: 8px 9px; white-space: nowrap;
+    font-weight: 600; font-size: 14px; color: var(--navy); border-radius: 6px; position: relative;
+  }
+  .nav-link:hover { color: var(--green-600); }
+  .nav-link.active { color: var(--green-600); }
+  .nav-link.active::after {
+    content: ""; position: absolute; left: 12px; right: 12px; bottom: -2px; height: 3px;
+    border-radius: 3px; background: var(--green-500);
+  }
+  .nav-item { position: relative; }
+  .nav-item .dropdown {
+    position: absolute; top: calc(100% + 6px); left: 0; min-width: 250px; background: #fff;
+    border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow);
+    padding: 8px; opacity: 0; visibility: hidden; transform: translateY(6px); transition: .16s ease;
+  }
+  .nav-item.has-menu:hover .dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
+  .dropdown a { display: block; padding: 9px 12px; border-radius: 8px; font-size: 14.5px; font-weight: 600; color: var(--ink); }
+  .dropdown a:hover { background: var(--bg); color: var(--green-600); }
+
+  .header-right { display: flex; align-items: center; gap: 12px; flex: 1 1 0; justify-content: flex-end; }
+  .header-right .cta { padding: 9px 15px; font-size: 13.5px; }
+  .nav-mobile-extra { display: none; }
+  .burger { display: none; background: none; border: 0; color: var(--navy); cursor: pointer; padding: 6px; }
+
+  @media (max-width: 1340px) {
+    /* Burger menu: hide the inline nav + the desktop CTA, but keep the language switcher
+       visible in the bar (before the burger) so it never gets buried in the drawer. */
+    .header-right .cta { display: none; }
+    .burger { display: inline-flex; }
+    .nav {
+      position: fixed; inset: var(--nav-h) 0 auto 0; flex-direction: column; align-items: stretch;
+      justify-content: flex-start;
+      gap: 2px; background: #fff; padding: 16px 24px 24px; margin: 0; border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow); transform: translateY(-130%);
+      /* visibility (delayed on close) takes the off-screen links out of the tab
+         order so keyboard focus can't leak into the hidden menu. */
+      visibility: hidden; transition: transform .25s ease, visibility 0s linear .25s;
+      max-height: calc(100vh - var(--nav-h));
+      max-height: calc(100dvh - var(--nav-h)); overflow-y: auto;
+    }
+    .nav.open { transform: translateY(0); visibility: visible; transition: transform .25s ease, visibility 0s; }
+    .nav-link.active::after { display: none; }
+    .nav-item .dropdown {
+      position: static; opacity: 1; visibility: visible; transform: none; box-shadow: none;
+      border: 0; border-left: 2px solid var(--border); border-radius: 0; margin: 2px 0 6px 14px; padding: 2px 0;
+    }
+    .nav-mobile-extra { display: flex; flex-direction: column; gap: 16px; margin-top: 16px; }
+    .nav-mobile-extra .btn { width: 100%; }
+  }
+</style>
+
+<script>
+  const burger = document.querySelector("[data-burger]");
+  const nav = document.querySelector("[data-nav]");
+  const setOpen = (open) => {
+    nav?.classList.toggle("open", open);
+    burger?.setAttribute("aria-expanded", String(open));
+    // Lock the page behind the open drawer so it can't scroll underneath.
+    document.body.style.overflow = open ? "hidden" : "";
+  };
+  burger?.addEventListener("click", () => setOpen(!nav?.classList.contains("open")));
+  // Close on Escape (keyboard) and after tapping a destination link.
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") setOpen(false); });
+  nav?.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => setOpen(false)));
+
+  // Condense the header once the page is scrolled past the fold.
+  const header = document.querySelector(".site-header");
+  const onScroll = () => header?.classList.toggle("scrolled", window.scrollY > 12);
+  onScroll();
+  addEventListener("scroll", onScroll, { passive: true });
+</script>

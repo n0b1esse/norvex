@@ -1,0 +1,10 @@
+---
+// Image placeholder — replace with Directus-managed images later.
+import Icon from "./Icon.astro";
+interface Props { label?: string; dark?: boolean; class?: string; style?: string; }
+const { label = "Изображение", dark = false, class: cls = "", style = "" } = Astro.props;
+---
+<div class={`placeholder ${dark ? "on-dark" : ""} ${cls}`} style={style} role="img" aria-label={label}>
+  <Icon name="leaf" size={40} />
+  <span>{label}</span>
+</div>

@@ -1,0 +1,22 @@
+{
+  "name": "norvex",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "predev": "node --env-file=.env.example --env-file-if-exists=.env scripts/sync-favicon.mjs",
+    "dev": "astro dev",
+    "prebuild": "node --env-file=.env.example --env-file-if-exists=.env scripts/sync-favicon.mjs",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "node --test test/favicon-contract.test.mjs test/sync-favicon.test.mjs test/favicon-layout.test.mjs",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "astro": "^6.4.7",
+    "lucide-static": "^1.21.0"
+  }
+}

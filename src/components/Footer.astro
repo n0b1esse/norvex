@@ -1,0 +1,97 @@
+---
+import Logo from "./Logo.astro";
+import Icon from "./Icon.astro";
+import { directus, PUBLISHED, SITE_SETTINGS } from "../lib/directus";
+import { getT, lp, tr, type Locale } from "../i18n";
+import { realUrl, waUrl, tgUrl, igUrl, lines } from "../lib/social";
+const { lang } = Astro.props as { lang: Locale };
+const t = await getT(lang);
+const year = new Date().getFullYear();
+
+const menu = [
+  ["nav.home", "/"], ["nav.about", "/about"], ["nav.services", "/services"],
+  ["nav.cooperation", "/cooperation"], ["nav.team", "/team"], ["nav.contacts", "/contacts"],
+].map(([k, p]) => [t(k), lp(lang, p === "/" ? "" : p)]);
+
+type Svc = { slug: string; translations: { languages_code: string; title: string }[] };
+const svc = await directus<Svc[]>(`/items/services?fields=slug,translations.languages_code,translations.title&${PUBLISHED}`, []);
+const servicesLinks = svc.map((s) => [tr<{ title: string }>(s.translations, lang).title, lp(lang, `/services#${s.slug}`)]);
+
+const docItems = await directus<{ translations: { languages_code: string; title: string }[] }[]>(
+  `/items/documents?fields=translations.languages_code,translations.title&${PUBLISHED}&limit=6`, []);
+const docsLinks = docItems.map((d) => tr<{ title: string }>(d.translations, lang).title);
+
+const settings = await directus<{ whatsapp?: string; telegram?: string; instagram?: string; social_whatsapp?: string; social_telegram?: string; social_linkedin?: string; social_instagram?: string; translations: { languages_code: string; footer_tagline: string }[] }>(
+  SITE_SETTINGS, { translations: [] });
+const tagline = tr<{ footer_tagline?: string }>(settings.translations, lang).footer_tagline ?? "HSE-решения для бизнеса. Безопасность. Надежность. Результат.";
+
+// Prefer an explicit social_* URL from the CMS, else derive one from the contact handle.
+// Contact fields can hold multiple values (one per line); the footer links the first.
+// Anything blank or a "#" placeholder is dropped (no dead links).
+const socials = [
+  { icon: "whatsapp", cls: "wa", label: "WhatsApp", href: realUrl(settings.social_whatsapp) ?? waUrl(lines(settings.whatsapp)[0]) },
+  { icon: "telegram", cls: "tg", label: "Telegram", href: realUrl(settings.social_telegram) ?? tgUrl(lines(settings.telegram)[0]) },
+  { icon: "linkedin", cls: "li", label: "LinkedIn", href: realUrl(settings.social_linkedin) },
+  { icon: "instagram", cls: "ig", label: "Instagram", href: realUrl(settings.social_instagram) ?? igUrl(lines(settings.instagram)[0]) },
+].filter((s) => s.href);
+---
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <Logo variant="light" height={90} href={lp(lang)} footer />
+        <p set:text={tagline}></p>
+        {socials.length > 0 && (
+          <div class="socials">
+            {socials.map((s) => (
+              <a href={s.href} aria-label={s.label} class={`soc ${s.cls}`} target="_blank" rel="noopener noreferrer"><Icon name={s.icon} size={20} /></a>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div class="footer-col">
+        <h4>{t("footer.menu")}</h4>
+        <ul>{menu.map(([l, h]) => <li><a href={h}>{l}</a></li>)}</ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>{t("footer.services")}</h4>
+        <ul>{servicesLinks.map(([l, h]) => <li><a href={h}>{l}</a></li>)}</ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>{t("footer.documents")}</h4>
+        <ul>{docsLinks.map((l) => <li><a href={lp(lang, "/documents")}>{l}</a></li>)}</ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>{t("footer.rights", { year })}</span>
+      <a href={lp(lang, "/privacy")}>{t("footer.privacy")}</a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer { background: var(--navy-900); color: rgba(255,255,255,.72); padding-block: 64px 28px; }
+  .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1.2fr 1.2fr; gap: 32px; }
+  .footer-brand p { margin-top: 18px; font-size: 14.5px; line-height: 1.7; }
+  .socials { display: flex; gap: 12px; margin-top: 22px; }
+  .soc { width: 42px; height: 42px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; }
+  .soc.wa { background: #25c366; } .soc.tg { background: #29a9eb; } .soc.li { background: #2f80c4; }
+  .soc.ig { background: linear-gradient(45deg, #f09433, #e6683c 30%, #dc2743 50%, #cc2366 70%, #bc1888); }
+  .soc:hover { opacity: .88; }
+  .footer-col h4 { color: #fff; font-size: 16px; margin-bottom: 20px; }
+  .footer-col li { margin-bottom: 13px; }
+  .footer-col a { font-size: 14.5px; color: rgba(255,255,255,.72); }
+  .footer-col a:hover { color: var(--green-500); }
+  .footer-bottom {
+    display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    margin-top: 48px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,.12); font-size: 14px;
+  }
+  .footer-bottom a { color: rgba(255,255,255,.72); }
+  .footer-bottom a:hover { color: var(--green-500); }
+  @media (max-width: 900px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .footer-grid { grid-template-columns: 1fr; gap: 28px; } }
+</style>

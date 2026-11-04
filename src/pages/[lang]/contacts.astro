@@ -1,0 +1,192 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Icon from "../../components/Icon.astro";
+import { directus, DIRECTUS_URL, SITE_SETTINGS } from "../../lib/directus";
+import { getT, lp, localeStaticPaths, tr } from "../../i18n";
+import { telUrl, waUrl, tgUrl, mailUrl, igUrl, realUrl, lines } from "../../lib/social";
+
+export const getStaticPaths = localeStaticPaths;
+const { lang } = Astro.params;
+const t = await getT(lang!);
+
+const raw = await directus<{ phone?: string; whatsapp?: string; telegram?: string; email?: string; instagram?: string; social_instagram?: string; linkedin?: string; social_linkedin?: string; map_url?: string; translations: any[] }>(
+  SITE_SETTINGS, { translations: [] });
+const s = { ...raw, ...tr<{ address?: string; working_hours?: string }>(raw.translations, lang!) } as Record<string, string>;
+
+// `lines()` (shared, in social.ts) splits a multiline CMS field into values; `or` adds a fallback.
+const or = (v: string[], fallback: string) => (v.length ? v : [fallback]);
+
+const addressLines = or(lines(s.address), "Кыргызская Республика, г. Бишкек, ул. Токтогула 123");
+const addressText = addressLines.join(", ");
+
+// Instagram & LinkedIn are single-account rows: show whenever EITHER a handle or an
+// explicit social_* URL is set (the explicit URL wins for the link), so the row never
+// disappears just because one of the two fields is blank — matching the footer.
+const igLink = realUrl(s.social_instagram) ?? igUrl(lines(s.instagram)[0]) ?? undefined;
+const igText = lines(s.instagram)[0] ?? igLink?.replace(/^https?:\/\/(www\.)?/, "");
+const liLink = realUrl(s.social_linkedin) ?? undefined;
+const liText = lines(s.linkedin)[0] ?? (liLink ? "LinkedIn" : undefined);
+
+// A row renders its label once and stacks each value beneath; href(v) makes a value a link.
+type Row = { icon: string; label: string; values: string[]; href?: (v: string) => string | undefined };
+const info: Row[] = ([
+  { icon: "phone", label: t("contacts.phone"), values: or(lines(s.phone), "+996 555 123 456"), href: (v) => telUrl(v) ?? undefined },
+  { icon: "whatsapp", label: "WhatsApp", values: lines(s.whatsapp), href: (v) => waUrl(v) ?? undefined },
+  { icon: "telegram", label: "Telegram", values: lines(s.telegram), href: (v) => tgUrl(v) ?? undefined },
+  { icon: "instagram", label: "Instagram", values: igText ? [igText] : [], href: () => igLink },
+  { icon: "linkedin", label: "LinkedIn", values: liText ? [liText] : [], href: () => liLink },
+  { icon: "mail", label: "Email", values: or(lines(s.email), "info@norvex-hse.com"), href: (v) => mailUrl(v) ?? undefined },
+  { icon: "map-pin", label: t("contacts.address"), values: addressLines },
+  { icon: "clock", label: t("contacts.hours"), values: or(lines(s.working_hours), "Пн – Пт: 9:00 – 18:00") },
+] as Row[]).filter((r) => r.values.length > 0);
+// Map: an explicit CMS embed URL wins; otherwise derive a keyless Google Maps
+// embed from the address so the contacts page always shows a real, live map.
+const mapSrc = s.map_url || `https://maps.google.com/maps?q=${encodeURIComponent(addressText)}&z=15&output=embed`;
+const submitEndpoint = `${DIRECTUS_URL}/items/contact_submissions`;
+---
+<Layout lang={lang} title={t("seo.contacts.title")} description={t("seo.contacts.desc")}>
+  <section class="section">
+    <div class="container">
+      <div class="section-head left">
+        <h1 class="section-title">{t("page.contacts_title")}</h1>
+        <p class="section-lead">{t("page.contacts_lead")}</p>
+      </div>
+
+      <div class="contacts-grid">
+        <ul class="info">
+          {info.map((row) => (
+            <li>
+              <span class="icon-badge icon-circle"><Icon name={row.icon} size={24} /></span>
+              <div>
+                <span class="info-label">{row.label}</span>
+                {row.values.map((v) => {
+                  const href = row.href?.(v);
+                  const external = !!href && href.startsWith("http");
+                  return href
+                    ? <a class="info-value" href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined}>{v}</a>
+                    : <span class="info-value">{v}</span>;
+                })}
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        <form class="form card" data-form>
+          <input type="text" name="name" placeholder={t("form.name")} required />
+          <input type="text" name="company" placeholder={t("form.company")} />
+          <input type="tel" name="phone" placeholder={t("form.phone")} />
+          <input type="email" name="email" placeholder={t("form.email")} />
+          <textarea name="message" rows="4" placeholder={t("form.message")}></textarea>
+          {/* No `name` on purpose: consent must not land in the contact_submissions
+              payload (the collection has no such field); `required` blocks submit natively. */}
+          <label class="consent">
+            <input type="checkbox" required data-consent />
+            <span>{t("form.consent")} <a href={lp(lang, "/privacy")} target="_blank">{t("form.consent_link")}</a></span>
+          </label>
+          <button type="submit" class="btn btn-primary" disabled>{t("cta.send")}</button>
+          <p class="form-note" data-note hidden></p>
+        </form>
+
+        <iframe
+          class="map"
+          src={mapSrc}
+          title={`${t("contacts.address")}: ${addressText}`}
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          allowfullscreen
+        ></iframe>
+      </div>
+
+      <div class="consult card">
+        <span class="help-icon"><Icon name="phone" size={26} /></span>
+        <div class="consult-text">
+          <strong>{t("contacts.consult_title")}</strong>
+          <span>{t("contacts.consult_text")}</span>
+        </div>
+        <a href={lp(lang, "/contacts")} class="btn btn-outline-green">{t("cta.consult")}</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .contacts-grid { display: grid; grid-template-columns: .95fr 1.05fr 1fr; gap: 32px; align-items: start; }
+  .info { display: flex; flex-direction: column; gap: 26px; }
+  /* flex-start keeps the icon aligned to the label even when a row stacks several
+     values (e.g. two emails) — align-items:center would float it down the block. */
+  .info li { display: flex; gap: 16px; align-items: flex-start; }
+  .info .icon-circle { width: 52px; height: 52px; }
+  .info-label { display: block; font-weight: 700; color: var(--navy); font-size: 15px; }
+  .info-value { display: block; color: var(--muted); font-size: 14.5px; margin-top: 2px; overflow-wrap: anywhere; }
+  a.info-value:hover { color: var(--green-600); }
+
+  .form { padding: 30px; display: flex; flex-direction: column; gap: 16px; }
+  /* :not([type=checkbox]) — appearance:none on the consent checkbox erased its
+     native checkmark (looked unclickable); text fields only. */
+  .form input:not([type="checkbox"]), .form textarea {
+    width: 100%; padding: 14px 16px; font: inherit; color: var(--ink);
+    /* 16px keeps iOS Safari from zooming the page on focus; appearance:none
+       strips the native inner shadow/bevel so fields match across browsers. */
+    font-size: 16px; -webkit-appearance: none; appearance: none;
+    border: 1px solid var(--border); border-radius: 9px; background: #fff; resize: vertical;
+  }
+  .form input:not([type="checkbox"]):focus, .form textarea:focus { outline: none; border-color: var(--green-500); box-shadow: 0 0 0 3px rgba(42,165,74,.12); }
+  .consent { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; color: var(--muted); line-height: 1.5; cursor: pointer; }
+  .consent input { margin-top: 2px; width: 16px; height: 16px; flex: none; accent-color: var(--green-600); cursor: pointer; }
+  .consent a { color: var(--green-600); text-decoration: underline; }
+  .form .btn { margin-top: 4px; }
+  .form .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .form-note { color: var(--green-700); font-size: 14px; font-weight: 600; }
+
+  .map { min-height: 380px; align-self: stretch; }
+  iframe.map { width: 100%; height: 100%; border: 0; border-radius: var(--radius); display: block; }
+
+  .consult { display: flex; align-items: center; gap: 18px; padding: 22px 26px; margin-top: 32px; background: #f1f8f3; border-color: #d6ebdc; }
+  .help-icon { color: var(--green-600); flex: none; }
+  .consult-text { display: flex; flex-direction: column; gap: 4px; margin-right: auto; }
+  .consult-text strong { color: var(--navy); font-size: 16px; }
+  .consult-text span { color: var(--muted); font-size: 14.5px; }
+
+  @media (max-width: 980px) {
+    .contacts-grid { grid-template-columns: 1fr 1fr; }
+    .map { grid-column: 1 / -1; min-height: 300px; }
+  }
+  @media (max-width: 640px) {
+    .contacts-grid { grid-template-columns: 1fr; }
+    .consult { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+
+<script define:vars={{ submitEndpoint, msg: { sending: t("form.sending"), send: t("cta.send"), success: t("form.success"), error: t("form.error") } }}>
+  const form = document.querySelector("[data-form]");
+  const note = document.querySelector("[data-note]");
+  const btn = form?.querySelector("button[type=submit]");
+  const consent = form?.querySelector("[data-consent]");
+  consent?.addEventListener("change", () => { if (btn) btn.disabled = !consent.checked; });
+  function showNote(text, ok) {
+    if (!note) return;
+    note.hidden = false;
+    note.textContent = text;
+    note.style.color = ok ? "var(--green-700)" : "#c0392b";
+  }
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form).entries());
+    if (btn) { btn.disabled = true; btn.textContent = msg.sending; }
+    try {
+      const res = await fetch(submitEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      form.reset();
+      showNote(msg.success, true);
+    } catch (err) {
+      showNote(msg.error, false);
+    } finally {
+      // form.reset() unchecks the consent box, so re-disable until re-checked.
+      if (btn) { btn.disabled = !consent?.checked; btn.textContent = msg.send; }
+    }
+  });
+</script>

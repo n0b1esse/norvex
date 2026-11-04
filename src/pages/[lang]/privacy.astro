@@ -1,0 +1,162 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getT, localeStaticPaths, type Locale } from "../../i18n";
+
+export const getStaticPaths = localeStaticPaths;
+const { lang } = Astro.params;
+const t = await getT(lang!);
+
+// ponytail: legal text lives here in the repo, not Directus — lawyers hand over
+// final wording and it changes ~never; move to a CMS singleton if editors ask.
+type Section = { h: string; ps: string[] };
+const CONTENT: Record<Locale, { title: string; updated: string; sections: Section[] }> = {
+  ru: {
+    title: "Политика конфиденциальности",
+    updated: "Дата последнего обновления: 17 июля 2026 г.",
+    sections: [
+      { h: "1. Общие положения", ps: [
+        "Настоящая Политика конфиденциальности определяет порядок обработки и защиты персональных данных посетителей сайта norvexhse.com (далее — «Сайт»), оператором которого является компания NORVEX (далее — «Компания»).",
+        "Политика разработана в соответствии с Конституцией Кыргызской Республики и Законом Кыргызской Республики «Об информации персонального характера» от 14 апреля 2008 года № 58.",
+        "Используя Сайт и отправляя данные через форму обратной связи, вы подтверждаете согласие с условиями настоящей Политики.",
+      ]},
+      { h: "2. Какие данные мы собираем", ps: [
+        "Через форму обратной связи: имя, название компании, номер телефона, адрес электронной почты и текст сообщения.",
+        "Автоматически при посещении Сайта: адрес просмотренной страницы, язык версии сайта, домен сайта-источника перехода и обезличенный случайный идентификатор посетителя, сохраняемый в браузере (localStorage). Эти данные не позволяют установить вашу личность.",
+      ]},
+      { h: "3. Цели обработки", ps: [
+        "Персональные данные обрабатываются исключительно для: ответа на ваши обращения и запросы; предоставления консультаций по услугам Компании; ведения обезличенной статистики посещаемости и улучшения работы Сайта.",
+      ]},
+      { h: "4. Правовое основание обработки", ps: [
+        "Обработка персональных данных осуществляется на основании вашего согласия, выражаемого путём проставления отметки в соответствующем поле перед отправкой формы обратной связи (статья 9 Закона КР «Об информации персонального характера»).",
+      ]},
+      { h: "5. Хранение и защита данных", ps: [
+        "Данные, отправленные через форму, сохраняются в защищённой системе управления содержимым Компании. Доступ к ним имеют только уполномоченные сотрудники Компании.",
+        "Компания принимает необходимые организационные и технические меры для защиты персональных данных от неправомерного доступа, изменения, раскрытия или уничтожения.",
+        "Данные хранятся не дольше, чем это необходимо для целей обработки, либо до отзыва вашего согласия.",
+      ]},
+      { h: "6. Передача данных третьим лицам", ps: [
+        "Компания не продаёт и не передаёт ваши персональные данные третьим лицам, за исключением поставщиков технической инфраструктуры (хостинг Сайта и системы управления содержимым), обрабатывающих данные по поручению Компании, а также случаев, прямо предусмотренных законодательством Кыргызской Республики.",
+      ]},
+      { h: "7. Cookies и аналитика", ps: [
+        "Сайт не использует рекламные или отслеживающие cookies третьих лиц. Для обезличенной статистики посещаемости в localStorage браузера сохраняется случайный идентификатор, не связанный с вашей личностью. Вы можете удалить его в любой момент, очистив данные сайта в настройках браузера.",
+      ]},
+      { h: "8. Ваши права", ps: [
+        "В соответствии с Законом КР «Об информации персонального характера» вы вправе: получить сведения о том, какие ваши данные обрабатываются; требовать их уточнения, блокирования или уничтожения; отозвать своё согласие на обработку в любой момент.",
+        "Для реализации этих прав направьте запрос на адрес info@norvex-hse.com — мы ответим в сроки, установленные законодательством.",
+      ]},
+      { h: "9. Изменения Политики", ps: [
+        "Компания вправе обновлять настоящую Политику. Новая редакция публикуется на этой странице с указанием даты обновления и вступает в силу с момента публикации.",
+      ]},
+      { h: "10. Контакты", ps: [
+        "По вопросам обработки персональных данных обращайтесь: info@norvex-hse.com.",
+      ]},
+    ],
+  },
+  en: {
+    title: "Privacy Policy",
+    updated: "Last updated: 17 July 2026",
+    sections: [
+      { h: "1. General", ps: [
+        "This Privacy Policy governs the processing and protection of personal data of visitors to norvexhse.com (the “Site”), operated by NORVEX (the “Company”).",
+        "The Policy is drawn up in accordance with the Constitution of the Kyrgyz Republic and the Law of the Kyrgyz Republic “On Personal Data Information” No. 58 of 14 April 2008.",
+        "By using the Site and submitting data through the contact form, you accept the terms of this Policy.",
+      ]},
+      { h: "2. Data we collect", ps: [
+        "Via the contact form: name, company name, phone number, email address and the text of your message.",
+        "Automatically when you visit the Site: the page viewed, the language version, the referring domain and an anonymous random visitor identifier stored in your browser (localStorage). This data does not identify you personally.",
+      ]},
+      { h: "3. Purposes of processing", ps: [
+        "Personal data is processed solely to: respond to your enquiries; provide consultations on the Company's services; keep anonymous visit statistics and improve the Site.",
+      ]},
+      { h: "4. Legal basis", ps: [
+        "Processing is based on your consent, given by ticking the corresponding checkbox before submitting the contact form (Article 9 of the KR Law “On Personal Data Information”).",
+      ]},
+      { h: "5. Storage and protection", ps: [
+        "Data submitted through the form is stored in the Company's secured content management system and is accessible only to authorised Company staff.",
+        "The Company takes the organisational and technical measures required to protect personal data against unlawful access, alteration, disclosure or destruction.",
+        "Data is kept no longer than necessary for the processing purposes, or until you withdraw your consent.",
+      ]},
+      { h: "6. Disclosure to third parties", ps: [
+        "The Company does not sell or share your personal data with third parties, except for technical infrastructure providers (Site hosting and the content management system) processing data on the Company's behalf, and cases expressly required by the legislation of the Kyrgyz Republic.",
+      ]},
+      { h: "7. Cookies and analytics", ps: [
+        "The Site uses no third-party advertising or tracking cookies. For anonymous visit statistics a random identifier, not linked to your identity, is stored in your browser's localStorage. You can remove it at any time by clearing the site data in your browser settings.",
+      ]},
+      { h: "8. Your rights", ps: [
+        "Under the KR Law “On Personal Data Information” you have the right to: know what data of yours is processed; request its correction, blocking or deletion; withdraw your consent at any time.",
+        "To exercise these rights, send a request to info@norvex-hse.com — we will reply within the statutory time limits.",
+      ]},
+      { h: "9. Changes to this Policy", ps: [
+        "The Company may update this Policy. The new version is published on this page with its update date and takes effect upon publication.",
+      ]},
+      { h: "10. Contact", ps: [
+        "For any personal-data questions, contact: info@norvex-hse.com.",
+      ]},
+    ],
+  },
+  ky: {
+    title: "Купуялык саясаты",
+    updated: "Акыркы жаңыртуу: 2026-жылдын 17-июлу",
+    sections: [
+      { h: "1. Жалпы жоболор", ps: [
+        "Бул Купуялык саясаты NORVEX компаниясы (мындан ары — «Компания») башкарган norvexhse.com сайтынын (мындан ары — «Сайт») келүүчүлөрүнүн жеке маалыматтарын иштетүү жана коргоо тартибин аныктайт.",
+        "Саясат Кыргыз Республикасынын Конституциясына жана Кыргыз Республикасынын 2008-жылдын 14-апрелиндеги № 58 «Жеке мүнөздөгү маалымат жөнүндө» Мыйзамына ылайык иштелип чыккан.",
+        "Сайтты колдонуу жана байланыш формасы аркылуу маалымат жөнөтүү менен сиз ушул Саясаттын шарттарына макулдугуңузду ырастайсыз.",
+      ]},
+      { h: "2. Кандай маалыматтарды чогултабыз", ps: [
+        "Байланыш формасы аркылуу: аты-жөнү, компаниянын аталышы, телефон номери, электрондук почта дареги жана билдирүүнүн тексти.",
+        "Сайтка кирүүдө автоматтык түрдө: каралган барактын дареги, сайттын тил версиясы, өткөн булак-сайттын домени жана браузерде (localStorage) сакталуучу жеке инсанды аныктабаган кокустук идентификатор. Бул маалыматтар сиздин инсандыгыңызды аныктоого мүмкүндүк бербейт.",
+      ]},
+      { h: "3. Иштетүүнүн максаттары", ps: [
+        "Жеке маалыматтар төмөнкү максаттарда гана иштетилет: кайрылууларыңызга жооп берүү; Компаниянын кызматтары боюнча консультация берүү; жашырын статистика жүргүзүү жана Сайттын ишин жакшыртуу.",
+      ]},
+      { h: "4. Иштетүүнүн укуктук негизи", ps: [
+        "Жеке маалыматтарды иштетүү байланыш формасын жөнөтүүдөн мурун тиешелүү талаага белги коюу аркылуу берилген макулдугуңуздун негизинде жүргүзүлөт (КР «Жеке мүнөздөгү маалымат жөнүндө» Мыйзамынын 9-беренеси).",
+      ]},
+      { h: "5. Маалыматтарды сактоо жана коргоо", ps: [
+        "Форма аркылуу жөнөтүлгөн маалыматтар Компаниянын корголгон контент башкаруу тутумунда сакталат. Аларга Компаниянын ыйгарым укуктуу кызматкерлери гана жете алат.",
+        "Компания жеке маалыматтарды мыйзамсыз жетүүдөн, өзгөртүүдөн, ачыкка чыгаруудан же жок кылуудан коргоо үчүн зарыл уюштуруучулук жана техникалык чараларды көрөт.",
+        "Маалыматтар иштетүү максаттары үчүн зарыл болгон мөөнөттөн ашык эмес же макулдугуңузду кайтарып алганга чейин сакталат.",
+      ]},
+      { h: "6. Маалыматтарды үчүнчү жактарга берүү", ps: [
+        "Компания сиздин жеке маалыматтарыңызды сатпайт жана үчүнчү жактарга бербейт; буга Компаниянын тапшырмасы боюнча маалымат иштеткен техникалык инфраструктура камсыздоочулары (Сайттын хостинги жана контент башкаруу тутуму), ошондой эле Кыргыз Республикасынын мыйзамдарында түздөн-түз каралган учурлар кирбейт.",
+      ]},
+      { h: "7. Cookies жана аналитика", ps: [
+        "Сайт үчүнчү жактардын жарнамалык же көзөмөлдөөчү cookie-файлдарын колдонбойт. Жашырын статистика үчүн браузердин localStorage'ында инсандыгыңызга байланышпаган кокустук идентификатор сакталат. Аны каалаган убакта браузердин жөндөөлөрүнөн сайттын маалыматтарын тазалоо аркылуу өчүрө аласыз.",
+      ]},
+      { h: "8. Сиздин укуктарыңыз", ps: [
+        "КР «Жеке мүнөздөгү маалымат жөнүндө» Мыйзамына ылайык сиз: кайсы маалыматтарыңыз иштетилип жатканын билүүгө; аларды тактоону, бөгөттөөнү же жок кылууну талап кылууга; макулдугуңузду каалаган убакта кайтарып алууга укуктуусуз.",
+        "Бул укуктарды ишке ашыруу үчүн info@norvex-hse.com дарегине кайрылыңыз — мыйзамда белгиленген мөөнөттө жооп беребиз.",
+      ]},
+      { h: "9. Саясатка өзгөртүүлөр", ps: [
+        "Компания бул Саясатты жаңыртууга укуктуу. Жаңы редакциясы жаңыртуу датасы менен ушул баракта жарыяланат жана жарыяланган учурдан тартып күчүнө кирет.",
+      ]},
+      { h: "10. Байланыш", ps: [
+        "Жеке маалыматтарды иштетүү боюнча суроолор менен кайрылыңыз: info@norvex-hse.com.",
+      ]},
+    ],
+  },
+};
+const c = CONTENT[lang as Locale];
+---
+<Layout lang={lang} title={t("seo.privacy.title")} description={t("seo.privacy.desc")}>
+  <section class="section">
+    <div class="container privacy">
+      <h1 class="section-title">{c.title}</h1>
+      <p class="updated">{c.updated}</p>
+      {c.sections.map((s) => (
+        <section>
+          <h2>{s.h}</h2>
+          {s.ps.map((p) => <p>{p}</p>)}
+        </section>
+      ))}
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .privacy { max-width: 820px; }
+  .updated { color: var(--muted); font-size: 14.5px; margin: 10px 0 34px; }
+  .privacy h2 { color: var(--navy); font-size: 20px; margin: 30px 0 12px; }
+  .privacy p { color: var(--muted); font-size: 15.5px; line-height: 1.75; margin-bottom: 12px; }
+</style>

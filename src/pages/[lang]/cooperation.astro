@@ -1,0 +1,92 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Icon from "../../components/Icon.astro";
+import Figure from "../../components/Figure.astro";
+import { directus, PUBLISHED } from "../../lib/directus";
+import { getT, lp, localeStaticPaths, tr as pickTr } from "../../i18n";
+
+export const getStaticPaths = localeStaticPaths;
+const { lang } = Astro.params;
+const tr = await getT(lang!);
+
+type ModelTr = { languages_code: string; title: string; description: string; points: string[] };
+type Model = { slug: string; icon: string; image: string | null; translations: ModelTr[] };
+const models = await directus<Model[]>(
+  `/items/cooperation_models?fields=slug,icon,image,translations.*&${PUBLISHED}`, []);
+const tabs = models.map((m) => {
+  const tt = pickTr<ModelTr>(m.translations, lang!);
+  return { id: m.slug, icon: m.icon, image: m.image, label: tt.title, desc: tt.description, points: tt.points ?? [] };
+});
+---
+<Layout lang={lang} title={tr("seo.cooperation.title")} description={tr("seo.cooperation.desc")}>
+  <section class="section">
+    <div class="container">
+      <div class="section-head left">
+        <h1 class="section-title">{tr("page.cooperation_title")}</h1>
+        <p class="section-lead">{tr("page.cooperation_lead")}</p>
+      </div>
+
+      <div class="tabs" role="tablist">
+        {tabs.map((t, i) => (
+          <button class:list={["tab", { active: i === 0 }]} role="tab" data-tab={t.id}>
+            <Icon name={t.icon} size={22} /> {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tabs.map((t, i) => (
+        <div class:list={["panel card", { active: i === 0 }]} data-panel={t.id} id={t.id}>
+          <div class="panel-text">
+            <h2>{t.label}</h2>
+            <p>{t.desc}</p>
+            <ul class="checklist">
+              {t.points.map((p) => (
+                <li><span class="check"><Icon name="check" size={16} /></span>{p}</li>
+              ))}
+            </ul>
+            <a href={lp(lang, "/contacts")} class="btn btn-outline-green">{tr("cta.learn_more")}</a>
+          </div>
+          <Figure id={t.image} label="Изображение" alt={t.label} class="panel-img" width={520} height={320} />
+        </div>
+      ))}
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .tabs { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 28px; }
+  .tab {
+    display: inline-flex; align-items: center; gap: 10px; padding: 16px 26px; cursor: pointer;
+    font-weight: 700; font-size: 16px; color: var(--navy); background: #fff;
+    border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow-sm); transition: .16s;
+  }
+  .tab:hover { border-color: var(--green-500); }
+  .tab.active { background: var(--green-500); color: #fff; border-color: var(--green-500); }
+
+  .panel { display: none; grid-template-columns: 1fr 1fr; gap: 40px; padding: 40px; align-items: center; scroll-margin-top: 100px; }
+  .panel.active { display: grid; }
+  .panel-text h2 { font-size: calc(28px * var(--ts-heading)); margin-bottom: 16px; }
+  .panel-text p { color: var(--ink); font-size: 16px; }
+  .checklist { margin: 24px 0 30px; display: grid; gap: 16px; }
+  .checklist li { display: flex; align-items: center; gap: 14px; font-weight: 600; color: var(--navy); }
+  .check { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: rgba(42,165,74,.14); color: var(--green-600); flex: none; }
+  .panel-img { min-height: 320px; }
+  img.panel-img { height: 100%; min-height: 320px; }
+
+  @media (max-width: 900px) {
+    .panel { grid-template-columns: 1fr; }
+    .panel-img { order: -1; }
+  }
+</style>
+
+<script>
+  const tabs = Array.from(document.querySelectorAll<HTMLElement>("[data-tab]"));
+  const panels = Array.from(document.querySelectorAll<HTMLElement>("[data-panel]"));
+  function activate(id: string) {
+    tabs.forEach((t) => t.classList.toggle("active", t.dataset.tab === id));
+    panels.forEach((p) => p.classList.toggle("active", p.dataset.panel === id));
+  }
+  tabs.forEach((t) => t.addEventListener("click", () => activate(t.dataset.tab!)));
+  const hash = location.hash.replace("#", "");
+  if (hash && panels.some((p) => p.dataset.panel === hash)) activate(hash);
+</script>

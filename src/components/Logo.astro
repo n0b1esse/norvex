@@ -1,0 +1,34 @@
+---
+// NORVEX logo: the full lockup (mark + wordmark) is a single image from the CMS.
+// The footer can use its own variant (site_settings.footer_logo) and falls back to
+// the main logo, then to an inline shield SVG if neither is uploaded. Both fields are
+// fetched in one (deduped) call.
+import { directus, asset } from "../lib/directus";
+interface Props { variant?: "dark" | "light"; height?: number; href?: string; footer?: boolean; }
+const { variant = "dark", height = 38, href = "/", footer = false } = Astro.props;
+const mainColor = variant === "light" ? "#ffffff" : "var(--navy)";
+const s = await directus<{ logo?: string | null; footer_logo?: string | null }>(
+  "/items/site_settings?fields=logo,footer_logo", {});
+const logoSrc = asset(footer ? (s.footer_logo ?? s.logo) : s.logo);
+---
+<a href={href} class="logo" aria-label="NORVEX — на главную" style={`--logo-h:${height}px; --logo-main:${mainColor};`}>
+  {logoSrc
+    ? <img class="logo-mark" src={logoSrc} alt="NORVEX" />
+    : <svg class="logo-mark" viewBox="0 0 40 44" fill="none" aria-hidden="true">
+        <path d="M20 2 L37 8 V22 C37 33 30 40 20 43 C10 40 3 33 3 22 V8 Z"
+          stroke="var(--logo-main)" stroke-width="2.4" stroke-linejoin="round"/>
+        <polyline points="13 31 13 14 27 31 27 14" stroke="var(--logo-main)"
+          stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+        <polyline points="11 25 18 33 34 12" stroke="var(--green-500)"
+          stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"/>
+      </svg>}
+</a>
+
+<style>
+  /* flex: none so the logo never shrinks in the flex header bar — otherwise the
+     width:auto image collapses toward 0 when nav text is wide (RU/KY). */
+  .logo { display: inline-flex; align-items: center; flex: none; }
+  .logo-mark { height: var(--logo-h); width: auto; flex: none; }
+  /* A wide logo-with-text shouldn't crowd the burger on small phones. */
+  @media (max-width: 480px) { .logo-mark { height: calc(var(--logo-h) * .82); } }
+</style>

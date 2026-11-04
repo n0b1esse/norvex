@@ -1,0 +1,126 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Icon from "../../components/Icon.astro";
+import { directus, asset } from "../../lib/directus";
+import { getT, lp, localeStaticPaths, tr } from "../../i18n";
+
+export const getStaticPaths = localeStaticPaths;
+const { lang } = Astro.params;
+const t = await getT(lang!);
+
+type Home = {
+  hero_title: string; hero_subtitle: string;
+  hero_features: { icon: string; label: string }[];
+  highlights_title: string;
+  highlights: { icon: string; title: string; text: string }[];
+};
+const raw = await directus<{ hero_image?: string | null; translations: (Home & { languages_code: string })[] }>(
+  "/items/home_page?fields=hero_image,translations.*", { translations: [] });
+const home = tr<Home>(raw.translations, lang!);
+home.hero_features ??= [];
+home.highlights ??= [];
+// Render "HSE" in the accent color without storing markup in the CMS.
+const heroTitleHtml = (home.hero_title ?? "").replace(/HSE/g, '<span class="g">HSE</span>');
+const heroSrc = asset(raw.hero_image);
+---
+<Layout lang={lang} title={t("seo.home.title")} description={t("seo.home.desc")}>
+  <section class="hero">
+    {heroSrc && <img class="hero-bg" src={heroSrc} alt="" aria-hidden="true" />}
+    <div class="container">
+      <div class="hero-text">
+        <h1 set:html={heroTitleHtml}></h1>
+        <p>{home.hero_subtitle}</p>
+        <div class="hero-cta">
+          <a href={lp(lang, "/contacts")} class="btn btn-primary">{t("cta.consult")}</a>
+          <a href={lp(lang, "/about")} class="btn btn-outline">{t("cta.learn_more")}</a>
+        </div>
+      </div>
+
+      <div class="hero-features">
+        {home.hero_features.map((f) => (
+          <div class="hero-feature">
+            <span class="icon-badge icon-circle on-dark"><Icon name={f.icon} size={28} /></span>
+            <span>{f.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-soft fill-to-footer">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2 class="section-title">{home.highlights_title}</h2>
+        <div class="bar"></div>
+      </div>
+      <div class="trio">
+        {home.highlights.map((h, i) => (
+          <div class="trio-item reveal" style={`--i:${i}`}>
+            <div class="trio-head">
+              <span class="icon-badge"><Icon name={h.icon} size={34} /></span>
+              <h3>{h.title}</h3>
+            </div>
+            <p>{h.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .hero {
+    position: relative; isolation: isolate; overflow: hidden;
+    background: var(--navy-900); color: #fff; padding-block: 88px 52px;
+  }
+  /* Full-bleed background photo (subject kept to the right), with a navy
+     gradient over it so the left-side text stays readable. */
+  .hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    width: 100%; height: 100%; object-fit: cover; object-position: right center;
+  }
+  .hero::after {
+    content: ""; position: absolute; inset: 0; z-index: 1;
+    background:
+      radial-gradient(70% 100% at 16% 28%, rgba(42,165,74,.16), transparent 62%),
+      linear-gradient(100deg,
+        var(--navy-900) 0%, rgba(12,39,67,.95) 30%, rgba(12,39,67,.66) 55%,
+        rgba(12,39,67,.40) 80%, rgba(12,39,67,.30) 100%);
+  }
+  .hero > .container {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column; min-height: 460px;
+  }
+  .hero-text { max-width: 600px; }
+  .hero-text h1 { color: #fff; font-size: calc(clamp(34px, 5vw, 56px) * var(--ts-hero)); line-height: 1.08; }
+  .hero-text h1 .g { color: var(--green-500); }
+  .hero-text p { margin-top: 22px; font-size: calc(19px * var(--ts-body)); color: rgba(255,255,255,.86); max-width: 520px; }
+  .hero-cta { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 34px; }
+
+  .hero-features {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px;
+    margin-top: auto; padding-top: 36px; border-top: 1px solid rgba(255,255,255,.16);
+  }
+  .hero-feature { display: flex; align-items: center; gap: 16px; font-weight: 600; font-size: calc(16px * var(--ts-body)); color: rgba(255,255,255,.95); }
+
+  .trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
+  .trio-item { padding: 8px 36px; }
+  .trio-item:not(:last-child) { border-right: 1px solid var(--border); }
+  .trio-head { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .trio-item p { color: var(--muted); font-size: 16px; }
+
+  /* Match the global .grid-4 breakpoint so features don't stay 4-up and crowd
+     long RU/KG labels in the 901–992px band. */
+  @media (max-width: 992px) {
+    .hero-features { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 900px) {
+    .hero > .container { min-height: auto; }
+    .hero::after { background: linear-gradient(180deg, rgba(12,39,67,.84), rgba(12,39,67,.94)); }
+    .hero-features { grid-template-columns: repeat(2, 1fr); gap: 22px; margin-top: 44px; }
+    .trio { grid-template-columns: 1fr; gap: 28px; }
+    .trio-item { padding: 0; }
+    .trio-item:not(:last-child) { border-right: 0; border-bottom: 1px solid var(--border); padding-bottom: 24px; }
+  }
+  @media (max-width: 560px) { .hero-features { grid-template-columns: 1fr; } }
+</style>

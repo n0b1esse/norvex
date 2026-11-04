@@ -1,0 +1,36 @@
+# Directus deployment for Norvex — lives on the Oracle VPS at ~/apps/norvex/
+# Secrets are NOT here; they're in /home/temur/envs/norvex.env (mode 600, not in git).
+#
+# Notes:
+# - Runs as the image's default `node` user (uid 1000). The bind-mounted data
+#   dirs MUST be owned by 1000:1000 on the host, or SQLite/pm2 fail with
+#   permission errors:  sudo chown -R 1000:1000 ~/apps/norvex/data
+# - Exposed only via the shared traefik (no host port published). Routed at
+#   http://127.0.0.1:18055 with StripPrefix; PUBLIC_URL carries the subpath.
+services:
+  norvex-directus:
+    image: directus/directus:12.0.2
+    container_name: norvex-directus
+    restart: unless-stopped
+    env_file:
+      - /home/temur/envs/norvex.env
+    volumes:
+      - /home/temur/apps/norvex/data/database:/directus/database
+      - /home/temur/apps/norvex/data/uploads:/directus/uploads
+      - /home/temur/apps/norvex/data/extensions:/directus/extensions
+    networks:
+      - traefik-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-net"
+      - "traefik.http.routers.norvex-directus.rule=Host(`temoor.uz`) && PathPrefix(`/norvex-cms`)"
+      - "traefik.http.routers.norvex-directus.entrypoints=websecure"
+      - "traefik.http.routers.norvex-directus.tls=true"
+      - "traefik.http.routers.norvex-directus.tls.certresolver=myresolver"
+      - "traefik.http.routers.norvex-directus.middlewares=norvex-directus-strip"
+      - "traefik.http.middlewares.norvex-directus-strip.stripprefix.prefixes=/norvex-cms"
+      - "traefik.http.services.norvex-directus.loadbalancer.server.port=8055"
+
+networks:
+  traefik-net:
+    external: true
