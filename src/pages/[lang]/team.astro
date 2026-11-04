@@ -1,0 +1,169 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Figure from "../../components/Figure.astro";
+import { directus, PUBLISHED } from "../../lib/directus";
+import { getT, localeStaticPaths, tr } from "../../i18n";
+
+export const getStaticPaths = localeStaticPaths;
+const { lang } = Astro.params;
+const t = await getT(lang!);
+
+type MemberTr = { languages_code: string; name?: string; position: string; experience: string };
+type Row = { name: string; photo: string | null; translations: MemberTr[] };
+const rows = await directus<Row[]>(
+  `/items/team_members?fields=name,photo,translations.*&${PUBLISHED}`, []);
+const team = rows.map((m) => {
+  const t0 = tr<MemberTr>(m.translations, lang!);
+  return { ...t0, photo: m.photo, name: t0.name ?? m.name };
+});
+
+// Первые 2 — директор и учредитель (всегда видны), остальные — специалисты (скрыты до нажатия).
+const LEADERS = 2;
+const leaders = team.slice(0, LEADERS);
+const specialists = team.slice(LEADERS);
+const hasMore = specialists.length > 0;
+---
+<Layout lang={lang} title={t("seo.team.title")} description={t("seo.team.desc")}>
+  <section class="section">
+    <div class="container">
+      <div class="section-head left">
+        <h1 class="section-title">{t("page.team_title")}</h1>
+        <p class="section-lead">{t("page.team_lead")}</p>
+      </div>
+
+      {/* Группа 1: директор + учредитель — всегда видны */}
+      <div class="grid grid-4 team-grid leaders-grid">
+        {leaders.map((m) => (
+          <article class="member">
+            <Figure id={m.photo} label="Фото сотрудника" alt={m.name} class="photo" width={300} height={240} />
+            <div class="member-body">
+              <h3>{m.name}</h3>
+              <p class="role">{m.position}</p>
+              <div class="exp">{t("team.experience")}: <span>{m.experience}</span></div>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      {/* Группа 2: остальные специалисты — скрыты до нажатия «все специалисты» */}
+      {hasMore && (
+        <>
+          <div class="team-cta">
+            <button type="button" class="btn btn-primary" data-show-all>{t("cta.all_specialists")}</button>
+          </div>
+          <div class:list={["grid grid-4 team-grid specialists-grid", { hidden: true }]}>
+            <div class="section-head left section-head-specialists">
+              <h2 class="section-title">{t("team.key_instructors")}</h2>
+            </div>
+            {specialists.map((m) => (
+              <article class:list={["member", { "is-hidden": true }]}>
+                <Figure id={m.photo} label="Фото сотрудника" alt={m.name} class="photo" width={300} height={240} />
+                <div class="member-body">
+                  <h3>{m.name}</h3>
+                  <p class="role">{m.position}</p>
+                  <div class="exp">{t("team.experience")}: <span>{m.experience}</span></div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .team-grid { margin-top: 8px; }
+  /* Карточки специалистов — чистые белые коробки по референсу:
+     без рамки и тени, мягкие скругленные углы, фото с radius сверху. */
+  .member {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    transition: none;
+  }
+  .member .photo {
+    min-height: 240px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  img.photo {
+    height: 240px;
+    width: 100%;
+    object-fit: cover;
+  }
+  .member-body { padding: 20px 20px 24px; display: flex; flex-direction: column; flex: 1; }
+  .member-body h3 { font-size: calc(18px * var(--ts-heading)); line-height: 1.3; color: #ea8c00; margin-bottom: 6px; }
+  .role { color: var(--muted); font-size: 14px; margin-top: 0; margin-bottom: 16px; }
+  .exp { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--border); font-weight: 600; color: var(--navy); font-size: 14px; }
+  .exp span { color: var(--green-600); }
+
+  /* Заголовок второй группы («Ключевые инструкторы») */
+  .section-head-specialists { text-align: left; margin: 48px 0 24px 0; }
+  .section-head-specialists .section-title { font-size: calc(22px * var(--ts-heading)); }
+
+  .team-cta { display: flex; justify-content: center; margin: 40px 0 24px 0; }
+
+  .specialists-grid.hidden { display: none; }
+  .member.is-hidden { display: none; }
+</style>
+
+<script>
+  // FLIP reveal второй группы специалистов (ветка снизу).
+  const btn = document.querySelector<HTMLElement>("[data-show-all]");
+  const grid = document.querySelector<HTMLElement>(".specialists-grid");
+  const REDUCE = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const DUR = 500;
+  btn?.addEventListener("click", () => {
+    if (!grid) return;
+    const hidden = Array.from(grid.querySelectorAll<HTMLElement>(".member.is-hidden"));
+
+    // Reduced motion (or nothing to reveal): show them with no animation.
+    if (REDUCE || !hidden.length) {
+      grid.classList.remove("hidden");
+      hidden.forEach((el) => el.classList.remove("is-hidden"));
+      btn.closest(".team-cta")?.remove();
+      return;
+    }
+
+    // Cap total stagger to ~320ms regardless of count (≤60ms/card).
+    const step = Math.min(60, Math.round(320 / hidden.length));
+    const first = hidden.map((el) => el.getBoundingClientRect());
+
+    grid.classList.remove("hidden");
+    hidden.forEach((el) => el.classList.remove("is-hidden"));
+
+    // Invert: park cards back at their old spot; start hidden.
+    hidden.forEach((el, i) => {
+      const last = el.getBoundingClientRect();
+      const dx = first[i].left - last.left, dy = first[i].top - last.top;
+      el.style.transition = "none";
+      el.style.transform = `translate(${dx}px, ${dy}px)`;
+      el.style.opacity = "0";
+      el.style.transform = "translateY(16px)";
+    });
+
+    // Play: next frame, release everything to its resting place.
+    requestAnimationFrame(() => {
+      hidden.forEach((el, i) => {
+        const d = i * step;
+        el.style.transition = `opacity ${DUR - 50}ms ease ${d}ms, transform ${DUR}ms cubic-bezier(.2,.7,.2,1) ${d}ms`;
+        el.style.opacity = "";
+        el.style.transform = "";
+      });
+    });
+
+    // Clear inline styles after the LAST card finishes.
+    const settle = (hidden.length - 1) * step + DUR + 80;
+    setTimeout(() => {
+      hidden.forEach((el) => {
+        el.style.transition = ""; el.style.transform = ""; el.style.opacity = "";
+      });
+    }, settle);
+
+    btn.closest(".team-cta")?.remove();
+  });
+</script>
