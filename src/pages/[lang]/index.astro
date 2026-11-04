@@ -17,6 +17,33 @@ type Home = {
 const raw = await directus<{ hero_image?: string | null; translations: (Home & { languages_code: string })[] }>(
   "/items/home_page?fields=hero_image,translations.*", { translations: [] });
 const home = tr<Home>(raw.translations, lang!);
+
+// Fallback без Directus CMS — чтобы главная не была пустой
+if (!home.hero_title) {
+  home.hero_title = lang === "en" ? "HSE solutions for business" : lang === "ky" ? "Бизнес үчүн HSE чечимдер" : "HSE-решения для бизнеса";
+  home.hero_subtitle = lang === "en" ? "Occupational safety, industrial safety and ecology — from consulting to full HSE outsourcing." : lang === "ky" ? "Эмгек коопсуздугу, өнөр жай коопсуздугу жана экология — кеңеш берүүдөн HSE функцияларын толук аутсорсингге чейин." : "Охрана труда, промышленная безопасность и экология — от консалтинга до полного аутсорсинга функций HSE.";
+  home.hero_features = lang === "en" ? [
+    { icon: "shield", label: "Safety" },
+    { icon: "factory", label: "Industry" },
+    { icon: "leaf", label: "Ecology" },
+    { icon: "clipboard", label: "Compliance" },
+  ] : [
+    { icon: "shield", label: "Безопасность" },
+    { icon: "factory", label: "Промышленность" },
+    { icon: "leaf", label: "Экология" },
+    { icon: "clipboard", label: "Соответствие" },
+  ];
+  home.highlights_title = lang === "en" ? "Why NORVEX" : lang === "ky" ? "Эмне үчүн NORVEX" : "Почему выбирают NORVEX";
+  home.highlights = lang === "en" ? [
+    { icon: "award", title: "Experience", text: "International certifications and years of practice." },
+    { icon: "users", title: "Team", text: "Professional HSE specialists." },
+    { icon: "target", title: "Results", text: "Measurable impact on safety and compliance." },
+  ] : [
+    { icon: "award", title: "Опыт", text: "Международные сертификаты и многолетняя практика." },
+    { icon: "users", title: "Команда", text: "Профессиональные HSE-специалисты." },
+    { icon: "target", title: "Результат", text: "Измеримый эффект для безопасности и соответствия." },
+  ];
+}
 home.hero_features ??= [];
 home.highlights ??= [];
 // Render "HSE" in the accent color without storing markup in the CMS.
