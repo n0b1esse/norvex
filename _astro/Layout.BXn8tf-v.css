@@ -11,3 +11,12 @@
 .faq-item .faq-body p{max-width:680px}
 .faq-cta{display:flex;justify-content:center;flex-wrap:wrap;gap:14px;margin-top:30px}
 @media(max-width:640px){.faq-item>summary{font-size:15.5px;padding:16px 18px}.faq-item .faq-body{padding:2px 18px 18px}}
+/* ==== staging: process (home) ==== */
+.process-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+@media(max-width:992px){.process-steps{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.process-steps{grid-template-columns:1fr}}
+.process-step{padding:26px 24px}
+.process-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.step-no{color:var(--green-600);font-weight:800;font-size:22px;letter-spacing:.02em}
+.process-title{font-size:17.5px}
+.process-step p{color:var(--muted);font-size:15.5px;margin-top:8px}
