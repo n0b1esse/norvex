@@ -1,9 +1,7 @@
 ---
 import Logo from "./Logo.astro";
 import Icon from "./Icon.astro";
-import { directus, PUBLISHED, SITE_SETTINGS } from "../lib/directus";
-import { getT, lp, tr, type Locale } from "../i18n";
-import { realUrl, waUrl, tgUrl, igUrl, lines } from "../lib/social";
+import { getT, lp, type Locale } from "../i18n";
 const { lang } = Astro.props as { lang: Locale };
 const t = await getT(lang);
 const year = new Date().getFullYear();
@@ -13,40 +11,32 @@ const menu = [
   ["nav.cooperation", "/cooperation"], ["nav.team", "/team"], ["nav.contacts", "/contacts"],
 ].map(([k, p]) => [t(k), lp(lang, p === "/" ? "" : p)]);
 
-type Svc = { slug: string; translations: { languages_code: string; title: string }[] };
-const svc = await directus<Svc[]>(`/items/services?fields=slug,translations.languages_code,translations.title&${PUBLISHED}`, []);
-
-// Fallback без Directus CMS — чтобы колонка услуг в футере не была пустой
-const fallbackSvcLinks = lang === "en" ? [
+const servicesLinks = lang === "en" ? [
   ["HSE consulting", lp(lang, "/services#consulting")],
   ["HSE outsourcing", lp(lang, "/services#outsourcing")],
   ["Outstaffing", lp(lang, "/services#outstaffing")],
+  ["Audits and inspections", lp(lang, "/services#audits")],
+  ["Documentation development", lp(lang, "/services#docs")],
+  ["Contractor management", lp(lang, "/services#contractors")],
 ] : [
   ["Консалтинг в области HSE", lp(lang, "/services#consulting")],
   ["Аутсорсинг функций HSE", lp(lang, "/services#outsourcing")],
   ["Аутстаффинг специалистов", lp(lang, "/services#outstaffing")],
+  ["Аудиты и инспекции", lp(lang, "/services#audits")],
+  ["Разработка документации", lp(lang, "/services#docs")],
+  ["Управление подрядчиками", lp(lang, "/services#contractors")],
 ];
-const servicesLinks = svc.length ? svc.map((s) => [tr<{ title: string }>(s.translations, lang).title, lp(lang, `/services#${s.slug}`)]) : fallbackSvcLinks;
 
-const docItems = await directus<{ translations: { languages_code: string; title: string }[] }[]>(
-  `/items/documents?fields=translations.languages_code,translations.title&${PUBLISHED}&limit=6`, []);
-// Fallback без Directus CMS
-const fallbackDocs = lang === "en" ? ["Policies", "Procedures", "Checklists"] : ["Политики", "Процедуры", "Чек-листы"];
-const docsLinks = docItems.length ? docItems.map((d) => tr<{ title: string }>(d.translations, lang).title) : fallbackDocs;
+const docsLinks = lang === "en" ? ["Policies", "Procedures", "Checklists"] : lang === "ky" ? ["Саясаттар", "Процедуралар", "Чек-листтер"] : ["Политики", "Процедуры", "Чек-листы"];
 
-const settings = await directus<{ whatsapp?: string; telegram?: string; instagram?: string; social_whatsapp?: string; social_telegram?: string; social_linkedin?: string; social_instagram?: string; translations: { languages_code: string; footer_tagline: string }[] }>(
-  SITE_SETTINGS, { translations: [] });
-const tagline = tr<{ footer_tagline?: string }>(settings.translations, lang).footer_tagline ?? "HSE-решения для бизнеса. Безопасность. Надежность. Результат.";
+const tagline = lang === "en" ? "Responsibility. Safety. Results." : lang === "ky" ? "Жоопкерчилик. Коопсуздук. Натыйжа." : "Ответственность. Безопасность. Результат.";
 
-// Prefer an explicit social_* URL from the CMS, else derive one from the contact handle.
-// Contact fields can hold multiple values (one per line); the footer links the first.
-// Anything blank or a "#" placeholder is dropped (no dead links).
 const socials = [
-  { icon: "whatsapp", cls: "wa", label: "WhatsApp", href: realUrl(settings.social_whatsapp) ?? waUrl(lines(settings.whatsapp)[0]) },
-  { icon: "telegram", cls: "tg", label: "Telegram", href: realUrl(settings.social_telegram) ?? tgUrl(lines(settings.telegram)[0]) },
-  { icon: "linkedin", cls: "li", label: "LinkedIn", href: realUrl(settings.social_linkedin) },
-  { icon: "instagram", cls: "ig", label: "Instagram", href: realUrl(settings.social_instagram) ?? igUrl(lines(settings.instagram)[0]) },
-].filter((s) => s.href);
+  { icon: "whatsapp", cls: "wa", label: "WhatsApp", href: "https://wa.me/996550209209" },
+  { icon: "telegram", cls: "tg", label: "Telegram", href: "https://t.me/NORVEX_HSE" },
+  { icon: "linkedin", cls: "li", label: "LinkedIn", href: "https://www.linkedin.com/company/norvex-hse" },
+  { icon: "instagram", cls: "ig", label: "Instagram", href: "https://www.instagram.com/norvex.hse" },
+];
 ---
 <footer class="site-footer">
   <div class="container">

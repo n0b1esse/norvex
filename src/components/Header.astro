@@ -2,8 +2,7 @@
 import Logo from "./Logo.astro";
 import Icon from "./Icon.astro";
 import LangSwitch from "./LangSwitch.astro";
-import { directus, PUBLISHED } from "../lib/directus";
-import { getT, lp, tr, type Locale } from "../i18n";
+import { getT, lp, type Locale } from "../i18n";
 
 const { lang } = Astro.props as { lang: Locale };
 const t = await getT(lang);
@@ -13,21 +12,24 @@ const rest = full.replace(new RegExp(`^/${lang}`), "") || "/";
 const is = (p: string) => (p === "/" ? rest === "/" : rest.startsWith(p));
 const switchPath = rest === "/" ? "" : rest;
 
-type Item = { slug: string; translations: { languages_code: string; title: string }[] };
-const serviceItems = await directus<Item[]>(`/items/services?fields=slug,translations.languages_code,translations.title&${PUBLISHED}`, []);
-const modelItems = await directus<Item[]>(`/items/cooperation_models?fields=slug,translations.languages_code,translations.title&${PUBLISHED}`, []);
-
-// Fallback без Directus CMS — чтобы dropdowns не были пустыми
-const fallbackServices = lang === "en" ? [
+// Полностью локальные пункты меню — работает без CMS
+const services = lang === "en" ? [
   ["HSE consulting", lp(lang, "/services#consulting")],
   ["HSE outsourcing", lp(lang, "/services#outsourcing")],
   ["Outstaffing", lp(lang, "/services#outstaffing")],
+  ["Audits and inspections", lp(lang, "/services#audits")],
+  ["Documentation development", lp(lang, "/services#docs")],
+  ["Contractor management", lp(lang, "/services#contractors")],
 ] : [
   ["Консалтинг в области HSE", lp(lang, "/services#consulting")],
   ["Аутсорсинг функций HSE", lp(lang, "/services#outsourcing")],
   ["Аутстаффинг специалистов", lp(lang, "/services#outstaffing")],
+  ["Аудиты и инспекции", lp(lang, "/services#audits")],
+  ["Разработка документации", lp(lang, "/services#docs")],
+  ["Управление подрядчиками", lp(lang, "/services#contractors")],
 ];
-const fallbackModels = lang === "en" ? [
+
+const models = lang === "en" ? [
   ["Consulting", lp(lang, "/cooperation#consulting")],
   ["Outsourcing", lp(lang, "/cooperation#outsourcing")],
   ["Outstaffing", lp(lang, "/cooperation#outstaffing")],
@@ -36,8 +38,6 @@ const fallbackModels = lang === "en" ? [
   ["Аутсорсинг", lp(lang, "/cooperation#outsourcing")],
   ["Аутстаффинг", lp(lang, "/cooperation#outstaffing")],
 ];
-const services = serviceItems.length ? serviceItems.map((s) => [tr<{ title: string }>(s.translations, lang).title, lp(lang, `/services#${s.slug}`)]) : fallbackServices;
-const models = modelItems.length ? modelItems.map((m) => [tr<{ title: string }>(m.translations, lang).title, lp(lang, `/cooperation#${m.slug}`)]) : fallbackModels;
 ---
 <header class="site-header">
   <div class="bar">

@@ -1,31 +1,27 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import Icon from "../../components/Icon.astro";
-import Figure from "../../components/Figure.astro";
-import { directus, PUBLISHED } from "../../lib/directus";
-import { getT, lp, localeStaticPaths, tr as pickTr } from "../../i18n";
+import { getT, lp, localeStaticPaths } from "../../i18n";
 
 export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const tr = await getT(lang!);
 
-type ModelTr = { languages_code: string; title: string; description: string; points: string[] };
-type Model = { slug: string; icon: string; image: string | null; translations: ModelTr[] };
-const models = await directus<Model[]>(
-  `/items/cooperation_models?fields=slug,icon,image,translations.*&${PUBLISHED}`, []);
-const tabs = models.map((m) => {
-  const tt = pickTr<ModelTr>(m.translations, lang!);
-  return { id: m.slug, icon: m.icon, image: m.image, label: tt.title, desc: tt.description, points: tt.points ?? [] };
-});
-
-// Fallback без Directus CMS — чтобы вкладки не были пустыми
-if (!tabs.length) {
-  tabs.push(...[
-    { id: "consulting", icon: "clipboard", image: null, label: lang === "en" ? "Consulting" : "Консалтинг", desc: lang === "en" ? "One-time expert assessment and recommendations." : "Разовая экспертная оценка и рекомендации.", points: lang === "en" ? ["HSE audit", "Risk assessment", "Action plan"] : ["Аудит HSE", "Оценка рисков", "План мероприятий"] },
-    { id: "outsourcing", icon: "building", image: null, label: lang === "en" ? "Outsourcing" : "Аутсорсинг", desc: lang === "en" ? "Full transfer of HSE functions to NORVEX specialists." : "Полная передача функций HSE специалистам NORVEX.", points: lang === "en" ? ["Dedicated specialist", "Documentation", "Reporting"] : ["Выделенный специалист", "Документация", "Отчётность"] },
-    { id: "outstaffing", icon: "users", image: null, label: lang === "en" ? "Outstaffing" : "Аутстаффинг", desc: lang === "en" ? "Provision of qualified HSE specialists for your projects." : "Предоставление квалифицированных HSE-специалистов для ваших проектов.", points: lang === "en" ? ["Certified experts", "Flexible terms", "Quick start"] : ["Сертифицированные эксперты", "Гибкие условия", "Быстрый старт"] },
-  ]);
-}
+// Локальный контент — site works without CMS
+const content = lang === "en" ? [
+  { id: "consulting", icon: "clipboard", image: "/assets/cooperation-consulting.webp", label: "Consulting", desc: "One-time expert assessment and recommendations: audit, risk analysis, action plan.", points: ["Comprehensive HSE audit", "Risk assessment and prioritization", "Practical action plan and recommendations", "Presentation for leadership"] },
+  { id: "outsourcing", icon: "building", image: "/assets/cooperation-outsourcing.webp", label: "Outsourcing", desc: "Full transfer of HSE functions to NORVEX: specialist, documentation, reporting.", points: ["Dedicated HSE specialist on site", "Development and maintenance of documentation", "Regular reports and audits", "Full legal compliance"] },
+  { id: "outstaffing", icon: "users", image: "/assets/cooperation-outstaffing.webp", label: "Outstaffing", desc: "Provision of qualified HSE specialists for your projects with full support.", points: ["Certified experts in OSH and IL", "Flexible staffing terms", "Fast start within days", "Quality control and reporting"] },
+] : lang === "ky" ? [
+  { id: "consulting", icon: "clipboard", image: "/assets/cooperation-consulting.webp", label: "Консалтинг", desc: "Бир жолку эксперттик баа жана сунуштар: аудит, тобокелдиктердин анализи, аракет планы.", points: ["Комплекстүү HSE аудит", "Тобокелдиктерди баалоо жана приоритеттөө", "Практикалык план жана сунуштар", "Башчылар үчүн презентация"] },
+  { id: "outsourcing", icon: "building", image: "/assets/cooperation-outsourcing.webp", label: "Аутсорсинг", desc: "HSE функцияларын NORVEXке толук өткөрүп берүү: адис, документация, отчеттоо.", points: ["Объекттеги дайын HSE адиси", "Документацияны иштеп чыгуу жана колдоо", "Мезгилдүү отчеттор жана аудиттер", "Мыйзамга толук шайкештик"] },
+  { id: "outstaffing", icon: "users", image: "/assets/cooperation-outstaffing.webp", label: "Аутстаффинг", desc: "Долбоорлоруңузга квалификациялуу HSE адистерин берүү жана толук колдоо.", points: ["Сертификатталган эмгек коопсуздугу адистери", "Ийкемдүү шарттар", "3–5 күн ичинде баштоо", "Сапатты текшерүү жана отчеттоо"] },
+] : [
+  { id: "consulting", icon: "clipboard", image: "/assets/cooperation-consulting.webp", label: "Консалтинг", desc: "Разовая экспертная оценка и рекомендации: аудит, анализ рисков, план действий.", points: ["Комплексный аудит HSE", "Оценка рисков и приоритизация", "Практический план мероприятий", "Презентация для руководства"] },
+  { id: "outsourcing", icon: "building", image: "/assets/cooperation-outsourcing.webp", label: "Аутсорсинг", desc: "Полная передача функций HSE специалистам NORVEX: адис на объекте, документация, отчётность.", points: ["Выделенный специалист на объекте", "Разработка и ведение документации", "Регулярная отчётность и аудиты", "Полное соответствие законодательству"] },
+  { id: "outstaffing", icon: "users", image: "/assets/cooperation-outstaffing.webp", label: "Аутстаффинг", desc: "Предоставление квалифицированных HSE-специалистов для ваших проектов с полной поддержкой.", points: ["Сертифицированные эксперты по охране труда", "Гибкие условия сотрудничества", "Быстрый старт за 3–5 дней", "Контроль качества и отчётность"] },
+];
+const tabs = content;
 ---
 <Layout lang={lang} title={tr("seo.cooperation.title")} description={tr("seo.cooperation.desc")}>
   <section class="section">
@@ -36,26 +32,26 @@ if (!tabs.length) {
       </div>
 
       <div class="tabs" role="tablist">
-        {tabs.map((t, i) => (
-          <button class:list={["tab", { active: i === 0 }]} role="tab" data-tab={t.id}>
-            <Icon name={t.icon} size={22} /> {t.label}
+        {tabs.map((tab, i) => (
+          <button class:list={["tab", { active: i === 0 }]} role="tab" data-tab={tab.id}>
+            <Icon name={tab.icon} size={22} /> {tab.label}
           </button>
         ))}
       </div>
 
-      {tabs.map((t, i) => (
-        <div class:list={["panel card", { active: i === 0 }]} data-panel={t.id} id={t.id}>
+      {tabs.map((tab, i) => (
+        <div class:list={["panel card", { active: i === 0 }]} data-panel={tab.id} id={tab.id}>
           <div class="panel-text">
-            <h2>{t.label}</h2>
-            <p>{t.desc}</p>
+            <h2>{tab.label}</h2>
+            <p>{tab.desc}</p>
             <ul class="checklist">
-              {t.points.map((p) => (
+              {tab.points.map((p) => (
                 <li><span class="check"><Icon name="check" size={16} /></span>{p}</li>
               ))}
             </ul>
             <a href={lp(lang, "/contacts")} class="btn btn-outline-green">{tr("cta.learn_more")}</a>
           </div>
-          <Figure id={t.image} label="Изображение" alt={t.label} class="panel-img" width={520} height={320} />
+          <img src={tab.image} alt={tab.label} class="panel-img" width={520} height={320} />
         </div>
       ))}
     </div>
@@ -79,8 +75,7 @@ if (!tabs.length) {
   .checklist { margin: 24px 0 30px; display: grid; gap: 16px; }
   .checklist li { display: flex; align-items: center; gap: 14px; font-weight: 600; color: var(--navy); }
   .check { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: rgba(42,165,74,.14); color: var(--green-600); flex: none; }
-  .panel-img { min-height: 320px; }
-  img.panel-img { height: 100%; min-height: 320px; }
+  .panel-img { min-height: 320px; border-radius: var(--radius); object-fit: cover; width: 100%; height: 100%; min-height: 320px; }
 
   @media (max-width: 900px) {
     .panel { grid-template-columns: 1fr; }

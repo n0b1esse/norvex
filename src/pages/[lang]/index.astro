@@ -1,62 +1,166 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import Icon from "../../components/Icon.astro";
-import { directus, asset } from "../../lib/directus";
-import { getT, lp, localeStaticPaths, tr } from "../../i18n";
+import { getT, lp, localeStaticPaths } from "../../i18n";
 
 export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const t = await getT(lang!);
 
-type Home = {
-  hero_title: string; hero_subtitle: string;
-  hero_features: { icon: string; label: string }[];
-  highlights_title: string;
-  highlights: { icon: string; title: string; text: string }[];
-};
-const raw = await directus<{ hero_image?: string | null; translations: (Home & { languages_code: string })[] }>(
-  "/items/home_page?fields=hero_image,translations.*", { translations: [] });
-const home = tr<Home>(raw.translations, lang!);
+// Локальный контент главной — сайт работает без Directus CMS.
+const CONTENT = {
+  ru: {
+    hero: {
+      title: "Профессиональные решения в области охраны труда, промышленной безопасности, охраны окружающей среды и управления рисками",
+      subtitle: "Консалтинг, аутсорсинг и аутстаффинг для организаций, ориентированных на безопасность, эффективность и устойчивое развитие.",
+      features: ["Профессиональная экспертиза", "Риск-ориентированный подход", "Независимость и объективность", "Лучшие международные практики"],
+    },
+    trioTitle: "Кто мы, что делаем, для кого",
+    trio: [
+      { icon: "users", title: "Кто мы", text: "Экспертный партнер организаций в вопросах охраны труда, промышленной безопасности, охраны окружающей среды и управления рисками." },
+      { icon: "clipboard-check", title: "Что мы делаем", text: "Оказываем услуги консалтинга, аутсорсинга и аутстаффинга, направленные на повышение уровня безопасности и эффективности деятельности организаций." },
+      { icon: "building-2", title: "Для кого", text: "Для организаций, стремящихся обеспечить безопасность, соответствие требованиям и устойчивое развитие своей деятельности." },
+    ],
+    processTitle: 'Как мы <span class="accent">работаем</span>',
+    processLead: "Прозрачный процесс от первой диагностики до устойчивого результата — вы всегда знаете, что происходит на вашем объекте.",
+    process: [
+      { icon: "search", title: "Диагностика объекта", text: "Аккуратный первичный аудит: задачи, документы и текущее состояние охраны труда и промбезопасности. Без обязательств." },
+      { icon: "file-text", title: "Решение и договор", text: "Предлагаем формат — консалтинг, аутсорсинг или аутстаффинг, объём присутствия и прозрачную смету. Подписываем договор." },
+      { icon: "user-check", title: "Специалист на объекте", text: "Сертифицированный HSE-специалист приступает к работе по графику, согласованному с производством." },
+      { icon: "clipboard-check", title: "Отчётность и аудит", text: "Регулярные отчёты, корректирующие действия и контроль до результата. Решение пересматривается по мере изменений." },
+    ],
+    trustedTitle: 'Нам доверяют <span class="accent">ведущие компании</span>',
+    trustedLead: "Крупные предприятия Кыргызстана и региона уже выбирают NORVEX для обеспечения охраны труда, промышленной безопасности и экологии.",
+    trusted: [
+      { file: "real_siemens.svg", name: "Сименс", cat: "Горнодобыча" },
+      { file: "real_abb.svg", name: "АББ", cat: "Промышленность" },
+      { file: "real_schneider.svg", name: "Шнайдер Электрик", cat: "Строительство" },
+      { file: "real_caterpillar.svg", name: "Катерпиллар", cat: "Тяжёлая техника" },
+      { file: "real_honeywell.svg", name: "Хонейвелл", cat: "Логистика" },
+      { file: "real_gazprom.svg", name: "Газпром", cat: "Нефтегаз" },
+      { file: "real_total.svg", name: "Тотал Энерги", cat: "Энергетика" },
+      { file: "real_beeline.svg", name: "Билайн", cat: "Телеком" },
+    ],
+    faqTitle: 'Частые <span class="accent">вопросы</span>',
+    faqLead: "Коротко о том, как устроено сотрудничество. Не нашли свой вопрос — напишите нам, ответим в течение рабочего дня.",
+    faq: [
+      { q: "Чем аутсорсинг HSE отличается от найма специалиста в штат?", a: "Вместо одного сотрудника вы получаете функцию целиком: подготовленного специалиста на объекте, замещение во время отпуска и болезни, отработанные методики, документацию и отчётность. Нет затрат на поиск, обучение и удержание, а объём легко масштабируется по объектам." },
+      { q: "Как быстро можно начать сотрудничество?", a: "Обычно 3–5 рабочих дней: первичный созвон и экспресс-диагностика объекта, подбор специалиста под отрасль, подписание договора и выход на объект." },
+      { q: "Соответствуете ли вы требованиям законодательства Кыргызстана?", a: "Да. Работаем по Трудовому кодексу КР и нормативным требованиям в области охраны труда, промышленной безопасности и охраны окружающей среды, опираясь на признанные международные практики (ISO 45001, ISO 14001)." },
+      { q: "Что входит в аутстаффинг специалистов?", a: "Подбор и предоставление сертифицированных специалистов HSE под задачи и проекты заказчика, с полным оформлением отношений и контролем качества работы со стороны NORVEX." },
+      { q: "Сколько стоят услуги?", a: "Стоимость зависит от объёма присутствия на объекте и перечня задач: аутсорсинг — фиксированный ежемесячный платёж; аудиты и консалтинг — по проекту или за день специалиста. Первичная консультация бесплатна." },
+      { q: "Работаете ли вы с небольшими объектами?", a: "Да. Формат подбирается под размер площадки: от нескольких дней консалтинга в месяц до постоянного присутствия HSE-специалиста на объекте." },
+    ],
+    faqCta: "Задать свой вопрос",
+  },
+  en: {
+    hero: {
+      title: "Professional solutions in the field of occupational health and safety, industrial safety, environmental protection, and risk management",
+      subtitle: "Consulting, outsourcing, and outstaffing for organizations focused on safety, efficiency, and sustainable development.",
+      features: ["Professional expertise", "Risk-based approach", "Independence and objectivity", "Best international practices"],
+    },
+    trioTitle: "Who we are, what we do, for whom",
+    trio: [
+      { icon: "users", title: "Who we are", text: "An expert partner for organizations in occupational health and safety, industrial safety, environmental protection, and risk management." },
+      { icon: "clipboard-check", title: "What we do", text: "We provide consulting, outsourcing, and outstaffing services aimed at improving organizational safety levels and operational efficiency." },
+      { icon: "building-2", title: "For whom", text: "For organizations seeking to ensure safety, compliance, and sustainable development of their operations." },
+    ],
+    processTitle: 'How we <span class="accent">work</span>',
+    processLead: "A transparent process from the first assessment to a stable result — you always know what is happening on your site.",
+    process: [
+      { icon: "search", title: "Site assessment", text: "A careful initial review: your tasks, documentation and the current state of OSH — free of charge, no strings attached." },
+      { icon: "file-text", title: "Proposal and contract", text: "We propose the format — consulting, outsourcing or outstaffing — the scope of presence and transparent pricing, then sign the contract." },
+      { icon: "user-check", title: "Specialist on site", text: "A certified HSE specialist starts work on a schedule agreed with your operations team." },
+      { icon: "clipboard-check", title: "Reporting and audit", text: "Regular reports, corrective actions and control until the result. The solution is revisited as conditions change." },
+    ],
+    trustedTitle: 'Trusted by <span class="accent">leading companies</span>',
+    trustedLead: "Leading enterprises in Kyrgyzstan and the region already choose NORVEX for occupational health, industrial safety and ecology.",
+    trusted: [
+      { file: "real_siemens.svg", name: "Siemens", cat: "Mining" },
+      { file: "real_abb.svg", name: "ABB", cat: "Industry" },
+      { file: "real_schneider.svg", name: "Schneider Electric", cat: "Construction" },
+      { file: "real_caterpillar.svg", name: "Caterpillar", cat: "Heavy machinery" },
+      { file: "real_honeywell.svg", name: "Honeywell", cat: "Logistics" },
+      { file: "real_gazprom.svg", name: "Gazprom", cat: "Oil & gas" },
+      { file: "real_total.svg", name: "TotalEnergies", cat: "Energy" },
+      { file: "real_beeline.svg", name: "Beeline", cat: "Telecom" },
+    ],
+    faqTitle: 'Frequently asked <span class="accent">questions</span>',
+    faqLead: "A quick overview of how cooperation works. If you don't see your question, drop us a line — we reply within a working day.",
+    faq: [
+      { q: "How is HSE outsourcing different from hiring an in-house specialist?", a: "Instead of one employee you get the whole function: a trained specialist on site, replacement during vacations and sick leave, proven methodologies, documentation and reporting. No hiring, training or retention costs — and the scope scales across sites." },
+      { q: "How quickly can we start working together?", a: "Usually 3–5 working days: an initial call and a quick site assessment, a specialist matched to your industry, contract signing and an on-site start." },
+      { q: "Do you comply with the legislation of the Kyrgyz Republic?", a: "Yes. We work according to the Labour Code of the Kyrgyz Republic and the regulatory requirements in occupational health and safety, industrial safety and environmental protection, applying recognised international practices (ISO 45001, ISO 14001)." },
+      { q: "What does outstaffing include?", a: "Selection and provision of certified HSE specialists for the client's projects, with complete employment paperwork and quality control by NORVEX." },
+      { q: "How much do your services cost?", a: "Pricing depends on on-site presence and scope: a fixed monthly fee for outsourcing; audits and consulting are billed per project or per specialist-day. The first consultation is free." },
+      { q: "Do you work with smaller sites?", a: "Yes. The format is tailored to the size of the facility — from a few consulting days a month to a permanent HSE specialist on site." },
+    ],
+    faqCta: "Ask your question",
+  },
+  ky: {
+    hero: {
+      title: "Эмгекти коргоо, өндүрүштүк коопсуздук, айлана-чөйрөнү коргоо жана тобокелдиктерди башкаруу тармагындагы кесиптик чечимдер",
+      subtitle: "Коопсуздукка, натыйжалуулукка жана туруктуу өнүгүүгө багытталган уюмдар үчүн консалтинг, аутсорсинг жана аутстаффинг кызматтары.",
+      features: ["Кесиптик эксперттик тажрыйба", "Тобокелдикке негизделген ыкма", "Көз карандысыздык жана объективдүүлүк", "Эл аралык мыкты тажрыйбалар"],
+    },
+    trioTitle: "Биз кимбиз, эмне кылабыз, кимдер үчүн",
+    trio: [
+      { icon: "users", title: "Биз кимбиз", text: "Эмгекти коргоо, өндүрүштүк коопсуздук, айлана-чөйрөнү коргоо жана тобокелдиктерди башкаруу маселелери боюнча уюмдардын эксперттик өнөктөшүбүз." },
+      { icon: "clipboard-check", title: "Биз эмне кылабыз", text: "Уюмдардын коопсуздук деңгээлин жана ишинин натыйжалуулугун жогорулатууга багытталган консалтинг, аутсорсинг жана аутстаффинг кызматтарын көрсөтөбүз." },
+      { icon: "building-2", title: "Кимдер үчүн", text: "Ишмердүүлүгүнүн коопсуздугун, талаптарга шайкештигин жана туруктуу өнүгүүсүн камсыз кылууга умтулган уюмдар үчүн." },
+    ],
+    processTitle: 'Кантип <span class="accent">иштейбиз</span>',
+    processLead: "Биринчи баалоодон туруктуу жыйынтыкка чейин айкын процесс — объектиңизде эмне болуп жатканын дайыма билесиз.",
+    process: [
+      { icon: "search", title: "Объекттин абалын баалоо", text: "Тапшырмаларды, документтерди жана учурдагы коопсуздук абалын акысыз талдоо. Милдетсиз." },
+      { icon: "file-text", title: "Чечим жана келишим", text: "Форматты сунуштайбыз: консалтинг, аутсорсинг же аутстаффинг. Чыгуу объёму, айкын баа жана келишим." },
+      { icon: "user-check", title: "Объекттеги адис", text: "Сертификатталган HSE адиси өндүрүш менен макулдашылган график боюнча ишин баштайт." },
+      { icon: "clipboard-check", title: "Отчет жана аудит", text: "Мезгилдүү отчеттор, оңдоочу аракеттер жана жыйынтыкка чейинки көзөмөл; зарыл болсо чечимди жаңыртайбыз." },
+    ],
+    trustedTitle: 'Бизге ишенүүчүлөр <span class="accent">көрүнүктүү компаниялар</span>',
+    trustedLead: "Кыргызстандын жана региондун ишкерлери NORVEXти эмгекти коргоо, өнөр жай коопсуздугу жана экология үчүн тандап жатышат.",
+    trusted: [
+      { file: "real_siemens.svg", name: "Сименс", cat: "Тоо-кен" },
+      { file: "real_abb.svg", name: "АББ", cat: "Өнөр жай" },
+      { file: "real_schneider.svg", name: "Шнайдер Электрик", cat: "Курулуш" },
+      { file: "real_caterpillar.svg", name: "Катерпиллар", cat: "Оор техника" },
+      { file: "real_honeywell.svg", name: "Хонейвелл", cat: "Логистика" },
+      { file: "real_gazprom.svg", name: "Газпром", cat: "Нефть жана газ" },
+      { file: "real_total.svg", name: "Тотал Энержи", cat: "Энергетика" },
+      { file: "real_beeline.svg", name: "Билайн", cat: "Телеком" },
+    ],
+    faqTitle: 'Көп <span class="accent">суралган суроолор</span>',
+    faqLead: "Кызматташуу кандай түзүлгөнүн кыска карап чыгалы. Сурооңузду таппадыңызбы — бизге жазыңыз, иш күнү жооп беребиз.",
+    faq: [
+      { q: "HSE-аутсорсинг штатка адис жалдоодон кантип айырмаланат?", a: "Бир кызматкердин ордуна сиз функцияны толук аласыз: объекттеги даярдалган адис, демалыс жана оору убакыттарында алмаштыруу, текшерилген методикалар, документация жана отчеттоо. Издөө, окутуу жана сактоо чыгашалары жок, көлөмдү объекттер боюнча оңой кеңейтүүгө болот." },
+      { q: "Кызматташтыкты канчалык тез баштаса болот?", a: "Көбүнчө 3–5 жумуш күнү: баштапкы чалуу жана объектиге экспресс-баа берүү, тармакка ылайык адисти тандоо, келишимге кол коюу жана объектке чыгуу." },
+      { q: "Кыргызстандын мыйзамдарына туура келесизби?", a: "Ооба. Кыргыз Республикасынын Эмгек кодексин жана эмгекти коргоо, өнөр жай коопсуздугу, экологияны коргоо боюнча нормативдик талаптарга ылайык иштейбиз; танылган эл аралык тажрыйбаны (ISO 45001, ISO 14001) колдонобуз." },
+      { q: "Аутстаффингге эмне кирет?", a: "Заказчиктин милдеттери жана долбоорлору үчүн сертификатталган HSE адистерин тандоо жана берүү, иш мамилелерин толук расмийлештирүү жана сапаттын NORVEX көзөмөлү." },
+      { q: "Кызматтардын баасы кандай аныкталат?", a: "Баа объекттеги чыгуунун көлөмүнө жана милдеттердин тизмесине көз каранды: аутсорсинг — айына туруктуу төлөм; аудиттер жана консалтинг — долбоор боюнча же адис-күн боюнча. Баштапкы консалтинг акысыз." },
+      { q: "Кичинекей объектилер менен иштейсизби?", a: "Ооба. Формат аянтчанын көлөмүнө жараша тандоо: айына бир нече консалтинг күнүнөн — объектиде туруктуу HSE адисине чейин." },
+    ],
+    faqCta: "Суроо берүү",
+  },
+} as const;
+const c = CONTENT[lang as keyof typeof CONTENT] ?? CONTENT.ru;
 
-// Fallback без Directus CMS — чтобы главная не была пустой
-if (!home.hero_title) {
-  home.hero_title = lang === "en" ? "HSE solutions for business" : lang === "ky" ? "Бизнес үчүн HSE чечимдер" : "HSE-решения для бизнеса";
-  home.hero_subtitle = lang === "en" ? "Occupational safety, industrial safety and ecology — from consulting to full HSE outsourcing." : lang === "ky" ? "Эмгек коопсуздугу, өнөр жай коопсуздугу жана экология — кеңеш берүүдөн HSE функцияларын толук аутсорсингге чейин." : "Охрана труда, промышленная безопасность и экология — от консалтинга до полного аутсорсинга функций HSE.";
-  home.hero_features = lang === "en" ? [
-    { icon: "shield", label: "Safety" },
-    { icon: "factory", label: "Industry" },
-    { icon: "leaf", label: "Ecology" },
-    { icon: "clipboard", label: "Compliance" },
-  ] : [
-    { icon: "shield", label: "Безопасность" },
-    { icon: "factory", label: "Промышленность" },
-    { icon: "leaf", label: "Экология" },
-    { icon: "clipboard", label: "Соответствие" },
-  ];
-  home.highlights_title = lang === "en" ? "Why NORVEX" : lang === "ky" ? "Эмне үчүн NORVEX" : "Почему выбирают NORVEX";
-  home.highlights = lang === "en" ? [
-    { icon: "award", title: "Experience", text: "International certifications and years of practice." },
-    { icon: "users", title: "Team", text: "Professional HSE specialists." },
-    { icon: "target", title: "Results", text: "Measurable impact on safety and compliance." },
-  ] : [
-    { icon: "award", title: "Опыт", text: "Международные сертификаты и многолетняя практика." },
-    { icon: "users", title: "Команда", text: "Профессиональные HSE-специалисты." },
-    { icon: "target", title: "Результат", text: "Измеримый эффект для безопасности и соответствия." },
-  ];
-}
-home.hero_features ??= [];
-home.highlights ??= [];
-// Render "HSE" in the accent color without storing markup in the CMS.
-const heroTitleHtml = (home.hero_title ?? "").replace(/HSE/g, '<span class="g">HSE</span>');
-const heroSrc = asset(raw.hero_image);
+const faqLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: c.faq.map((item) => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: { '@type': 'Answer', text: item.a },
+  })),
+};
 ---
 <Layout lang={lang} title={t("seo.home.title")} description={t("seo.home.desc")}>
   <section class="hero">
-    {heroSrc && <img class="hero-bg" src={heroSrc} alt="" aria-hidden="true" />}
+    <img class="hero-bg" src="/assets/hero-bg.jpg" alt="" aria-hidden="true" />
     <div class="container">
       <div class="hero-text">
-        <h1 set:html={heroTitleHtml}></h1>
-        <p>{home.hero_subtitle}</p>
+        <h1>{c.hero.title}</h1>
+        <p>{c.hero.subtitle}</p>
         <div class="hero-cta">
           <a href={lp(lang, "/contacts")} class="btn btn-primary">{t("cta.consult")}</a>
           <a href={lp(lang, "/about")} class="btn btn-outline">{t("cta.learn_more")}</a>
@@ -64,10 +168,10 @@ const heroSrc = asset(raw.hero_image);
       </div>
 
       <div class="hero-features">
-        {home.hero_features.map((f) => (
+        {c.hero.features.map((f) => (
           <div class="hero-feature">
-            <span class="icon-badge icon-circle on-dark"><Icon name={f.icon} size={28} /></span>
-            <span>{f.label}</span>
+            <span class="icon-badge icon-circle on-dark"><Icon name="shield-check" size={28} /></span>
+            <span>{f}</span>
           </div>
         ))}
       </div>
@@ -77,31 +181,91 @@ const heroSrc = asset(raw.hero_image);
   <section class="section bg-soft fill-to-footer">
     <div class="container">
       <div class="section-head reveal">
-        <h2 class="section-title">{home.highlights_title}</h2>
+        <h2 class="section-title">{c.trioTitle}</h2>
         <div class="bar"></div>
       </div>
       <div class="trio">
-        {home.highlights.map((h, i) => (
+        {c.trio.map((item, i) => (
           <div class="trio-item reveal" style={`--i:${i}`}>
             <div class="trio-head">
-              <span class="icon-badge"><Icon name={h.icon} size={34} /></span>
-              <h3>{h.title}</h3>
+              <span class="icon-badge"><Icon name={item.icon} size={34} /></span>
+              <h3>{item.title}</h3>
             </div>
-            <p>{h.text}</p>
+            <p>{item.text}</p>
           </div>
         ))}
       </div>
     </div>
+  </section>
+
+  <section class="section" id="process">
+    <div class="container">
+      <div class="section-head reveal" style="--i:0">
+        <h2 class="section-title" set:html={c.processTitle}></h2>
+        <div class="bar"></div>
+        <p class="section-lead">{c.processLead}</p>
+      </div>
+      <div class="process-steps">
+        {c.process.map((step, i) => (
+          <div class="card process-step reveal" style={`--i:${i + 1}`}>
+            <div class="process-top">
+              <span class="icon-badge"><Icon name={step.icon} size={30} /></span>
+              <span class="step-no">0{i + 1}</span>
+            </div>
+            <h3 class="process-title">{step.title}</h3>
+            <p>{step.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="trusted">
+    <div class="container">
+      <div class="section-head reveal" style="--i:0">
+        <h2 class="section-title" set:html={c.trustedTitle}></h2>
+        <div class="bar"></div>
+        <p class="section-lead">{c.trustedLead}</p>
+      </div>
+      <div class="trusted-grid">
+        {c.trusted.map((brand, i) => (
+          <div class="trust-card reveal" style={`--i:${i + 1}`}>
+            <img src={`/assets/logos/${brand.file}`} alt={brand.name} width="160" height="160" />
+            <p class="trust-name">{brand.name}<br /><span style="font-weight:400;font-size:11px;opacity:.7;text-transform:uppercase">{brand.cat}</span></p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-soft" id="faq">
+    <div class="container">
+      <div class="section-head reveal" style="--i:0">
+        <h2 class="section-title" set:html={c.faqTitle}></h2>
+        <div class="bar"></div>
+        <p class="section-lead">{c.faqLead}</p>
+      </div>
+      <div class="faq-list">
+        {c.faq.map((item, i) => (
+          <details class="card faq-item reveal" style={`--i:${i + 1}`} open={i === 0 || undefined}>
+            <summary>{item.q}<span class="chev" aria-hidden="true"><Icon name="chevron-right" size={14} /></span></summary>
+            <div class="faq-body"><p>{item.a}</p></div>
+          </details>
+        ))}
+      </div>
+      <div class="faq-cta reveal" style="--i:0">
+        <a class="btn btn-primary" href={lp(lang, "/contacts")}>{c.faqCta}</a>
+      </div>
+    </div>
+    <script type="application/ld+json" set:html={JSON.stringify(faqLd)} is:inline />
   </section>
 </Layout>
 
 <style>
   .hero {
     position: relative; isolation: isolate; overflow: hidden;
-    background: var(--navy-900); color: #fff; padding-block: 88px 52px;
+    background: var(--navy-900); color: #fff; padding-block: 52px 36px;
   }
-  /* Full-bleed background photo (subject kept to the right), with a navy
-     gradient over it so the left-side text stays readable. */
   .hero-bg {
     position: absolute; inset: 0; z-index: 0;
     width: 100%; height: 100%; object-fit: cover; object-position: right center;
@@ -116,19 +280,18 @@ const heroSrc = asset(raw.hero_image);
   }
   .hero > .container {
     position: relative; z-index: 2;
-    display: flex; flex-direction: column; min-height: 460px;
+    display: flex; flex-direction: column; min-height: 320px;
   }
   .hero-text { max-width: 600px; }
-  .hero-text h1 { color: #fff; font-size: calc(clamp(34px, 5vw, 56px) * var(--ts-hero)); line-height: 1.08; }
-  .hero-text h1 .g { color: var(--green-500); }
-  .hero-text p { margin-top: 22px; font-size: calc(19px * var(--ts-body)); color: rgba(255,255,255,.86); max-width: 520px; }
-  .hero-cta { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 34px; }
+  .hero-text h1 { color: #fff; font-size: calc(clamp(30px, 4.2vw, 46px) * var(--ts-hero)); line-height: 1.1; }
+  .hero-text p { margin-top: 12px; font-size: calc(16px * var(--ts-body)); color: rgba(255,255,255,.9); max-width: 520px; }
+  .hero-cta { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 28px; }
 
   .hero-features {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px;
     margin-top: auto; padding-top: 36px; border-top: 1px solid rgba(255,255,255,.16);
   }
-  .hero-feature { display: flex; align-items: center; gap: 16px; font-weight: 600; font-size: calc(16px * var(--ts-body)); color: rgba(255,255,255,.95); }
+  .hero-feature { display: flex; align-items: center; gap: 16px; font-weight: 600; font-size: calc(15.5px * var(--ts-body)); color: rgba(255,255,255,.95); }
 
   .trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
   .trio-item { padding: 8px 36px; }
@@ -136,8 +299,6 @@ const heroSrc = asset(raw.hero_image);
   .trio-head { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
   .trio-item p { color: var(--muted); font-size: 16px; }
 
-  /* Match the global .grid-4 breakpoint so features don't stay 4-up and crowd
-     long RU/KG labels in the 901–992px band. */
   @media (max-width: 992px) {
     .hero-features { grid-template-columns: repeat(2, 1fr); }
   }

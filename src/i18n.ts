@@ -1,6 +1,5 @@
 // App-level i18n: locales, routing helpers, and the UI-string translator.
-import { directus } from "./lib/directus";
-
+// UI strings are fully local (see FALLBACK) — no CMS dependency.
 export const LOCALES = ["ru", "en", "ky"] as const;
 export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = "ru";
@@ -32,9 +31,7 @@ export function tr<T = Record<string, any>>(
   ) as T;
 }
 
-type Row = { key: string; ru: string; en: string; ky: string };
-
-// Локальные переводы интерфейса — fallback, когда Directus недоступен (например, на Vercel).
+// Локальные переводы интерфейса — полный fallback для всего сайта без CMS.
 const FALLBACK: Record<string, { ru: string; en: string; ky: string }> = {
   "nav.home": { ru: "Главная", en: "Home", ky: "Башкы бет" },
   "nav.about": { ru: "О компании", en: "About", ky: "Компания жөнүндө" },
@@ -102,14 +99,11 @@ const FALLBACK: Record<string, { ru: string; en: string; ky: string }> = {
   "seo.privacy.desc": { ru: "Политика обработки персональных данных NORVEX.", en: "NORVEX personal data processing policy.", ky: "NORVEXтин персоналдык маалыматтарды иштетүү саясаты." },
 };
 
-export async function getT(lang: string) {
-  const rows = await directus<Row[]>("/items/ui_strings?fields=key,ru,en,ky&limit=-1", []);
-  const map = new Map(Object.entries(FALLBACK).map(([k, v]) => [k, (v as Record<string, string>)[lang] || v.ru]));
-  if (rows.length) {
-    for (const r of rows) map.set(r.key, (r as Record<string, string>)[lang] || r.ru);
-  }
-  return (key: string, vars?: Record<string, string | number>): string => {
-    let s = map.get(key) ?? key;
+export function getT(lang: string) {
+  const key = (lang: string) => (["ru", "en", "ky"].includes(lang) ? lang : "ru");
+  const map = new Map(Object.entries(FALLBACK).map(([k, v]) => [k, (v as Record<string, string>)[key(lang)] || v.ru]));
+  return (keyName: string, vars?: Record<string, string | number>): string => {
+    let s = map.get(keyName) ?? keyName;
     if (vars) for (const k in vars) s = s.replaceAll(`{${k}}`, String(vars[k]));
     return s;
   };

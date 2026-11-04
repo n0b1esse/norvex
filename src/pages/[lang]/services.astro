@@ -1,38 +1,25 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import Icon from "../../components/Icon.astro";
-import { directus, asset, PUBLISHED } from "../../lib/directus";
-import { getT, lp, localeStaticPaths, tr } from "../../i18n";
+import { getT, lp, localeStaticPaths } from "../../i18n";
 
 export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const t = await getT(lang!);
 
-type Tr = { languages_code: string; title: string; description: string };
-type Service = { slug: string; icon: string; translations: Tr[] };
-const rows = await directus<Service[]>(
-  `/items/services?fields=slug,icon,translations.*&${PUBLISHED}`, []);
-const services = rows.map((s) => ({ slug: s.slug, icon: s.icon, ...tr<Tr>(s.translations, lang!) }));
-
-// Fallback без Directus CMS — чтобы сетка услуг не была пустой
-if (!services.length) {
-  const pick = (ru: [string, string], en: [string, string]): [string, string] => lang === "en" ? en : ru;
-  services.push(...[
-    { slug: "consulting", icon: "clipboard", title: pick(["Консалтинг в области HSE", "HSE consulting"], ["HSE consulting", "HSE consulting"])[lang === "en" ? 1 : 0], description: pick(["Полный аудит и разработка систем управления HSE", "Full audit and HSE management system development"], ["Full audit and HSE management system development", "Full audit and HSE management system development"])[lang === "en" ? 1 : 0] },
-    { slug: "outsourcing", icon: "building", title: pick(["Аутсорсинг функций HSE", "HSE outsourcing"], ["HSE outsourcing", "HSE outsourcing"])[lang === "en" ? 1 : 0], description: pick(["Передача функций охраны труда и промышленной безопасности на аутсорсинг", "Transfer of occupational safety and industrial safety functions to outsourcing"], ["Transfer of occupational safety and industrial safety functions to outsourcing", "Transfer of occupational safety and industrial safety functions to outsourcing"])[lang === "en" ? 1 : 0] },
-    { slug: "outstaffing", icon: "users", title: pick(["Аутстаффинг специалистов", "Outstaffing of specialists"], ["Outstaffing of specialists", "Outstaffing of specialists"])[lang === "en" ? 1 : 0], description: pick(["Подбор и предоставление квалифицированных HSE-специалистов", "Selection and provision of qualified HSE specialists"], ["Selection and provision of qualified HSE specialists", "Selection and provision of qualified HSE specialists"])[lang === "en" ? 1 : 0] },
-    { slug: "audits", icon: "search", title: pick(["Аудиты и инспекции", "Audits and inspections"], ["Audits and inspections", "Audits and inspections"])[lang === "en" ? 1 : 0], description: pick(["Комплексные проверки и аудиты систем безопасности", "Comprehensive checks and safety system audits"], ["Comprehensive checks and safety system audits", "Comprehensive checks and safety system audits"])[lang === "en" ? 1 : 0] },
-    { slug: "documentation", icon: "file-text", title: pick(["Разработка документации", "Documentation development"], ["Documentation development", "Documentation development"])[lang === "en" ? 1 : 0], description: pick(["Разработка инструкций, регламентов и иной документации", "Development of instructions, regulations and other documentation"], ["Development of instructions, regulations and other documentation", "Development of instructions, regulations and other documentation"])[lang === "en" ? 1 : 0] },
-    { slug: "contractor-management", icon: "settings", title: pick(["Управление подрядчиками", "Contractor management"], ["Contractor management", "Contractor management"])[lang === "en" ? 1 : 0], description: pick(["Система управления подрядчиками и контроль безопасности", "Contractor management system and safety oversight"], ["Contractor management system and safety oversight", "Contractor management system and safety oversight"])[lang === "en" ? 1 : 0] },
-  ]);
-}
-// Reuse the office photo from the About page as the hero background.
-const about = await directus<{ image?: string | null }>("/items/about_page?fields=image", {});
-const officeImg = asset(about.image);
+// Локальный контент услуг — не зависит от CMS.
+const services = [
+  { slug: "consulting", icon: "clipboard", title: lang === "en" ? "HSE consulting" : "Консалтинг в области HSE", description: lang === "en" ? "Full audit and HSE management system development" : "Полный аудит и разработка систем управления HSE" },
+  { slug: "outsourcing", icon: "building", title: lang === "en" ? "HSE outsourcing" : "Аутсорсинг функций HSE", description: lang === "en" ? "Transfer of occupational safety and industrial safety functions to outsourcing" : "Передача функций охраны труда и промышленной безопасности на аутсорсинг" },
+  { slug: "outstaffing", icon: "users", title: lang === "en" ? "Outstaffing of specialists" : "Аутстаффинг специалистов", description: lang === "en" ? "Selection and provision of qualified HSE specialists" : "Подбор и предоставление квалифицированных HSE-специалистов" },
+  { slug: "audits", icon: "search", title: lang === "en" ? "Audits and inspections" : "Аудиты и инспекции", description: lang === "en" ? "Comprehensive checks and safety system audits" : "Комплексные проверки и аудиты систем безопасности" },
+  { slug: "docs", icon: "file-text", title: lang === "en" ? "Documentation development" : "Разработка документации", description: lang === "en" ? "Development of instructions, regulations and other documentation" : "Разработка инструкций, регламентов и иной документации" },
+  { slug: "contractors", icon: "settings", title: lang === "en" ? "Contractor management" : "Управление подрядчиками", description: lang === "en" ? "Contractor management system and safety oversight" : "Система управления подрядчиками и контроль безопасности" },
+];
 ---
 <Layout lang={lang} title={t("seo.services.title")} description={t("seo.services.desc")}>
   <section class="page-hero">
-    {officeImg && <img class="hero-bg" src={officeImg} alt="" aria-hidden="true" />}
+    <img class="hero-bg" src="/newOffice.png" alt="" aria-hidden="true" />
     <div class="container">
       <div class="hero-text">
         <h1>{t("page.services_title")}</h1>
@@ -58,9 +45,7 @@ const officeImg = asset(about.image);
 </Layout>
 
 <style>
-  /* Hero uses the shared .page-hero treatment in global.css. */
   .service { position: relative; overflow: hidden; padding: 34px 30px; display: flex; flex-direction: column; align-items: center; text-align: center; scroll-margin-top: 100px; }
-  /* Green accent bar that wipes across the card top on hover. */
   .service::before {
     content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: var(--green-500);
     transform: scaleX(0); transform-origin: left; transition: transform .28s ease;

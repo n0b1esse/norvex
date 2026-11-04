@@ -1,52 +1,57 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import Icon from "../../components/Icon.astro";
-import { directus, asset, PUBLISHED } from "../../lib/directus";
-import { getT, lp, localeStaticPaths, tr } from "../../i18n";
+import { getT, lp, localeStaticPaths } from "../../i18n";
 
 export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const t = await getT(lang!);
 
-type CatTr = { languages_code: string; title: string; heading: string; lead: string };
-type DocTr = { languages_code: string; title: string };
-type Cat = { slug: string; icon: string; translations: CatTr[] };
-type Doc = { file: string | null; file_size: string; category: { slug: string } | null; translations: DocTr[] };
-
-const cats = await directus<Cat[]>(
-  "/items/document_categories?fields=slug,icon,translations.*&sort=sort", []);
-const docs = await directus<Doc[]>(
-  `/items/documents?fields=file,file_size,category.slug,translations.*&${PUBLISHED}`, []);
-
-const allCategories = cats.map((c) => ({
-  slug: c.slug, icon: c.icon,
-  ...tr<CatTr>(c.translations, lang!),
-  docs: docs
-    .filter((d) => d.category?.slug === c.slug)
-    .map((d) => ({ file: d.file, file_size: d.file_size, title: tr<DocTr>(d.translations, lang!).title })),
-}));
-
-// Fallback без Directus CMS — чтобы страница документов не была пустой
-if (!allCategories.length) {
-  allCategories.push(
-    { slug: "policies", icon: "file-text", title: lang === "en" ? "Policies" : "Политики", heading: lang === "en" ? "Policies" : "Политики", lead: lang === "en" ? "Company policies on safety and ecology." : "Политики компании в области безопасности и экологии.", docs: [
-      { file: null, file_size: "PDF", title: lang === "en" ? "Safety policy" : "Политика безопасности" },
-      { file: null, file_size: "PDF", title: lang === "en" ? "Environmental policy" : "Экологическая политика" },
-    ] },
-    { slug: "procedures", icon: "clipboard", title: lang === "en" ? "Procedures" : "Процедуры", heading: lang === "en" ? "Procedures" : "Процедуры", lead: lang === "en" ? "Work procedures and instructions." : "Процедуры и инструкции по работе.", docs: [
-      { file: null, file_size: "PDF", title: lang === "en" ? "Work safety procedure" : "Процедура безопасности работ" },
-    ] },
-    { slug: "checklists", icon: "check-square", title: lang === "en" ? "Checklists" : "Чек-листы", heading: lang === "en" ? "Checklists" : "Чек-листы", lead: lang === "en" ? "Inspection and audit checklists." : "Чек-листы проверок и аудитов.", docs: [
-      { file: null, file_size: "PDF", title: lang === "en" ? "HSE inspection checklist" : "Чек-лист инспекции HSE" },
-    ] },
-  );
-}
-// Hide categories with no published documents — but only when docs actually loaded.
-// `directus()` returns [] on a fetch error too, so without this guard a build-time
-// hiccup on the docs request would filter out *every* category and blank the page.
-const categories = docs.length > 0
-  ? allCategories.filter((c) => c.docs.length > 0)
-  : allCategories;
+// Локальный контент документов — не зависит от CMS
+const allCategories = lang === "en" ? [
+  { slug: "policies", icon: "file-text", title: "Policies", heading: "Policies and regulations", lead: "Company policies on safety, environment and compliance.", docs: [
+    { file: null, file_size: "PDF", title: "Occupational Safety Policy" },
+    { file: null, file_size: "PDF", title: "Environmental Policy" },
+    { file: null, file_size: "PDF", title: "Risk Management Policy" },
+  ] },
+  { slug: "procedures", icon: "clipboard", title: "Procedures", heading: "Work procedures and instructions", lead: "Procedures and instructions for safe work execution.", docs: [
+    { file: null, file_size: "PDF", title: "Work Safety Procedure" },
+    { file: null, file_size: "PDF", title: "Incident Response Procedure" },
+  ] },
+  { slug: "checklists", icon: "check-square", title: "Checklists", heading: "Checklists and inspection forms", lead: "Checklists for audits, inspections and routine control.", docs: [
+    { file: null, file_size: "PDF", title: "HSE Inspection Checklist" },
+    { file: null, file_size: "PDF", title: "Audit Report Form" },
+  ] },
+] : lang === "ky" ? [
+  { slug: "policies", icon: "file-text", title: "Саясаттар", heading: "Саясат жана жобалар", lead: "Коопсуздук, экология жана шайкештик боюнча компаниянын саясаттары.", docs: [
+    { file: null, file_size: "PDF", title: "Эмгекти коргоо саясаты" },
+    { file: null, file_size: "PDF", title: "Айлана-чөйрөнү коргоо саясаты" },
+    { file: null, file_size: "PDF", title: "Тобокелдиктерди башкаруу саясаты" },
+  ] },
+  { slug: "procedures", icon: "clipboard", title: "Процедуралар", heading: "Иш процедуралары жана нускамалар", lead: "Коопсуз жумуш жүргүзүү үчүн процедуралар жана нускамалар.", docs: [
+    { file: null, file_size: "PDF", title: "Жумуш коопсуздугу процедураси" },
+    { file: null, file_size: "PDF", title: "Окуя жооп берүү процедураси" },
+  ] },
+  { slug: "checklists", icon: "check-square", title: "Чек-листтер", heading: "Чек-листтер жана аудит формалары", lead: "Аудиттер, текшерүүлөр жана күнүмдүк көзөмөл үчүн чек-листтер.", docs: [
+    { file: null, file_size: "PDF", title: "HSE текшерүү чек-листи" },
+    { file: null, file_size: "PDF", title: "Аудит отчетунун формасы" },
+  ] },
+] : [
+  { slug: "policies", icon: "file-text", title: "Политики", heading: "Политики и регламенты", lead: "Корпоративные политики в области безопасности, экологии и соответствия требованиям.", docs: [
+    { file: null, file_size: "PDF", title: "Политика охраны труда" },
+    { file: null, file_size: "PDF", title: "Экологическая политика" },
+    { file: null, file_size: "PDF", title: "Политика управления рисками" },
+  ] },
+  { slug: "procedures", icon: "clipboard", title: "Процедуры", heading: "Процедуры и инструкции", lead: "Процедуры и инструкции по безопасному выполнению работ.", docs: [
+    { file: null, file_size: "PDF", title: "Процедура безопасности работ" },
+    { file: null, file_size: "PDF", title: "Процедура реагирования на происшествия" },
+  ] },
+  { slug: "checklists", icon: "check-square", title: "Чек-листы", heading: "Чек-листы и формы аудита", lead: "Чек-листы проверок, аудитов и планового контроля.", docs: [
+    { file: null, file_size: "PDF", title: "Чек-лист инспекции HSE" },
+    { file: null, file_size: "PDF", title: "Форма аудита" },
+  ] },
+];
+const categories = allCategories;
 ---
 <Layout lang={lang} title={t("seo.documents.title")} description={t("seo.documents.desc")}>
   <section class="section bg-soft fill-to-footer">
@@ -72,13 +77,7 @@ const categories = docs.length > 0
                     <span class="doc-name">{d.title}</span>
                     <span class="doc-sub">PDF{d.file_size ? `, ${d.file_size}` : ""}</span>
                   </div>
-                  {/* ?download → Directus serves the asset with Content-Disposition:
-                      attachment. Docs with no uploaded file get no button. */}
-                  {d.file && (
-                    <a class="btn btn-outline-green doc-dl" href={`${asset(d.file)}?download`}>
-                      <Icon name="download" size={17} /> {t("cta.download")}
-                    </a>
-                  )}
+
                 </li>
               ))}
             </ul>

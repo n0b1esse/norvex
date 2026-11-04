@@ -1,28 +1,21 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import Icon from "../../components/Icon.astro";
-
-import { directus, asset } from "../../lib/directus";
-import { getT, lp, localeStaticPaths, tr } from "../../i18n";
+import { getT, lp, localeStaticPaths } from "../../i18n";
 
 export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const t = await getT(lang!);
 
-type About = {
-  title: string; intro: string;
-  stats: { value: string; label: string }[];
-  advantages: { icon: string; label: string }[];
-};
-const raw = await directus<{ image?: string | null; translations: (About & { languages_code: string })[] }>(
-  "/items/about_page?fields=image,translations.*", { translations: [] });
-const about = tr<About>(raw.translations, lang!);
-
-// Fallback без Directus CMS — чтобы страница не была пустой
-if (!about.title) {
-  about.title = lang === "en" ? "About NORVEX" : lang === "ky" ? "NORVEX жөнүндө" : "О компании NORVEX";
-  about.intro = lang === "en" ? "NORVEX is a team of experts in occupational safety, industrial safety and ecology. We help businesses build safe and compliant operations." : lang === "ky" ? "NORVEX — эмгек коопсуздугу, өнөр жай коопсуздугу жана экология боюнча эксперттер командасы. Биз бизнеске коопсуз жана талаптарга ылайык иштерди курууда жардам беребиз." : "NORVEX — команда экспертов в области охраны труда, промышленной безопасности и экологии. Мы помогаем бизнесу выстраивать безопасные и соответствующие требованиям операции.";
-  about.stats = lang === "en" ? [
+// Локальный контент страницы — сайт работает без CMS
+const about = {
+  title: lang === "en" ? "About NORVEX" : lang === "ky" ? "NORVEX жөнүндө" : "О компании NORVEX",
+  intro: lang === "en"
+    ? "NORVEX is a team of experts in occupational safety, industrial safety and ecology. We help businesses build safe and compliant operations."
+    : lang === "ky"
+      ? "NORVEX — эмгек коопсуздугу, өнөр жай коопсуздугу жана экология боюнча эксперттер командасы. Биз бизнеске коопсуз жана талаптарга ылайык иштерди курууда жардам беребиз."
+      : "NORVEX — команда экспертов в области охраны труда, промышленной безопасности и экологии. Мы помогаем бизнесу выстраивать безопасные и соответствующие требованиям операции.",
+  stats: lang === "en" ? [
     { value: "10+", label: "Years of experience" },
     { value: "150+", label: "Projects completed" },
     { value: "98%", label: "Client satisfaction" },
@@ -32,8 +25,8 @@ if (!about.title) {
     { value: "150+", label: "Выполненных проектов" },
     { value: "98%", label: "Удовлетворённость клиентов" },
     { value: "24/7", label: "Поддержка" },
-  ];
-  about.advantages = lang === "en" ? [
+  ],
+  advantages: lang === "en" ? [
     { icon: "shield", label: "Safety first" },
     { icon: "award", label: "Certified experts" },
     { icon: "chart", label: "Proven results" },
@@ -43,17 +36,16 @@ if (!about.title) {
     { icon: "award", label: "Сертифицированные эксперты" },
     { icon: "chart", label: "Проверенные результаты" },
     { icon: "support", label: "Поддержка 24/7" },
-  ];
-}
-const stats = about.stats ?? [];
-const why = about.advantages ?? [];
-// Render "NORVEX" in the accent color without storing markup in the CMS.
+  ],
+};
+const stats = about.stats;
+const why = about.advantages;
 const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accent">NORVEX</span>');
-const aboutImg = asset(raw.image);
+
 ---
 <Layout lang={lang} title={t("seo.about.title")} description={t("seo.about.desc")}>
   <section class="page-hero">
-    {aboutImg && <img class="hero-bg" src={aboutImg} alt="" aria-hidden="true" />}
+    <img class="hero-bg" src="/norvexOffice.jpg" alt="" aria-hidden="true" />
     <div class="container">
       <div class="hero-text">
         <h1>{about.title}</h1>

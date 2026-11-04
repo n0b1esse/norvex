@@ -2,10 +2,8 @@
 import "../styles/global.css";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import { directus, asset, DIRECTUS_URL } from "../lib/directus";
 import { favicon } from "../generated/favicon";
 import { HTML_LANG, LOCALES, type Locale } from "../i18n";
-import { realUrl } from "../lib/social";
 
 interface Props { title?: string; description?: string; lang?: Locale; }
 const {
@@ -13,17 +11,6 @@ const {
   description = "NORVEX — охрана труда, промышленная безопасность и экология: от консалтинга до полного аутсорсинга функций HSE.",
   lang = "ru",
 } = Astro.props;
-const settings = await directus<{
-  og_image?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  social_instagram?: string | null;
-  social_telegram?: string | null;
-  social_linkedin?: string | null;
-  type_scale_hero?: number | null;
-  type_scale_heading?: number | null;
-  type_scale_body?: number | null;
-}>("/items/site_settings?fields=og_image,email,phone,social_instagram,social_telegram,social_linkedin,type_scale_hero,type_scale_heading,type_scale_body", {});
 
 // --- SEO: canonical, hreflang alternates, OG/Twitter, Organization JSON-LD ---
 // All absolute URLs resolve against `site` (astro.config → https://norvexhse.com).
@@ -35,29 +22,19 @@ const rest = Astro.url.pathname.replace(/^\/(ru|en|ky)/, "").replace(/\/$/, "");
 const altUrl = (loc: string) => new URL(`/${loc}${rest}/`, site).href;
 const canonical = altUrl(lang);
 const OG_LOCALE: Record<string, string> = { ru: "ru_RU", en: "en_US", ky: "ky_KG" };
-const ogImage = new URL(asset(settings.og_image) ?? "/norvexHero.jpg", site).href;
-const firstLine = (v?: string | null) => (v ?? "").split(/\r?\n/)[0].trim();
-const sameAs = [settings.social_instagram, settings.social_telegram, settings.social_linkedin]
-  .map(realUrl).filter((u): u is string => !!u);
+const ogImage = new URL("/norvexHero.jpg", site).href;
 const orgLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "NORVEX",
   url: site.href,
   logo: new URL("/norvexLogo.png", site).href,
-  ...(firstLine(settings.email) ? { email: firstLine(settings.email) } : {}),
-  ...(firstLine(settings.phone) ? { telephone: firstLine(settings.phone) } : {}),
-  ...(sameAs.length ? { sameAs } : {}),
+  email: "info@norvex-hse.com",
+  telephone: "+996 550 209 209",
+  sameAs: ["https://www.instagram.com/norvex.hse", "https://www.linkedin.com/company/norvex-hse", "https://t.me/NORVEX_HSE"],
 };
 
-// Typography scale multipliers (set in the CMS, bounded 0.8–1.4; default 1).
-// Clamped here as a guard, then injected into :root to override global.css.
-const tsClamp = (n: number | null | undefined) =>
-  Math.min(1.4, Math.max(0.8, Number(n) || 1));
-const typeScaleStyle =
-  `--ts-hero:${tsClamp(settings.type_scale_hero)};` +
-  `--ts-heading:${tsClamp(settings.type_scale_heading)};` +
-  `--ts-body:${tsClamp(settings.type_scale_body)}`;
+const typeScaleStyle = "--ts-hero:1;--ts-heading:1;--ts-body:1";
 ---
 <!doctype html>
 <html lang={HTML_LANG[lang]} style={typeScaleStyle}>
@@ -124,35 +101,6 @@ const typeScaleStyle =
         }, { threshold: 0.15, rootMargin: "0px 0px -10% 0px" });
         els.forEach((el) => io.observe(el));
       }
-    </script>
-
-    <script define:vars={{ ENDPOINT: `${DIRECTUS_URL}/items/page_views`, LANG: lang }}>
-      // Anonymous page-view beacon → Directus `page_views` (see directus/setup_analytics.py).
-      // One row per page load; keepalive fetch survives navigation. Skips localhost.
-      (() => {
-        const h = location.hostname;
-        if (h === "localhost" || h === "127.0.0.1" || h.endsWith(".local")) return;
-        let visitor = "";
-        try {
-          visitor = localStorage.getItem("nv_vid") || "";
-          if (!visitor) {
-            visitor = (crypto.randomUUID && crypto.randomUUID()) || Date.now().toString(36) + Math.random().toString(36).slice(2);
-            localStorage.setItem("nv_vid", visitor);
-          }
-        } catch (e) {}
-        const isBot = /bot|crawl|spider|slurp|bingpreview|facebookexternal|embedly|pinterest|headless|lighthouse|gtmetrix|pingdom|monitor|preview|scan/i.test(navigator.userAgent || "");
-        let referrer = "";
-        try { referrer = document.referrer ? new URL(document.referrer).hostname : ""; } catch (e) {}
-        try {
-          fetch(ENDPOINT, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ path: location.pathname, lang: LANG, referrer, visitor, is_bot: isBot }),
-            keepalive: true,
-            mode: "cors",
-          }).catch(() => {});
-        } catch (e) {}
-      })();
     </script>
   </body>
 </html>
