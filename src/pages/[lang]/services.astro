@@ -13,6 +13,19 @@ type Service = { slug: string; icon: string; translations: Tr[] };
 const rows = await directus<Service[]>(
   `/items/services?fields=slug,icon,translations.*&${PUBLISHED}`, []);
 const services = rows.map((s) => ({ slug: s.slug, icon: s.icon, ...tr<Tr>(s.translations, lang!) }));
+
+// Fallback без Directus CMS — чтобы сетка услуг не была пустой
+if (!services.length) {
+  const pick = (ru: [string, string], en: [string, string]): [string, string] => lang === "en" ? en : ru;
+  services.push(...[
+    { slug: "consulting", icon: "clipboard", title: pick(["Консалтинг в области HSE", "HSE consulting"], ["HSE consulting", "HSE consulting"])[lang === "en" ? 1 : 0], description: pick(["Полный аудит и разработка систем управления HSE", "Full audit and HSE management system development"], ["Full audit and HSE management system development", "Full audit and HSE management system development"])[lang === "en" ? 1 : 0] },
+    { slug: "outsourcing", icon: "building", title: pick(["Аутсорсинг функций HSE", "HSE outsourcing"], ["HSE outsourcing", "HSE outsourcing"])[lang === "en" ? 1 : 0], description: pick(["Передача функций охраны труда и промышленной безопасности на аутсорсинг", "Transfer of occupational safety and industrial safety functions to outsourcing"], ["Transfer of occupational safety and industrial safety functions to outsourcing", "Transfer of occupational safety and industrial safety functions to outsourcing"])[lang === "en" ? 1 : 0] },
+    { slug: "outstaffing", icon: "users", title: pick(["Аутстаффинг специалистов", "Outstaffing of specialists"], ["Outstaffing of specialists", "Outstaffing of specialists"])[lang === "en" ? 1 : 0], description: pick(["Подбор и предоставление квалифицированных HSE-специалистов", "Selection and provision of qualified HSE specialists"], ["Selection and provision of qualified HSE specialists", "Selection and provision of qualified HSE specialists"])[lang === "en" ? 1 : 0] },
+    { slug: "audits", icon: "search", title: pick(["Аудиты и инспекции", "Audits and inspections"], ["Audits and inspections", "Audits and inspections"])[lang === "en" ? 1 : 0], description: pick(["Комплексные проверки и аудиты систем безопасности", "Comprehensive checks and safety system audits"], ["Comprehensive checks and safety system audits", "Comprehensive checks and safety system audits"])[lang === "en" ? 1 : 0] },
+    { slug: "documentation", icon: "file-text", title: pick(["Разработка документации", "Documentation development"], ["Documentation development", "Documentation development"])[lang === "en" ? 1 : 0], description: pick(["Разработка инструкций, регламентов и иной документации", "Development of instructions, regulations and other documentation"], ["Development of instructions, regulations and other documentation", "Development of instructions, regulations and other documentation"])[lang === "en" ? 1 : 0] },
+    { slug: "contractor-management", icon: "settings", title: pick(["Управление подрядчиками", "Contractor management"], ["Contractor management", "Contractor management"])[lang === "en" ? 1 : 0], description: pick(["Система управления подрядчиками и контроль безопасности", "Contractor management system and safety oversight"], ["Contractor management system and safety oversight", "Contractor management system and safety oversight"])[lang === "en" ? 1 : 0] },
+  ]);
+}
 // Reuse the office photo from the About page as the hero background.
 const about = await directus<{ image?: string | null }>("/items/about_page?fields=image", {});
 const officeImg = asset(about.image);

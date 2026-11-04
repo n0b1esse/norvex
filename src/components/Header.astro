@@ -16,8 +16,28 @@ const switchPath = rest === "/" ? "" : rest;
 type Item = { slug: string; translations: { languages_code: string; title: string }[] };
 const serviceItems = await directus<Item[]>(`/items/services?fields=slug,translations.languages_code,translations.title&${PUBLISHED}`, []);
 const modelItems = await directus<Item[]>(`/items/cooperation_models?fields=slug,translations.languages_code,translations.title&${PUBLISHED}`, []);
-const services = serviceItems.map((s) => [tr<{ title: string }>(s.translations, lang).title, lp(lang, `/services#${s.slug}`)]);
-const models = modelItems.map((m) => [tr<{ title: string }>(m.translations, lang).title, lp(lang, `/cooperation#${m.slug}`)]);
+
+// Fallback без Directus CMS — чтобы dropdowns не были пустыми
+const fallbackServices = lang === "en" ? [
+  ["HSE consulting", lp(lang, "/services#consulting")],
+  ["HSE outsourcing", lp(lang, "/services#outsourcing")],
+  ["Outstaffing", lp(lang, "/services#outstaffing")],
+] : [
+  ["Консалтинг в области HSE", lp(lang, "/services#consulting")],
+  ["Аутсорсинг функций HSE", lp(lang, "/services#outsourcing")],
+  ["Аутстаффинг специалистов", lp(lang, "/services#outstaffing")],
+];
+const fallbackModels = lang === "en" ? [
+  ["Consulting", lp(lang, "/cooperation#consulting")],
+  ["Outsourcing", lp(lang, "/cooperation#outsourcing")],
+  ["Outstaffing", lp(lang, "/cooperation#outstaffing")],
+] : [
+  ["Консалтинг", lp(lang, "/cooperation#consulting")],
+  ["Аутсорсинг", lp(lang, "/cooperation#outsourcing")],
+  ["Аутстаффинг", lp(lang, "/cooperation#outstaffing")],
+];
+const services = serviceItems.length ? serviceItems.map((s) => [tr<{ title: string }>(s.translations, lang).title, lp(lang, `/services#${s.slug}`)]) : fallbackServices;
+const models = modelItems.length ? modelItems.map((m) => [tr<{ title: string }>(m.translations, lang).title, lp(lang, `/cooperation#${m.slug}`)]) : fallbackModels;
 ---
 <header class="site-header">
   <div class="bar">

@@ -15,11 +15,24 @@ const menu = [
 
 type Svc = { slug: string; translations: { languages_code: string; title: string }[] };
 const svc = await directus<Svc[]>(`/items/services?fields=slug,translations.languages_code,translations.title&${PUBLISHED}`, []);
-const servicesLinks = svc.map((s) => [tr<{ title: string }>(s.translations, lang).title, lp(lang, `/services#${s.slug}`)]);
+
+// Fallback без Directus CMS — чтобы колонка услуг в футере не была пустой
+const fallbackSvcLinks = lang === "en" ? [
+  ["HSE consulting", lp(lang, "/services#consulting")],
+  ["HSE outsourcing", lp(lang, "/services#outsourcing")],
+  ["Outstaffing", lp(lang, "/services#outstaffing")],
+] : [
+  ["Консалтинг в области HSE", lp(lang, "/services#consulting")],
+  ["Аутсорсинг функций HSE", lp(lang, "/services#outsourcing")],
+  ["Аутстаффинг специалистов", lp(lang, "/services#outstaffing")],
+];
+const servicesLinks = svc.length ? svc.map((s) => [tr<{ title: string }>(s.translations, lang).title, lp(lang, `/services#${s.slug}`)]) : fallbackSvcLinks;
 
 const docItems = await directus<{ translations: { languages_code: string; title: string }[] }[]>(
   `/items/documents?fields=translations.languages_code,translations.title&${PUBLISHED}&limit=6`, []);
-const docsLinks = docItems.map((d) => tr<{ title: string }>(d.translations, lang).title);
+// Fallback без Directus CMS
+const fallbackDocs = lang === "en" ? ["Policies", "Procedures", "Checklists"] : ["Политики", "Процедуры", "Чек-листы"];
+const docsLinks = docItems.length ? docItems.map((d) => tr<{ title: string }>(d.translations, lang).title) : fallbackDocs;
 
 const settings = await directus<{ whatsapp?: string; telegram?: string; instagram?: string; social_whatsapp?: string; social_telegram?: string; social_linkedin?: string; social_instagram?: string; translations: { languages_code: string; footer_tagline: string }[] }>(
   SITE_SETTINGS, { translations: [] });

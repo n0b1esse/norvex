@@ -17,6 +17,34 @@ type About = {
 const raw = await directus<{ image?: string | null; translations: (About & { languages_code: string })[] }>(
   "/items/about_page?fields=image,translations.*", { translations: [] });
 const about = tr<About>(raw.translations, lang!);
+
+// Fallback без Directus CMS — чтобы страница не была пустой
+if (!about.title) {
+  about.title = lang === "en" ? "About NORVEX" : lang === "ky" ? "NORVEX жөнүндө" : "О компании NORVEX";
+  about.intro = lang === "en" ? "NORVEX is a team of experts in occupational safety, industrial safety and ecology. We help businesses build safe and compliant operations." : lang === "ky" ? "NORVEX — эмгек коопсуздугу, өнөр жай коопсуздугу жана экология боюнча эксперттер командасы. Биз бизнеске коопсуз жана талаптарга ылайык иштерди курууда жардам беребиз." : "NORVEX — команда экспертов в области охраны труда, промышленной безопасности и экологии. Мы помогаем бизнесу выстраивать безопасные и соответствующие требованиям операции.";
+  about.stats = lang === "en" ? [
+    { value: "10+", label: "Years of experience" },
+    { value: "150+", label: "Projects completed" },
+    { value: "98%", label: "Client satisfaction" },
+    { value: "24/7", label: "Support" },
+  ] : [
+    { value: "10+", label: "Лет опыта" },
+    { value: "150+", label: "Выполненных проектов" },
+    { value: "98%", label: "Удовлетворённость клиентов" },
+    { value: "24/7", label: "Поддержка" },
+  ];
+  about.advantages = lang === "en" ? [
+    { icon: "shield", label: "Safety first" },
+    { icon: "award", label: "Certified experts" },
+    { icon: "chart", label: "Proven results" },
+    { icon: "support", label: "24/7 support" },
+  ] : [
+    { icon: "shield", label: "Безопасность прежде всего" },
+    { icon: "award", label: "Сертифицированные эксперты" },
+    { icon: "chart", label: "Проверенные результаты" },
+    { icon: "support", label: "Поддержка 24/7" },
+  ];
+}
 const stats = about.stats ?? [];
 const why = about.advantages ?? [];
 // Render "NORVEX" in the accent color without storing markup in the CMS.

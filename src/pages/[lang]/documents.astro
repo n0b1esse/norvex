@@ -25,6 +25,22 @@ const allCategories = cats.map((c) => ({
     .filter((d) => d.category?.slug === c.slug)
     .map((d) => ({ file: d.file, file_size: d.file_size, title: tr<DocTr>(d.translations, lang!).title })),
 }));
+
+// Fallback без Directus CMS — чтобы страница документов не была пустой
+if (!allCategories.length) {
+  allCategories.push(
+    { slug: "policies", icon: "file-text", title: lang === "en" ? "Policies" : "Политики", heading: lang === "en" ? "Policies" : "Политики", lead: lang === "en" ? "Company policies on safety and ecology." : "Политики компании в области безопасности и экологии.", docs: [
+      { file: null, file_size: "PDF", title: lang === "en" ? "Safety policy" : "Политика безопасности" },
+      { file: null, file_size: "PDF", title: lang === "en" ? "Environmental policy" : "Экологическая политика" },
+    ] },
+    { slug: "procedures", icon: "clipboard", title: lang === "en" ? "Procedures" : "Процедуры", heading: lang === "en" ? "Procedures" : "Процедуры", lead: lang === "en" ? "Work procedures and instructions." : "Процедуры и инструкции по работе.", docs: [
+      { file: null, file_size: "PDF", title: lang === "en" ? "Work safety procedure" : "Процедура безопасности работ" },
+    ] },
+    { slug: "checklists", icon: "check-square", title: lang === "en" ? "Checklists" : "Чек-листы", heading: lang === "en" ? "Checklists" : "Чек-листы", lead: lang === "en" ? "Inspection and audit checklists." : "Чек-листы проверок и аудитов.", docs: [
+      { file: null, file_size: "PDF", title: lang === "en" ? "HSE inspection checklist" : "Чек-лист инспекции HSE" },
+    ] },
+  );
+}
 // Hide categories with no published documents — but only when docs actually loaded.
 // `directus()` returns [] on a fetch error too, so without this guard a build-time
 // hiccup on the docs request would filter out *every* category and blank the page.

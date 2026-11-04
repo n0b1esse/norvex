@@ -17,6 +17,15 @@ const tabs = models.map((m) => {
   const tt = pickTr<ModelTr>(m.translations, lang!);
   return { id: m.slug, icon: m.icon, image: m.image, label: tt.title, desc: tt.description, points: tt.points ?? [] };
 });
+
+// Fallback без Directus CMS — чтобы вкладки не были пустыми
+if (!tabs.length) {
+  tabs.push(...[
+    { id: "consulting", icon: "clipboard", image: null, label: lang === "en" ? "Consulting" : "Консалтинг", desc: lang === "en" ? "One-time expert assessment and recommendations." : "Разовая экспертная оценка и рекомендации.", points: lang === "en" ? ["HSE audit", "Risk assessment", "Action plan"] : ["Аудит HSE", "Оценка рисков", "План мероприятий"] },
+    { id: "outsourcing", icon: "building", image: null, label: lang === "en" ? "Outsourcing" : "Аутсорсинг", desc: lang === "en" ? "Full transfer of HSE functions to NORVEX specialists." : "Полная передача функций HSE специалистам NORVEX.", points: lang === "en" ? ["Dedicated specialist", "Documentation", "Reporting"] : ["Выделенный специалист", "Документация", "Отчётность"] },
+    { id: "outstaffing", icon: "users", image: null, label: lang === "en" ? "Outstaffing" : "Аутстаффинг", desc: lang === "en" ? "Provision of qualified HSE specialists for your projects." : "Предоставление квалифицированных HSE-специалистов для ваших проектов.", points: lang === "en" ? ["Certified experts", "Flexible terms", "Quick start"] : ["Сертифицированные эксперты", "Гибкие условия", "Быстрый старт"] },
+  ]);
+}
 ---
 <Layout lang={lang} title={tr("seo.cooperation.title")} description={tr("seo.cooperation.desc")}>
   <section class="section">
