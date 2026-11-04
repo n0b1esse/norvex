@@ -48,7 +48,7 @@ export default defineConfig({
     '/': '/ru',
   },
   integrations: [
-    contentGuard(),
+    // contentGuard(), // отключено: Directus недоступен на Vercel во время сборки
     // Emits sitemap-index.xml (+ sitemap-0.xml) at the site root, with hreflang
     // alternates linking the ru/en/ky versions of each page for search engines.
     sitemap({
