@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+const ROOT = process.cwd();
 const OLD = '<script>(function(){var h=(location.hash||"").replace("#","");if(h){var b=document.querySelector(\'.cat[data-cat="\'+h+\'"]\');if(b)b.click();}})();</script>';
 const NEW = '<script>(function(){var h=(location.hash||"").replace("#","");if(!h)return;function act(){var ok=[].slice.call(document.querySelectorAll("[data-catpanel]")).some(function(p){return p.dataset.catpanel===h});if(!ok)return;document.querySelectorAll("[data-cat]").forEach(function(x){var on=x.dataset.cat===h;x.classList.toggle("active",on)});document.querySelectorAll("[data-catpanel]").forEach(function(p){var on=p.dataset.catpanel===h;p.classList.toggle("active",on)});}act();})();</script>';
 
