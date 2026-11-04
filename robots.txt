@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://norvexhse.com/sitemap-index.xml
