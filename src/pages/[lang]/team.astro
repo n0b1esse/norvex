@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import teamFounder from "../../assets/team-founder.jpg";
 import { getT, localeStaticPaths } from "../../i18n";
 
 export const getStaticPaths = localeStaticPaths;
@@ -9,17 +10,18 @@ const t = await getT(lang!);
 // Жёстко заданные данные команды (без зависимости от Directus — работает без CMS)
 const LEADERS = 2;
 const team = [
-  { name: "Абдраимов Тумарбек Абдраимович", position: "Учредитель", experience: "10 лет" },
-  { name: "Оморкулов Уланбек Абдраимович", position: "Директор", experience: "15 лет" },
-  { name: "Маматов Данияр Талгатович", position: "Эксперт по пожарной безопасности", experience: "10 лет" },
-  { name: "Сидякова Айгуль Нурлановна", position: "Эксперт по охране окружающей среды (Экология)", experience: "9 лет" },
-  { name: "Козлов Алексей Сергеевич", position: "Инженер по охране труда", experience: "7 лет" },
-  { name: "Петрова Мария Ивановна", position: "Эколог", experience: "5 лет" },
+  { name: "Абдраимов Тумарбек Абдраимович", position: "Учредитель", experience: "10 лет", photo: teamFounder },
+  { name: "Оморкулов Уланбек Абдраимович", position: "Директор", experience: "15 лет", photo: null as unknown as typeof teamFounder },
+  { name: "Маматов Данияр Талгатович", position: "Эксперт по пожарной безопасности", experience: "10 лет", photo: null as unknown as typeof teamFounder },
+  { name: "Сидякова Айгуль Нурлановна", position: "Эксперт по охране окружающей среды (Экология)", experience: "9 лет", photo: null as unknown as typeof teamFounder },
+  { name: "Козлов Алексей Сергеевич", position: "Инженер по охране труда", experience: "7 лет", photo: null as unknown as typeof teamFounder },
+  { name: "Петрова Мария Ивановна", position: "Эколог", experience: "5 лет", photo: null as unknown as typeof teamFounder },
 ];
 
 const leaders = team.slice(0, LEADERS);
 const specialists = team.slice(LEADERS);
 const hasMore = specialists.length > 0;
+const placeholder = (w: number, h: number) => `https://placehold.co/${w}x${h}`;
 ---
 <Layout lang={lang} title={t("seo.team.title")} description={t("seo.team.desc")}>
   <section class="section">
@@ -33,7 +35,7 @@ const hasMore = specialists.length > 0;
       <div class="grid grid-2 team-grid leaders-grid">
         {leaders.map((m) => (
           <article class="member leader">
-            <img src="https://placehold.co/420x330" alt={m.name} class="photo" width={420} height={330} />
+            <img src={m.photo?.src ?? placeholder(420, 330)} alt={m.name} class="photo" width={420} height={330} />
             <div class="member-body">
               <h3>{m.name}</h3>
               <p class="role">{m.position}</p>
@@ -42,25 +44,28 @@ const hasMore = specialists.length > 0;
         ))}
       </div>
 
-      {/* Группа 2: остальные специалисты — скрыты до нажатия «все специалистов» */}
+      {/* Группа 2: остальные специалисты — скрыты до нажатия «Все специалисты» */}
       {hasMore && (
         <>
           <div class="team-cta">
             <button type="button" class="btn btn-primary" data-show-all>{t("cta.all_specialists")}</button>
           </div>
-          <div class:list={["grid grid-4 team-grid specialists-grid", { hidden: true }]}>
+
+          <div class:list={["specialists-block", { hidden: true }]}>
             <div class="section-head-specialists">
-              <h2 class="section-title">Ключевые специалисты</h2>
+              <h2>Ключевые специалисты</h2>
             </div>
-            {specialists.map((m) => (
-              <article class:list={["member", { "is-hidden": true }]}>
-                <img src="https://placehold.co/300x240" alt={m.name} class="photo" width={300} height={240} />
-                <div class="member-body">
-                  <h3>{m.name}</h3>
-                  <p class="role">{m.position}</p>
-                </div>
-              </article>
-            ))}
+            <div class="grid grid-4 team-grid specialists-grid">
+              {specialists.map((m) => (
+                <article class:list={["member", { "is-hidden": true }]}>
+                  <img src={m.photo?.src ?? placeholder(300, 240)} alt={m.name} class="photo" width={300} height={240} />
+                  <div class="member-body">
+                    <h3>{m.name}</h3>
+                    <p class="role">{m.position}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
         </>
       )}
@@ -86,6 +91,7 @@ const hasMore = specialists.length > 0;
     border-radius: var(--radius-sm);
     overflow: hidden;
     display: block;
+    background: #f0f0f0;
   }
   img.photo {
     height: 100%;
@@ -101,29 +107,37 @@ const hasMore = specialists.length > 0;
   .member.leader .member-body h3 { font-size: calc(20px * var(--ts-heading)); margin-bottom: 8px; }
   .member.leader .member-body .role { font-size: 15px; margin-bottom: 20px; }
 
-  /* Заголовок второй группы («Ключевые специалисты») — серый, как на референсе */
-  .section-head-specialists { text-align: left; margin: 48px 0 24px 0; }
-  .section-head-specialists .section-title { font-size: calc(22px * var(--ts-heading)); color: var(--muted); font-weight: 600; }
+  /* Заголовок второй группы — отдельный блок над карточками, слева */
+  .section-head-specialists {
+    margin: 48px 0 24px 0;
+    text-align: left;
+  }
+  .section-head-specialists h2 {
+    color: var(--muted);
+    font-size: calc(22px * var(--ts-heading));
+    font-weight: 600;
+  }
 
   .team-cta { display: flex; justify-content: center; margin: 40px 0 24px 0; }
 
-  .specialists-grid.hidden { display: none; }
+  .specialists-block.hidden { display: none; }
   .member.is-hidden { display: none; }
 </style>
 
 <script>
-  // FLIP reveal второй группы специалистов (ветка снизу).
+  // FLIP reveal второй группы специалистов.
   const btn = document.querySelector<HTMLElement>("[data-show-all]");
+  const block = document.querySelector<HTMLElement>(".specialists-block");
   const grid = document.querySelector<HTMLElement>(".specialists-grid");
   const REDUCE = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const DUR = 500;
   btn?.addEventListener("click", () => {
-    if (!grid) return;
+    if (!block || !grid) return;
     const hidden = Array.from(grid.querySelectorAll<HTMLElement>(".member.is-hidden"));
 
     // Reduced motion (or nothing to reveal): show them with no animation.
     if (REDUCE || !hidden.length) {
-      grid.classList.remove("hidden");
+      block.classList.remove("hidden");
       hidden.forEach((el) => el.classList.remove("is-hidden"));
       btn.closest(".team-cta")?.remove();
       return;
@@ -133,7 +147,7 @@ const hasMore = specialists.length > 0;
     const step = Math.min(60, Math.round(320 / hidden.length));
     const first = hidden.map((el) => el.getBoundingClientRect());
 
-    grid.classList.remove("hidden");
+    block.classList.remove("hidden");
     hidden.forEach((el) => el.classList.remove("is-hidden"));
 
     // Invert: park cards back at their old spot; start hidden.
