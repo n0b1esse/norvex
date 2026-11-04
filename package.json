@@ -8,7 +8,7 @@
   "scripts": {
     "predev": "node --env-file=.env.example --env-file-if-exists=.env scripts/sync-favicon.mjs",
     "dev": "astro dev",
-    "prebuild": "node --env-file=.env.example --env-file-if-exists=.env scripts/sync-favicon.mjs",
+    // "prebuild": "node --env-file=.env.example --env-file-if-exists=.env scripts/sync-favicon.mjs", // отключено: Directus недоступен на Vercel
     "build": "astro build",
     "preview": "astro preview",
     "test": "node --test test/favicon-contract.test.mjs test/sync-favicon.test.mjs test/favicon-layout.test.mjs",
