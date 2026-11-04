@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Coop compare old vs new</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; color: #111; margin: 0; padding: 16px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: left; vertical-align: top; }
+  th { background: #f3f6f9; }
+  img { max-width: 100%; height: auto; display: block; }
+  .label { font-size: 12px; color: #666; margin-top: 4px; }
+  h1 { font-size: 18px; margin: 0 0 12px 0; }
+</style>
+</head>
+<body>
+<h1>Cooperation: старый PNG vs новый WebP (в ряду: PNG слева, WebP справа)</h1>
+<table>
+  <tr>
+    <th>consulting<br><span class="label">старый PNG 2453 КБ / новый WebP 22 КБ</span></th>
+    <th>outsourcing<br><span class="label">старый PNG 1397 КБ / новый WebP 14 КБ (файл был повреждён, JPEG-стать BMP в промежуточном)</span></th>
+    <th>outstaffing<br><span class="label">старый PNG 2997 КБ / новый WebP 28 КБ</span></th>
+  </tr>
+  <tr>
+    <td>
+      <img src="assets/cooperation-consulting.png"  alt="old consulting" width="320" height="213">
+    </td>
+    <td>
+      <img src="assets/cooperation-outsourcing.png" alt="old outsourcing" width="320" height="213">
+    </td>
+    <td>
+      <img src="assets/cooperation-outstaffing.png" alt="old outstaffing" width="320" height="213">
+    </td>
+  </tr>
+  <tr>
+    <td><img src="assets/cooperation-consulting.webp"  alt="new consulting"  width="320" height="213"></td>
+    <td><img src="assets/cooperation-outsourcing.webp" alt="new outsourcing" width="320" height="213"></td>
+    <td><img src="assets/cooperation-outstaffing.webp" alt="new outstaffing" width="320" height="213"></td>
+  </tr>
+  <tr><th colspan="3">Hero-фоны пересжатые (это уже «прод»)</th></tr>
+  <tr>
+    <td><img src="_tmp_hero-bg.jpg"     alt="hero-bg"  width="320" height="181"></td>
+    <td><img src="_tmp_hero-page.jpg"   alt="hero-page" width="320" height="242"></td>
+    <td><img src="_tmp_norvexHero.jpg"  alt="norvexHero" width="320" height="181"></td>
+  </tr>
+  <tr>
+    <td colspan="3"><img src="_tmp_team-founder.jpg" alt="team-founder" width="240" height="240"></td>
+  </tr>
+</table>
+</body>
+</html>
