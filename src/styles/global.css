@@ -136,10 +136,12 @@ h1, h2, h3, h4 { color: var(--navy); line-height: 1.15; font-weight: 800; }
 
 /* Full-bleed page hero: cover photo + navy gradient overlay (same treatment as
    the home hero). Pages add only their <img class="hero-bg"> and per-page tweaks
-   (e.g. min-height) in their own scoped <style>. */
+   in their own scoped <style>. Kept deliberately short - the banner holds a
+   title + one lead line, so it stays close to its current slim home-hero
+   proportions rather than towering over a line and a half of text. */
 .page-hero {
   position: relative; isolation: isolate; overflow: hidden;
-  background: var(--navy-900); color: #fff; padding-block: 84px 76px;
+  background: var(--navy-900); color: #fff; padding-block: 44px 38px;
 }
 .page-hero .hero-bg {
   position: absolute; inset: 0; z-index: 0;
@@ -153,10 +155,10 @@ h1, h2, h3, h4 { color: var(--navy); line-height: 1.15; font-weight: 800; }
       var(--navy-900) 0%, rgba(12,39,67,.95) 30%, rgba(12,39,67,.66) 55%,
       rgba(12,39,67,.40) 80%, rgba(12,39,67,.30) 100%);
 }
-.page-hero > .container { position: relative; z-index: 2; display: flex; align-items: center; min-height: 600px; }
+.page-hero > .container { position: relative; z-index: 2; display: flex; align-items: center; min-height: 340px; }
 .page-hero .hero-text { max-width: 600px; }
-.page-hero h1 { color: #fff; font-size: calc(clamp(32px, 4.5vw, 50px) * var(--ts-hero)); }
-.page-hero .hero-text p { margin-top: 20px; font-size: calc(17px * var(--ts-body)); color: rgba(255,255,255,.86); max-width: 500px; }
+.page-hero h1 { color: #fff; font-size: calc(clamp(28px, 3.8vw, 40px) * var(--ts-hero)); }
+.page-hero .hero-text p { margin-top: 16px; font-size: calc(16px * var(--ts-body)); color: rgba(255,255,255,.86); max-width: 500px; }
 
 @media (max-width: 900px) {
   .page-hero > .container { min-height: auto; }
