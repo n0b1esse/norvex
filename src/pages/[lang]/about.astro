@@ -25,22 +25,27 @@ const advantages = ADV_ICONS.map((icon, i) => ({ icon, label: advLabels[i] ?? ""
 
 // Локальный контент страницы — сайт работает без CMS
 const about = {
-  title: lang === "en" ? "About NORVEX" : lang === "ky" ? "NORVEX жөнүндө" : "О компании NORVEX",
+  title: lang === "en" ? "About the company" : lang === "ky" ? "Компания жөнүндө" : "О компании",
   intro: lang === "en"
-    ? "NORVEX is a team of experts in occupational safety, industrial safety and ecology. We help businesses build safe and compliant operations."
+    ? "NORVEX provides professional services in occupational health and safety, industrial safety, environmental protection and risk management. We offer organizations expert support and practical solutions aimed at ensuring safety, meeting legal requirements and improving operational efficiency."
     : lang === "ky"
-      ? "NORVEX — эмгек коопсуздугу, өнөр жай коопсуздугу жана экология боюнча эксперттер командасы. Биз бизнеске коопсуз жана талаптарга ылайык иштерди курууда жардам беребиз."
-      : "NORVEX — команда экспертов в области охраны труда, промышленной безопасности и экологии. Мы помогаем бизнесу выстраивать безопасные и соответствующие требованиям операции.",
+      ? "NORVEX эмгекти коргоо, өнөр жай коопсуздугу, айлана-чөйрөнү коргоо жана тобокелдиктерди башкаруу тармагында кесипкөй кызматтарды көрсөтөт. Уюмдарга коопсуздукту камсыздоого, мыйзам талаптарын сактоого жана иштин натыйжалуулугун жогорулатууга багытталган эксперттик колдоо жана практикалык чечимдерди беребиз."
+      : "NORVEX оказывает профессиональные услуги в области охраны труда, промышленной безопасности, охраны окружающей среды и управления рисками. Предоставляем организациям экспертную поддержку и практические решения, направленные на обеспечение безопасности, соблюдение требований законодательства и повышение эффективности деятельности.",
   stats: lang === "en" ? [
-    { value: "10+", label: "Years of experience" },
-    { value: "150+", label: "Projects completed" },
-    { value: "98%", label: "Client satisfaction" },
-    { value: "24/7", label: "Support" },
+    { value: "30+", label: "years of team experience" },
+    { value: "20+", label: "successful projects" },
+    { value: "10+", label: "industries of expertise" },
+    { value: "4", label: "languages of service" },
+  ] : lang === "ky" ? [
+    { value: "30+", label: "жылдык команда тажрыйбасы" },
+    { value: "20+", label: "ийгиликтүү долбоорлор" },
+    { value: "10+", label: "экспертиза тармактары" },
+    { value: "4", label: "тейлөө тили" },
   ] : [
-    { value: "10+", label: "Лет опыта" },
-    { value: "150+", label: "Выполненных проектов" },
-    { value: "98%", label: "Удовлетворённость клиентов" },
-    { value: "24/7", label: "Поддержка" },
+    { value: "30+", label: "лет опыта команды" },
+    { value: "20+", label: "успешных проектов" },
+    { value: "10+", label: "отраслей экспертизы" },
+    { value: "4", label: "языка обслуживания" },
   ],
   advantages,
 };

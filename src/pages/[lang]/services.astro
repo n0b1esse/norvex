@@ -7,14 +7,28 @@ export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const t = await getT(lang!);
 
-// Локальный контент услуг — не зависит от CMS.
-const services = [
-  { slug: "consulting", icon: "clipboard", title: lang === "en" ? "HSE consulting" : "Консалтинг в области HSE", description: lang === "en" ? "Full audit and HSE management system development" : "Полный аудит и разработка систем управления HSE" },
-  { slug: "outsourcing", icon: "building", title: lang === "en" ? "HSE outsourcing" : "Аутсорсинг функций HSE", description: lang === "en" ? "Transfer of occupational safety and industrial safety functions to outsourcing" : "Передача функций охраны труда и промышленной безопасности на аутсорсинг" },
-  { slug: "outstaffing", icon: "users", title: lang === "en" ? "Outstaffing of specialists" : "Аутстаффинг специалистов", description: lang === "en" ? "Selection and provision of qualified HSE specialists" : "Подбор и предоставление квалифицированных HSE-специалистов" },
-  { slug: "audits", icon: "search", title: lang === "en" ? "Audits and inspections" : "Аудиты и инспекции", description: lang === "en" ? "Comprehensive checks and safety system audits" : "Комплексные проверки и аудиты систем безопасности" },
-  { slug: "docs", icon: "file-text", title: lang === "en" ? "Documentation development" : "Разработка документации", description: lang === "en" ? "Development of instructions, regulations and other documentation" : "Разработка инструкций, регламентов и иной документации" },
-  { slug: "contractors", icon: "settings", title: lang === "en" ? "Contractor management" : "Управление подрядчиками", description: lang === "en" ? "Contractor management system and safety oversight" : "Система управления подрядчиками и контроль безопасности" },
+// Локальный контент услуг — оригинальные тексты из CMS (дамп handoff).
+const services = lang === "en" ? [
+  { slug: "consulting", icon: "clipboard", title: "Consulting in occupational, industrial and environmental safety", description: "Expert support in ensuring safety, managing risks and meeting legal requirements." },
+  { slug: "outsourcing", icon: "building", title: "Outsourcing of occupational, industrial and environmental safety functions", description: "End-to-end performance of OHS, industrial and environmental safety functions with control, reporting and ongoing support of the organization's operations." },
+  { slug: "outstaffing", icon: "users", title: "Specialist outstaffing", description: "Provision of qualified specialists for short- or long-term reinforcement of the client's team in line with project requirements." },
+  { slug: "audits", icon: "search", title: "Audits and inspections", description: "Independent assessment of compliance with legal requirements, corporate standards and industry best practices." },
+  { slug: "docs", icon: "file-text", title: "Documentation development", description: "Development and updating of OHS, industrial and environmental safety documentation in compliance with legal requirements and international standards." },
+  { slug: "contractors", icon: "settings", title: "Contractor management", description: "Assessment, support and monitoring of contractor organizations to ensure safety, quality and compliance with established requirements." },
+] : lang === "ky" ? [
+  { slug: "consulting", icon: "clipboard", title: "Эмгекти коргоо, өнөр жай жана айлана-чөйрө коопсуздугу боюнча консалтинг", description: "Коопсуздукту камсыздоо, тобокелдиктерди башкаруу жана мыйзам талаптарына шайкештик маселелеринде эксперттик колдоо." },
+  { slug: "outsourcing", icon: "building", title: "Эмгекти коргоо, өнөр жай жана айлана-чөйрө коопсуздугу функцияларын аутсорсинг", description: "Эмгекти коргоо, өнөр жай жана айлана-чөйрө коопсуздугу функцияларын контролдоо, отчёттуулук жана уюмдун ишин туруктуу коштоо менен комплекстүү аткаруу." },
+  { slug: "outstaffing", icon: "users", title: "Адистерди аутстаффинг", description: "Долбоордун талаптарына ылайык кардардын командасын убактылуу же узак мөөнөттүү күчөтүү үчүн тармактык адистерди берүү." },
+  { slug: "audits", icon: "search", title: "Аудиттер жана текшерүүлөр", description: "Мыйзам талаптарына, корпоративдик стандарттарга жана тармактын мыкты тажрыйбаларына шайкештигин көз карандысыз баалоо." },
+  { slug: "docs", icon: "file-text", title: "Документтерди иштеп чыгуу", description: "Мыйзам талаптарына жана эл аралык стандарттарга ылайык эмгекти коргоо, өнөр жай жана айлана-чөйрө коопсуздугу боюнча документтерди иштеп чыгуу жана жаңылоо." },
+  { slug: "contractors", icon: "settings", title: "Подрядчыларды башкаруу", description: "Коопсуздукту, сапатты жана белгиленген талаптарды сактоону камсыздоо үчүн подряд уюмдарын баалоо, коштоо жана контролдоо." },
+] : [
+  { slug: "consulting", icon: "clipboard", title: "Консалтинг в области ОТ, ПБ и ООС", description: "Экспертная поддержка в вопросах обеспечения безопасности, управления рисками и соответствия требованиям законодательства." },
+  { slug: "outsourcing", icon: "building", title: "Аутсорсинг функций ОТ, ПБ и ООС", description: "Комплексное выполнение функций ОТ, ПБ и ООС с обеспечением контроля, отчетности и постоянного сопровождения деятельности организации." },
+  { slug: "outstaffing", icon: "users", title: "Аутстаффинг специалистов", description: "Предоставление профильных специалистов для временного или долгосрочного усиления команды заказчика в соответствии с требованиями проекта." },
+  { slug: "audits", icon: "search", title: "Аудиты и инспекции", description: "Независимая оценка соответствия требованиям законодательства, корпоративных стандартов и лучших отраслевых практик." },
+  { slug: "docs", icon: "file-text", title: "Разработка документации", description: "Разработка и актуализация документации в области ОТ, ПБ и ООС в соответствии с требованиями законодательства и международных стандартов." },
+  { slug: "contractors", icon: "settings", title: "Управление подрядчиками", description: "Оценка, сопровождение и контроль подрядных организаций для обеспечения безопасности, качества и соблюдения установленных требований." },
 ];
 ---
 <Layout lang={lang} title={t("seo.services.title")} description={t("seo.services.desc")}>

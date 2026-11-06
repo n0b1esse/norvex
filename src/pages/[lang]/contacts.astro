@@ -16,8 +16,8 @@ const socials = {
   instagram: "https://www.instagram.com/norvex.hse/",
   linkedin: "https://www.linkedin.com/company/norvex-hse",
 };
-const address = lang === "en" ? "Kyrgyz Republic, Bishkek, Toktogula St. 123" : lang === "ky" ? "Кыргыз Республикасы, Бишкек ш., Токтогул к. 123" : "Кыргызская Республика, г. Бишкек, ул. Токтогула 123";
-const workingHours = lang === "en" ? "Mon – Fri: 9:00 – 18:00" : lang === "ky" ? "Дүйшөмбү – Жума: 9:00 – 18:00" : "Пн – Пт: 9:00 – 18:00";
+const address = lang === "en" ? "Kyrgyz Republic, Bishkek City, 7 Ankara Street, 223" : lang === "ky" ? "Кыргыз Республикасы, Бишкек шаары, Анкара көчөсү, 223" : "Кыргызская Республика, город Бишкек, улица Анкара, 223";
+const workingHours = lang === "en" ? "Monday – Saturday, 09:00 – 20:00" : lang === "ky" ? "Дүйшөмбү – Ишемби, 09:00 – 20:00" : "Понедельник – Суббота, 09:00 – 20:00";
 const mapSrc = `https://maps.google.com/maps?q=${encodeURIComponent(address)}&z=15&output=embed`;
 const info = [
   { icon: "phone", label: t("contacts.phone"), values: [{ text: phone, href: `tel:${phone.replace(/\s|\(/g, "").replace(/\)/g, "")}` }] },
