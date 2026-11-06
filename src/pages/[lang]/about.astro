@@ -7,6 +7,22 @@ export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const t = await getT(lang!);
 
+// «Почему выбирают NORVEX» — 8 преимуществ, 3 локали (как на живом сайте).
+const ADV_ICONS = ["award", "globe", "target", "scale", "gavel", "lock", "clipboard-check", "user-check"];
+const ADV_LABELS: Record<string, string[]> = {
+  ru: ["Профессиональная экспертиза", "Лучшие международные практики", "Риск-ориентированный подход",
+       "Независимость и объективность", "Соответствие требованиям законодательства", "Конфиденциальность информации",
+       "Комплексное сопровождение проектов", "Индивидуальный подход к каждому вопросу"],
+  en: ["Professional expertise", "Best international practices", "Risk-based approach",
+       "Independence and objectivity", "Compliance with legal requirements", "Confidentiality of information",
+       "Comprehensive project support", "Individual approach to every matter"],
+  ky: ["Кесипкөй экспертиза", "Эл аралык мыкты тажрыйбалар", "Тобокелдикке негизделген ыкма",
+       "Көз карандысыздык жана объективдүүлүк", "Мыйзам талаптарына шайкештик", "Маалыматтын купуялыгы",
+       "Долбоорлорду комплекстүү коштоо", "Ар бир маселеге жеке мамиле"],
+};
+const advLabels = ADV_LABELS[lang ?? "ru"] ?? ADV_LABELS.ru;
+const advantages = ADV_ICONS.map((icon, i) => ({ icon, label: advLabels[i] ?? "" }));
+
 // Локальный контент страницы — сайт работает без CMS
 const about = {
   title: lang === "en" ? "About NORVEX" : lang === "ky" ? "NORVEX жөнүндө" : "О компании NORVEX",
@@ -26,17 +42,7 @@ const about = {
     { value: "98%", label: "Удовлетворённость клиентов" },
     { value: "24/7", label: "Поддержка" },
   ],
-  advantages: lang === "en" ? [
-    { icon: "shield", label: "Safety first" },
-    { icon: "award", label: "Certified experts" },
-    { icon: "chart", label: "Proven results" },
-    { icon: "support", label: "24/7 support" },
-  ] : [
-    { icon: "shield", label: "Безопасность прежде всего" },
-    { icon: "award", label: "Сертифицированные эксперты" },
-    { icon: "chart", label: "Проверенные результаты" },
-    { icon: "support", label: "Поддержка 24/7" },
-  ],
+  advantages,
 };
 const stats = about.stats;
 const why = about.advantages;
