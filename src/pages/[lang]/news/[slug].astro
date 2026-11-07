@@ -1,0 +1,66 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import Icon from "../../../components/Icon.astro";
+import { getT, lp, localeStaticPaths } from "../../../i18n";
+import { NEWS } from "../../../data/news";
+
+export const getStaticPaths = async () => {
+  const paths = NEWS.flatMap((n) => ["ru", "en", "ky"].map((lang) => ({ params: { lang, slug: n.slug } })));
+  return paths;
+};
+
+const { lang, slug } = Astro.params as { lang: string; slug: string };
+const t = await getT(lang);
+
+const newsItem = NEWS.find((n) => n.slug === slug);
+if (!newsItem) {
+  return new Response(null, { status: 404 });
+}
+
+const categoryLabel = {
+  ru: { "Законодательство": "Законодательство", "Компания": "Компания", "Экспертиза": "Экспертиза", "События": "События" },
+  en: { "Законодательство": "Legislation", "Компания": "Company", "Экспертиза": "Expertise", "События": "Events" },
+  ky: { "Законодательство": "Законодательство", "Компания": "Компания", "Экспертиза": "Экспертиза", "События": "События" },
+}[lang];
+
+const formatDate = (iso: string) => {
+  const d = new Date(iso);
+  const opts: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" };
+  return lang === "ky" ? d.toLocaleDateString("ky-KG", opts) : d.toLocaleDateString(lang === "en" ? "en-US" : "ru-RU", opts);
+};
+---
+<Layout lang={lang} title={newsItem.title[lang]} description={newsItem.excerpt[lang]}>
+  <section class="page-hero">
+    {newsItem.image ? (
+      <img class="hero-bg" src={newsItem.image} alt="" aria-hidden="true" />
+    ) : null}
+    <div class="container">
+      <div class="hero-text">
+        <span class="news-detail-category">{categoryLabel[newsItem.category]}</span>
+        <h1>{newsItem.title[lang]}</h1>
+        <p class="news-detail-date">{formatDate(newsItem.date)}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-soft fill-to-footer">
+    <div class="container">
+      <article class="news-detail" set:html={newsItem.content[lang] || ""}></article>
+      <div class="news-detail-back">
+        <a href={lp(lang, "/news")} class="btn btn-outline-green">{t("cta.more")} <Icon name="arrow-left" size={18} /></a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .news-detail-category { display: inline-block; background: #e5f4ea; color: var(--green-700); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 12px; }
+  .news-detail-date { color: var(--muted); font-size: 15px; margin-top: 6px; }
+  .news-detail { font-size: calc(16px * var(--ts-body)); line-height: 1.8; color: var(--ink); margin-bottom: 32px; }
+  .news-detail p { margin-bottom: 18px; }
+  .news-detail ul, .news-detail ol { margin: 12px 0 18px 24px; padding-left: 18px; }
+  .news-detail li { margin-bottom: 8px; color: var(--ink); }
+  .news-detail strong { color: var(--navy); }
+  .news-detail-back { margin-top: 32px; }
+  .news-detail-back .btn { width: auto; }
+</style>

@@ -1,0 +1,83 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Icon from "../../components/Icon.astro";
+import { getT, lp, localeStaticPaths } from "../../i18n";
+import { NEWS } from "../../data/news";
+
+export const getStaticPaths = localeStaticPaths;
+const { lang } = Astro.params;
+const t = await getT(lang!);
+
+// Новости, отсортированные по дате (новые сверху)
+const news = [...NEWS].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+const categoryLabel = {
+  ru: { "Законодательство": "Законодательство", "Компания": "Компания", "Экспертиза": "Экспертиза", "События": "События" },
+  en: { "Законодательство": "Legislation", "Компания": "Company", "Экспертиза": "Expertise", "События": "Events" },
+  ky: { "Законодательство": "Законодательство", "Компания": "Компания", "Экспертиза": "Экспертиза", "События": "События" },
+}[lang];
+
+const formatDate = (iso: string) => {
+  const d = new Date(iso);
+  const opts: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" };
+  return lang === "ky" ? d.toLocaleDateString("ky-KG", opts) : d.toLocaleDateString(lang === "en" ? "en-US" : "ru-RU", opts);
+};
+---
+<Layout lang={lang} title={t("seo.news.title")} description={t("seo.news.desc")}>
+  <section class="page-hero">
+    <img class="hero-bg" src="/assets/hero-bg.jpg" alt="" aria-hidden="true" />
+    <div class="container">
+      <div class="hero-text">
+        <h1>{t("page.news_title")}</h1>
+        <p>{t("page.news_lead")}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-soft fill-to-footer">
+    <div class="container">
+      <div class="grid grid-3">
+        {news.map((n, i) => (
+          <article class="card news-item reveal" style={`--i:${i}`}>
+            <div class="news-media">
+              {n.image ? (
+                <img src={n.image} alt={n.title[lang]} class="news-img" loading="lazy" width={600} height={400} />
+              ) : (
+                <div class="placeholder" style="min-height:220px"><Icon name="newspaper" size={40} /></div>
+              )}
+            </div>
+            <div class="news-body">
+              <div class="news-meta">
+                <span class="news-category">{categoryLabel[n.category]}</span>
+                <span class="news-date">{formatDate(n.date)}</span>
+              </div>
+              <h3 class="news-title">{n.title[lang]}</h3>
+              <p class="news-excerpt">{n.excerpt[lang]}</p>
+              <a href={lp(lang, `/news/${n.slug}`)} class="btn btn-outline-green">{t("cta.more")} <Icon name="arrow-right" size={18} /></a>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .news-item { display: flex; flex-direction: column; height: 100%; }
+  .news-media { height: 220px; overflow: hidden; border-radius: var(--radius) var(--radius) 0 0; background: var(--bg); }
+  .news-img { width: 100%; height: 100%; object-fit: cover; }
+  .news-body { padding: 24px; display: flex; flex-direction: column; flex: 1; }
+  .news-meta { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .news-category { background: #e5f4ea; color: var(--green-700); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: .05em; }
+  .news-date { color: var(--muted); font-size: 13px; }
+  .news-title { font-size: calc(19px * var(--ts-heading)); margin: 0 0 10px; line-height: 1.35; }
+  .news-excerpt { color: var(--muted); font-size: 15px; line-height: 1.6; margin-bottom: 18px; flex: 1; }
+  .news-item .btn { width: 100%; justify-content: center; }
+
+  @media (max-width: 992px) {
+    .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .grid-3 { grid-template-columns: 1fr; }
+  }
+</style>

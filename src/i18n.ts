@@ -40,6 +40,7 @@ const FALLBACK: Record<string, { ru: string; en: string; ky: string }> = {
   "nav.team": { ru: "Команда", en: "Team", ky: "Команда" },
   "nav.documents": { ru: "Документы", en: "Documents", ky: "Документтер" },
   "nav.contacts": { ru: "Контакты", en: "Contacts", ky: "Байланыш" },
+  "nav.news": { ru: "Новости", en: "News", ky: "Жаңылыктар" },
   "cta.consult": { ru: "Получить консультацию", en: "Get a consultation", ky: "Консультация алуу" },
   "cta.learn_more": { ru: "Узнать больше", en: "Learn more", ky: "Толугураак" },
   "cta.more": { ru: "Подробнее", en: "Learn more", ky: "Толугураак" },
@@ -80,6 +81,8 @@ const FALLBACK: Record<string, { ru: string; en: string; ky: string }> = {
   "contacts.hours": { ru: "Время работы", en: "Working hours", ky: "Иш убактысы" },
   "page.contacts_title": { ru: "Свяжитесь с нами", en: "Get in touch", ky: "Биз менен байланышыңыз" },
   "page.contacts_lead": { ru: "Контактная информация для взаимодействия по вопросам оказания услуг, реализации проектов и делового сотрудничества.", en: "Contact details for inquiries about our services, project delivery and business cooperation.", ky: "Кызматтарды көрсөтүү, долбоорлорду ишке ашыруу жана ишкердик кызматташуу маселелери боюнча байланышуу үчүн маалымат." },
+  "page.news_title": { ru: "Новости NORVEX", en: "NORVEX News", ky: "NORVEX жаңылыктары" },
+  "page.news_lead": { ru: "Актуальные новости компании, изменения в законодательстве по охране труда, промышленной безопасности и экологии, экспертные материалы и анонсы мероприятий.", en: "Company news, occupational health and safety, industrial safety and environmental legislation updates, expert materials and event announcements.", ky: "Компания дайымдуу жаңылыктары, эмгекти коргоо, өнөр жай коопсуздуку жана экологияга кedeң өзгөртүүлөрү, тажрыйба материалдары жана оюндардын анонстары." },
   "about.why_title": { ru: "Почему выбирают NORVEX", en: "Why NORVEX", ky: "NORVEXти эмне үчүн тандашат" },
   "seo.home.title": { ru: "NORVEX — охрана труда, промбезопасность и экология", en: "NORVEX — Occupational Safety, Industrial Safety & Ecology", ky: "NORVEX — эмгекти коргоо, өнөр жай коопсуздугу жана экология" },
   "seo.home.desc": { ru: "NORVEX — надёжный партнёр в области HSE в Кыргызстане: охрана труда, промышленная безопасность, экология и аутсорсинг функций HSE для вашего бизнеса.", en: "NORVEX is a trusted HSE partner in Kyrgyzstan: occupational health & safety, industrial safety, ecology and full HSE outsourcing for your business.", ky: "NORVEX — Кыргызстандагы ишеничтүү HSE өнөктөшү: эмгекти коргоо, өнөр жай коопсуздугу, экология жана HSE функцияларын аутсорсинг." },
@@ -97,6 +100,8 @@ const FALLBACK: Record<string, { ru: string; en: string; ky: string }> = {
   "seo.cooperation.desc": { ru: "Выберите модель сотрудничества с NORVEX: разовый проект, абонентское обслуживание или полный аутсорсинг функций HSE.", en: "Choose how to work with NORVEX: one-off projects, ongoing retainer support, or full outsourcing of your HSE functions.", ky: "NORVEX менен кызматташуу моделин тандаңыз: бир жолку долбоор, абоненттик тейлөө же HSE функцияларын толук аутсорсинг." },
   "seo.privacy.title": { ru: "Политика конфиденциальности | NORVEX", en: "Privacy Policy | NORVEX", ky: "Купуялык саясаты | NORVEX" },
   "seo.privacy.desc": { ru: "Политика конфиденциальности NORVEX: как мы собираем, используем и защищаем персональные данные в соответствии с законодательством Кыргызской Республики.", en: "NORVEX Privacy Policy: how we collect, use and protect personal data in accordance with the legislation of the Kyrgyz Republic.", ky: "NORVEX купуялык саясаты: жеке маалыматтарды Кыргыз Республикасынын мыйзамдарына ылайык кантип чогултабыз, колдонобуз жана коргойбуз." },
+  "seo.news.title": { ru: "Новости NORVEX — охрана труда, промбезопасность, экология", en: "NORVEX News — Occupational Safety, Industrial Safety & Ecology", ky: "NORVEX жаңылыктары — эмгекти коргоо жана экология" },
+  "seo.news.desc": { ru: "Актуальные новости NORVEX: изменения в законодательстве КР, экспертные материалы по охране труда и экологии, анонсы семинаров и мероприятий.", en: "NORVEX news: Kyrgyzstan legislation updates, occupational health and environmental expert materials, seminar and event announcements.", ky: "NORVEX жаңылыктары: КР мыйзаларында өзгөртүүлөр, эмгекти коргоо жана экология боюнча тажрыйба материалдары, семинар жана оюндардын анонстары." },
 };
 
 export function getT(lang: string) {
