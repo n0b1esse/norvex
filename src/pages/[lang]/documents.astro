@@ -58,7 +58,7 @@ const categories = allCategories;
     <div class="container docs-layout">
       <aside class="docs-side">
         {categories.map((c, i) => (
-          <button class:list={["cat", { active: i === 0 }]} data-cat={c.slug}>
+          <button class:list={["cat", { active: i === 2 }]} data-cat={c.slug}>
             <Icon name={c.icon} size={20} /> {c.title}
           </button>
         ))}
@@ -66,7 +66,7 @@ const categories = allCategories;
 
       <div class="docs-main">
         {categories.map((c, i) => (
-          <div class:list={["docs-panel", { active: i === 0 }]} data-catpanel={c.slug}>
+          <div class:list={["docs-panel", { active: i === 2 }]} data-catpanel={c.slug}>
             <h1>{c.heading}</h1>
             <p class="docs-lead">{c.lead}</p>
             <ul class="doc-list">
