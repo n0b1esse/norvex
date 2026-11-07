@@ -55,7 +55,7 @@ export const NEWS: NewsItem[] = [
 </ul>
 <p>Dan istinizden — biz kompaniyangizin dokumentatsiyasını yangılatıp beremiz.</p>`,
     },
-    image: "/assets/news/trudovoy-kodeks.jpg",
+    image: "/norvexOffice.jpg",
     featured: true,
   },
   {
@@ -81,7 +81,7 @@ export const NEWS: NewsItem[] = [
 <p>The certificate confirms that NORVEX operates in line with international requirements and is ready to support facilities of any complexity.</p>`,
       ky: `<p>NORVEX ISO 45001 audit өткөн. Sertifikat 3 jyl.</p>`,
     },
-    image: "/assets/news/iso-audit.jpg",
+    image: "/newOffice.png",
     featured: true,
   },
   {
@@ -119,7 +119,7 @@ export const NEWS: NewsItem[] = [
 <p>We will help select and purchase PPE compliant with new norms and arrange documentation.</p>`,
       ky: `<p>1-сентябрь 2026 — SIZ norma kirdi.</p>`,
     },
-    image: "/assets/news/siz.jpg",
+    image: "/HSE2.jpg",
     featured: false,
   },
   {
@@ -145,7 +145,7 @@ export const NEWS: NewsItem[] = [
 <p>Seminar recording and speaker presentations are available on request.</p>`,
       ky: `<p>2026-жыл 7-iyul — NORVEX семинар Bishkekде.</p>`,
     },
-    image: "/assets/news/seminar.jpg",
+    image: "/HSE1.webp",
     featured: false,
   },
   {
@@ -185,7 +185,7 @@ export const NEWS: NewsItem[] = [
 <p>Download the full checklist or order a NORVEX consultation — we will check your documentation.</p>`,
       ky: `<p>2026-жыл 8-avgust — check-list ish berүүchü үчүн.</p>`,
     },
-    image: "/assets/news/checklist.jpg",
+    image: "/HSE3.webp",
     featured: true,
   },
 ];
