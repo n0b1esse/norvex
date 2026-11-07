@@ -74,7 +74,7 @@ const FALLBACK: Record<string, { ru: string; en: string; ky: string }> = {
   "page.cooperation_title": { ru: "Модели сотрудничества", en: "Engagement models", ky: "Кызматташуу моделдери" },
   "page.cooperation_lead": { ru: "NORVEX предлагает различные форматы сотрудничества, позволяющие подобрать оптимальное решение с учетом специфики деятельности, требований проекта и потребностей организации.", en: "NORVEX offers a variety of engagement formats, making it possible to choose the optimal solution based on the nature of your operations, project requirements and organizational needs.", ky: "NORVEX иштин өзгөчөлүгүн, долбоордун талаптарын жана уюмдун муктаждыктарын эске алуу менен оптималдуу чечимди тандоого мүмкүндүк берген кызматташуунун ар түрдүү форматтарын сунуштайт." },
   "team.experience": { ru: "Стаж", en: "Experience", ky: "Тажрыйба" },
-  "team.key_instructors": { ru: "Ключевые специалисты", en: "Key specialists", ky: "Негизги адистер" },
+  "team.key_instructors": { ru: "Ключевые эксперты", en: "Key experts", ky: "Негизги эксперттер" },
   "contacts.phone": { ru: "Телефон", en: "Phone", ky: "Телефон" },
   "contacts.address": { ru: "Адрес", en: "Address", ky: "Дарек" },
   "contacts.hours": { ru: "Время работы", en: "Working hours", ky: "Иш убактысы" },
