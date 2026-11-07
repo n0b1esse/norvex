@@ -10,6 +10,8 @@ const t = await getT(lang!);
 
 // Новости, отсортированные по дате (новые сверху)
 const news = [...NEWS].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+const featured = news[0];
+const rest = news.slice(1);
 
 const categoryLabel = {
   ru: { "Законодательство": "Законодательство", "Компания": "Компания", "Экспертиза": "Экспертиза", "События": "События" },
@@ -36,24 +38,47 @@ const formatDate = (iso: string) => {
 
   <section class="section bg-soft fill-to-footer">
     <div class="container">
-      <div class="grid grid-3">
-        {news.map((n, i) => (
-          <article class="card news-item reveal" style={`--i:${i}`}>
-            <div class="news-media">
+      {/* Featured статья — первая новость в полном формате */}
+      {featured && (
+        <article class="article-featured reveal" style="--i:0">
+          <div class="article-media">
+            {featured.image ? (
+              <img src={featured.image} alt={featured.title[lang]} class="article-img" loading="lazy" width={900} height={500} />
+            ) : (
+              <div class="placeholder" style="min-height:360px"><Icon name="newspaper" size={56} /></div>
+            )}
+          </div>
+          <div class="article-body">
+            <div class="article-meta">
+              <span class="article-category">{categoryLabel[featured.category]}</span>
+              <span class="article-date">{formatDate(featured.date)}</span>
+            </div>
+            <h2 class="article-title">{featured.title[lang]}</h2>
+            <p class="article-excerpt">{featured.excerpt[lang]}</p>
+            <a href={lp(lang, `/news/${featured.slug}`)} class="btn btn-outline-green">{t("cta.more")} <Icon name="arrow-right" size={18} /></a>
+          </div>
+        </article>
+      )}
+
+      {/* Остальные статьи — сетка */}
+      <div class="articles-grid">
+        {rest.map((n, i) => (
+          <article class="article-card reveal" style={`--i:${i + 1}`}>
+            <div class="article-media">
               {n.image ? (
-                <img src={n.image} alt={n.title[lang]} class="news-img" loading="lazy" width={600} height={400} />
+                <img src={n.image} alt={n.title[lang]} class="article-img" loading="lazy" width={500} height={320} />
               ) : (
-                <div class="placeholder" style="min-height:220px"><Icon name="newspaper" size={40} /></div>
+                <div class="placeholder" style="min-height:200px"><Icon name="newspaper" size={40} /></div>
               )}
             </div>
-            <div class="news-body">
-              <div class="news-meta">
-                <span class="news-category">{categoryLabel[n.category]}</span>
-                <span class="news-date">{formatDate(n.date)}</span>
+            <div class="article-body">
+              <div class="article-meta">
+                <span class="article-category">{categoryLabel[n.category]}</span>
+                <span class="article-date">{formatDate(n.date)}</span>
               </div>
-              <h3 class="news-title">{n.title[lang]}</h3>
-              <p class="news-excerpt">{n.excerpt[lang]}</p>
-              <a href={lp(lang, `/news/${n.slug}`)} class="btn btn-outline-green">{t("cta.more")} <Icon name="arrow-right" size={18} /></a>
+              <h3 class="article-title">{n.title[lang]}</h3>
+              <p class="article-excerpt">{n.excerpt[lang]}</p>
+              <a href={lp(lang, `/news/${n.slug}`)} class="btn btn-outline-green">{t("cta.more")} <Icon name="arrow-right" size={16} /></a>
             </div>
           </article>
         ))}
@@ -63,21 +88,85 @@ const formatDate = (iso: string) => {
 </Layout>
 
 <style>
-  .news-item { display: flex; flex-direction: column; height: 100%; }
-  .news-media { height: 220px; overflow: hidden; border-radius: var(--radius) var(--radius) 0 0; background: var(--bg); }
-  .news-img { width: 100%; height: 100%; object-fit: cover; }
-  .news-body { padding: 24px; display: flex; flex-direction: column; flex: 1; }
-  .news-meta { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
-  .news-category { background: #e5f4ea; color: var(--green-700); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: .05em; }
-  .news-date { color: var(--muted); font-size: 13px; }
-  .news-title { font-size: calc(19px * var(--ts-heading)); margin: 0 0 10px; line-height: 1.35; }
-  .news-excerpt { color: var(--muted); font-size: 15px; line-height: 1.6; margin-bottom: 18px; flex: 1; }
-  .news-item .btn { width: 100%; justify-content: center; }
+  /* Featured статья */
+  .article-featured {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .28s ease, border-color .28s ease;
+  }
+  .article-featured:hover {
+    box-shadow: var(--shadow);
+    border-color: rgba(42,165,74,.35);
+  }
+  .article-media {
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+  }
+  .article-img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transition: transform .5s ease;
+  }
+  .article-featured:hover .article-img { transform: scale(1.03); }
+  .article-body {
+    padding: 40px 48px;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .article-meta { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .article-category {
+    background: #e5f4ea; color: var(--green-700); font-size: 12px; font-weight: 700;
+    padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: .05em;
+  }
+  .article-date { color: var(--muted); font-size: 13px; }
+  .article-title { margin: 0 0 16px; font-size: calc(26px * var(--ts-heading)); line-height: 1.3; }
+  .article-excerpt { color: var(--ink); font-size: 16px; line-height: 1.7; margin-bottom: 24px; flex: 1; }
+  .article-featured .btn { width: auto; padding: 12px 24px; }
 
+  /* Сетка статей */
+  .articles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .article-card {
+    display: flex; flex-direction: column; height: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .28s ease, border-color .28s ease, translate .22s ease;
+  }
+  .article-card:hover {
+    translate: 0 -6px;
+    box-shadow: var(--shadow);
+    border-color: rgba(42,165,74,.35);
+  }
+  .article-card .article-media {
+    height: 210px; overflow: hidden; background: var(--bg);
+  }
+  .article-card .article-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .article-card .article-body {
+    padding: 24px; display: flex; flex-direction: column; flex: 1;
+  }
+  .article-card .article-title { margin: 0 0 10px; font-size: calc(19px * var(--ts-heading)); line-height: 1.35; }
+  .article-card .article-excerpt { color: var(--muted); font-size: 14.5px; line-height: 1.6; margin-bottom: 18px; flex: 1; }
+  .article-card .btn { width: 100%; justify-content: center; padding: 10px 16px; font-size: 14px; }
+
+  /* Адаптив */
   @media (max-width: 992px) {
-    .grid-3 { grid-template-columns: repeat(2, 1fr); }
+    .article-featured { grid-template-columns: 1fr; }
+    .article-featured .article-media { height: 320px; }
+    .articles-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
   }
   @media (max-width: 640px) {
-    .grid-3 { grid-template-columns: 1fr; }
+    .articles-grid { grid-template-columns: 1fr; gap: 20px; }
+    .article-body { padding: 28px 24px; }
   }
 </style>
