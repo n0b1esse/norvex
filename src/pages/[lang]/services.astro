@@ -2,10 +2,16 @@
 import Layout from "../../layouts/Layout.astro";
 import Icon from "../../components/Icon.astro";
 import { getT, lp, localeStaticPaths } from "../../i18n";
+import { directus, asset } from "../../lib/directus";
 
 export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const t = await getT(lang!);
+
+// Локальный контент услуг — не зависит от CMS.
+// Hero-изображение берётся из about_page (Directus).
+const about = await directus<{ image?: string | null }>("/items/about_page?fields=image", {});
+const officeImg = asset(about.image);
 
 // Локальный контент услуг — не зависит от CMS.
 const services = [
@@ -19,7 +25,7 @@ const services = [
 ---
 <Layout lang={lang} title={t("seo.services.title")} description={t("seo.services.desc")}>
   <section class="page-hero">
-    <img class="hero-bg" src="/newOffice.png" alt="" aria-hidden="true" />
+    {officeImg && <img class="hero-bg" src={officeImg} alt="" aria-hidden="true" />}
     <div class="container">
       <div class="hero-text">
         <h1>{t("page.services_title")}</h1>

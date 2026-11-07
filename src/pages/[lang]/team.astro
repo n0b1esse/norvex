@@ -1,29 +1,27 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import teamFounder from "../../assets/team-founder.jpg";
-import { getT, localeStaticPaths } from "../../i18n";
+import Figure from "../../components/Figure.astro";
+import { directus, PUBLISHED } from "../../lib/directus";
+import { getT, localeStaticPaths, tr } from "../../i18n";
 
 export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const t = await getT(lang!);
 
-// Жёстко заданные данные команды (без зависимости от Directus — работает без CMS)
-const LEADERS = 2;
-const team = [
-  { name: "Абдраимов Тумарбек Абдраимович", position: "Учредитель", experience: "10 лет", photo: teamFounder },
-  { name: "Оморкулов Уланбек Абдраимович", position: "Директор", experience: "15 лет", photo: null as unknown as typeof teamFounder },
-  { name: "Маматов Данияр Талгатович", position: "Эксперт по пожарной безопасности", experience: "10 лет", photo: null as unknown as typeof teamFounder },
-  { name: "Сидякова Айгуль Нурлановна", position: "Эксперт по охране окружающей среды (Экология)", experience: "9 лет", photo: null as unknown as typeof teamFounder },
-  { name: "Козлов Алексей Сергеевич", position: "Инженер по охране труда", experience: "7 лет", photo: null as unknown as typeof teamFounder },
-  { name: "Петрова Мария Ивановна", position: "Эколог", experience: "5 лет", photo: null as unknown as typeof teamFounder },
-];
+type MemberTr = { languages_code: string; name?: string; position: string; experience: string };
+type Row = { name: string; photo: string | null; translations: MemberTr[] };
+const rows = await directus<Row[]>(
+  `/items/team_members?fields=name,photo,translations.*&${PUBLISHED}`, []);
+const team = rows.map((m) => {
+  const t0 = tr<MemberTr>(m.translations, lang!);
+  return { ...t0, photo: m.photo, name: t0.name ?? m.name };
+});
 
+// Первые 2 — директор и учредитель (всегда видны, крупные карточки), остальные — специалисты (скрыты до нажатия).
+const LEADERS = 2;
 const leaders = team.slice(0, LEADERS);
 const specialists = team.slice(LEADERS);
 const hasMore = specialists.length > 0;
-// Монограмма «Фамилия Имя» для карточек без загруженного фото
-const initials = (name: string) =>
-  name.trim().split(/\s+/).slice(0, 2).map((w) => [...w][0]?.toUpperCase() ?? "").join("");
 ---
 <Layout lang={lang} title={t("seo.team.title")} description={t("seo.team.desc")}>
   <section class="section">
@@ -33,52 +31,35 @@ const initials = (name: string) =>
         <p class="section-lead">{t("page.team_lead")}</p>
       </div>
 
-      {/* Группа 1: директор + учредитель — первая строка, горизонтальные карточки (2 в ряд) */}
+      {/* Группа 1: директор + учредитель — первая строка, крупные карточки (2 в ряд) */}
       <div class="grid grid-2 team-grid leaders-grid">
         {leaders.map((m) => (
           <article class="member leader">
-            <div class="photo">
-              {m.photo
-                ? <img src={m.photo.src} alt={m.name} width={800} height={800} />
-                : <span class="monogram" aria-hidden="true">{initials(m.name)}</span>}
-            </div>
+            <Figure id={m.photo} label="Фото сотрудника" alt={m.name} class="photo" width={420} height={330} />
             <div class="member-body">
               <h3>{m.name}</h3>
               <p class="role">{m.position}</p>
-              <div class="exp"><span class="exp-label">{t("team.experience")}</span><span class="exp-value">{m.experience}</span></div>
             </div>
           </article>
         ))}
       </div>
 
-      {/* Группа 2: остальные специалисты — скрыты до нажатия «Все специалисты» */}
+      {/* Группа 2: остальные специалисты — скрыты до нажатия «все специалистов» */}
       {hasMore && (
         <>
           <div class="team-cta">
             <button type="button" class="btn btn-primary" data-show-all>{t("cta.all_specialists")}</button>
           </div>
-
-          <div class:list={["specialists-block", { hidden: true }]}>
-            <div class="section-head-specialists">
-              <h2>{t("team.key_instructors")}</h2>
-              <span class="bar" aria-hidden="true"></span>
-            </div>
-            <div class="grid grid-4 team-grid specialists-grid">
-              {specialists.map((m) => (
-                <article class:list={["member", { "is-hidden": true }]}>
-                  <div class="photo">
-                    {m.photo
-                      ? <img src={m.photo.src} alt={m.name} width={800} height={800} loading="lazy" />
-                      : <span class="monogram" aria-hidden="true">{initials(m.name)}</span>}
-                  </div>
-                  <div class="member-body">
-                    <h3>{m.name}</h3>
-                    <p class="role">{m.position}</p>
-                    <div class="exp"><span class="exp-label">{t("team.experience")}</span><span class="exp-value">{m.experience}</span></div>
-                  </div>
-                </article>
-              ))}
-            </div>
+          <div class:list={["grid grid-4 team-grid specialists-grid", { hidden: true }]}>
+            {specialists.map((m) => (
+              <article class:list={["member", { "is-hidden": true }]}>
+                <Figure id={m.photo} label="Фото сотрудника" alt={m.name} class="photo" width={300} height={240} />
+                <div class="member-body">
+                  <h3>{m.name}</h3>
+                  <p class="role">{m.position}</p>
+                </div>
+              </article>
+            ))}
           </div>
         </>
       )}
@@ -87,135 +68,60 @@ const initials = (name: string) =>
 </Layout>
 
 <style>
-  .team-grid { margin-top: 8px; gap: 22px; }
-
-  /* Карточки — в языке .card из global.css: белая поверхность, волосяная рамка,
-     мягкая тень, подъём и зелёная рамка при наведении. */
+  .team-grid { margin-top: 8px; }
+  /* Карточки специалистов — чистые белые коробки по референсу:
+     без рамки и тени, мягкие скругленные углы, фото с radius сверху. */
   .member {
     overflow: hidden;
     display: flex;
     flex-direction: column;
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-sm);
-    transition: translate .22s ease, box-shadow .22s ease, border-color .22s ease;
+    border-radius: var(--radius-sm);
+    transition: none;
   }
-  .member:hover {
-    translate: 0 -4px;
-    box-shadow: var(--shadow);
-    border-color: rgba(42,165,74,.35);
+  .member .photo {
+    min-height: 240px;
+    border: 0;
+    border-radius: var(--radius-sm);
   }
-
-  /* Фото: квадратный кроп с фокусом на лице; без фото — монограмма на мягком градиенте */
-  .photo {
-    position: relative;
-    aspect-ratio: 1 / 1;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(155deg, #eef2f7 0%, #dde6ee 100%);
-  }
-  .photo img {
-    width: 100%;
+  img.photo {
     height: 100%;
+    width: 100%;
     object-fit: cover;
     object-position: center 16%;
-    border: 0;
-    display: block;
   }
-  .monogram {
-    font-size: 46px;
-    font-weight: 800;
-    letter-spacing: .05em;
-    color: rgba(16, 50, 87, .35);
-    user-select: none;
-  }
+  .member-body { padding: 20px 20px 24px; display: flex; flex-direction: column; flex: 1; }
+  .member-body h3 { font-size: calc(18px * var(--ts-heading)); line-height: 1.3; color: #ea8c00; margin-bottom: 6px; }
+  .role { color: var(--muted); font-size: 14px; margin-top: 0; margin-bottom: 16px; }
 
-  .member-body { padding: 18px 20px 18px; display: flex; flex-direction: column; flex: 1; }
-  .member-body h3 {
-    font-size: calc(16px * var(--ts-heading));
-    font-weight: 800;
-    line-height: 1.34;
-    color: var(--navy);
-    margin: 0 0 6px;
-  }
-  .role { color: var(--muted); font-size: 13px; line-height: 1.45; margin: 0; }
+  /* Лидеры — крупные карточки в первой строке */
+  .member.leader .photo { min-height: 330px; }
+  .member.leader .member-body h3 { font-size: calc(20px * var(--ts-heading)); margin-bottom: 8px; }
+  .member.leader .member-body .role { font-size: 15px; margin-bottom: 20px; }
 
-  /* Стаж — волосяная линия, справа значение зелёным (как в ранней версии карточек) */
-  .exp {
-    margin-top: auto;
-    padding-top: 12px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  .exp-label {
-    color: var(--muted);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-  }
-  .exp-value { color: var(--green-700); font-weight: 800; font-size: 14px; white-space: nowrap; }
-
-  /* Лидеры — горизонтальные карточки: фото слева, текст справа, без гигантского кропа */
-  .member.leader { flex-direction: row; align-items: stretch; }
-  .member.leader .photo { flex: 0 0 42%; aspect-ratio: auto; min-height: 230px; }
-  .member.leader .monogram { font-size: 64px; }
-  .member.leader .member-body { padding: 22px 24px; justify-content: center; }
-  .member.leader .member-body h3 { font-size: calc(19px * var(--ts-heading)); margin-bottom: 8px; }
-  .member.leader .role { font-size: 14px; margin-bottom: 18px; }
-
-  /* Заголовок второй группы — с короткой зелёной чертой, как в .section-head */
-  .section-head-specialists { margin: 48px 0 24px 0; text-align: left; }
-  .section-head-specialists h2 {
-    color: var(--navy);
-    font-size: calc(21px * var(--ts-heading));
-    font-weight: 800;
-    margin: 0;
-  }
-  .section-head-specialists .bar {
-    display: block;
-    width: 44px;
-    height: 4px;
-    border-radius: 4px;
-    background: var(--green-500);
-    margin-top: 10px;
-  }
+  /* Заголовок второй группы («Ключевые специалисты») — серый, как на референсе */
+  .section-head-specialists { text-align: left; margin: 48px 0 24px 0; }
+  .section-head-specialists .section-title { font-size: calc(22px * var(--ts-heading)); color: var(--muted); font-weight: 600; }
 
   .team-cta { display: flex; justify-content: center; margin: 40px 0 24px 0; }
 
-  .specialists-block.hidden { display: none; }
+  .specialists-grid.hidden { display: none; }
   .member.is-hidden { display: none; }
-
-  @media (prefers-reduced-motion: reduce) {
-    .member { transition: none; }
-    .member:hover { translate: none; }
-  }
-  @media (max-width: 560px) {
-    .member.leader { flex-direction: column; }
-    .member.leader .photo { flex-basis: auto; aspect-ratio: 1 / 1; min-height: 0; }
-  }
 </style>
 
 <script>
-  // FLIP reveal второй группы специалистов.
+  // FLIP reveal второй группы специалистов (ветка снизу).
   const btn = document.querySelector<HTMLElement>("[data-show-all]");
-  const block = document.querySelector<HTMLElement>(".specialists-block");
   const grid = document.querySelector<HTMLElement>(".specialists-grid");
   const REDUCE = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const DUR = 500;
   btn?.addEventListener("click", () => {
-    if (!block || !grid) return;
+    if (!grid) return;
     const hidden = Array.from(grid.querySelectorAll<HTMLElement>(".member.is-hidden"));
 
     // Reduced motion (or nothing to reveal): show them with no animation.
     if (REDUCE || !hidden.length) {
-      block.classList.remove("hidden");
+      grid.classList.remove("hidden");
       hidden.forEach((el) => el.classList.remove("is-hidden"));
       btn.closest(".team-cta")?.remove();
       return;
@@ -225,7 +131,7 @@ const initials = (name: string) =>
     const step = Math.min(60, Math.round(320 / hidden.length));
     const first = hidden.map((el) => el.getBoundingClientRect());
 
-    block.classList.remove("hidden");
+    grid.classList.remove("hidden");
     hidden.forEach((el) => el.classList.remove("is-hidden"));
 
     // Invert: park cards back at their old spot; start hidden.
