@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import Icon from "../../components/Icon.astro";
 import { getT, lp, localeStaticPaths } from "../../i18n";
+import { NEWS } from "../../data/news";
 
 export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
@@ -41,8 +42,7 @@ const CONTENT = {
       { file: "real_total.svg", name: "Тотал Энерги", cat: "Энергетика" },
       { file: "real_beeline.svg", name: "Билайн", cat: "Телеком" },
     ],
-    faqTitle: 'Частые <span class="accent">вопросы</span>',
-    faqLead: "Коротко о том, как устроено сотрудничество. Не нашли свой вопрос — напишите нам, ответим в течение рабочего дня.",
+    faqTitle: 'Частые <span class="accent">вопросы</span>',    faqLead: "Коротко о том, как устроено сотрудничество. Не нашли свой вопрос — напишите нам, ответим в течение рабочего дня.",
     faq: [
       { q: "Чем аутсорсинг HSE отличается от найма специалиста в штат?", a: "Вместо одного сотрудника вы получаете функцию целиком: подготовленного специалиста на объекте, замещение во время отпуска и болезни, отработанные методики, документацию и отчётность. Нет затрат на поиск, обучение и удержание, а объём легко масштабируется по объектам." },
       { q: "Как быстро можно начать сотрудничество?", a: "Обычно 3–5 рабочих дней: первичный созвон и экспресс-диагностика объекта, подбор специалиста под отрасль, подписание договора и выход на объект." },
@@ -144,6 +144,21 @@ const CONTENT = {
 } as const;
 const c = CONTENT[lang as keyof typeof CONTENT] ?? CONTENT.ru;
 
+// Последние новости для главной (3 свежих)
+const latestNews = [...NEWS].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 3);
+
+const categoryLabel = {
+  ru: { "Законодательство": "Законодательство", "Компания": "Компания", "Экспертиза": "Экспертиза", "События": "События" },
+  en: { "Законодательство": "Legislation", "Компания": "Company", "Экспертиза": "Expertise", "События": "Events" },
+  ky: { "Законодательство": "Законодательство", "Компания": "Компания", "Экспертиза": "Экспертиза", "События": "События" },
+}[lang];
+
+const formatDate = (iso: string) => {
+  const d = new Date(iso);
+  const opts: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" };
+  return lang === "ky" ? d.toLocaleDateString("ky-KG", opts) : d.toLocaleDateString(lang === "en" ? "en-US" : "ru-RU", opts);
+};
+
 const faqLd = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
@@ -238,6 +253,38 @@ const faqLd = {
     </div>
   </section>
 
+  <section class="section bg-soft fill-to-footer" id="news">
+    <div class="container">
+      <div class="section-head reveal">
+        <h2 class="section-title">{t("news_section_title")}</h2>
+        <div class="bar"></div>
+        <p class="section-lead">{t("news_section_lead")}</p>
+      </div>
+      <div class="grid grid-3">
+        {latestNews.map((n, i) => (
+          <article class="card news-item reveal" style={`--i:${i + 1}`}>
+            <div class="news-media">
+              {n.image ? (
+                <img src={n.image} alt={n.title[lang]} class="news-img" loading="lazy" width={400} height={260} />
+              ) : (
+                <div class="placeholder" style="min-height:200px"><Icon name="newspaper" size={36} /></div>
+              )}
+            </div>
+            <div class="news-body">
+              <div class="news-meta">
+                <span class="news-category">{categoryLabel[n.category]}</span>
+                <span class="news-date">{formatDate(n.date)}</span>
+              </div>
+              <h3 class="news-title">{n.title[lang]}</h3>
+              <p class="news-excerpt">{n.excerpt[lang]}</p>
+              <a href={lp(lang, `/news/${n.slug}`)} class="btn btn-outline-green">{t("news_section_cta")} <Icon name="arrow-right" size={16} /></a>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
   <section class="section bg-soft" id="faq">
     <div class="container">
       <div class="section-head reveal" style="--i:0">
@@ -311,4 +358,16 @@ const faqLd = {
     .trio-item:not(:last-child) { border-right: 0; border-bottom: 1px solid var(--border); padding-bottom: 24px; }
   }
   @media (max-width: 560px) { .hero-features { grid-template-columns: 1fr; } }
+
+  /* Новости на главной */
+  #news .news-item { display: flex; flex-direction: column; height: 100%; }
+  #news .news-media { height: 200px; overflow: hidden; border-radius: var(--radius) var(--radius) 0 0; background: var(--bg); }
+  #news .news-img { width: 100%; height: 100%; object-fit: cover; }
+  #news .news-body { padding: 20px; display: flex; flex-direction: column; flex: 1; }
+  #news .news-meta { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  #news .news-category { background: #e5f4ea; color: var(--green-700); font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: .05em; }
+  #news .news-date { color: var(--muted); font-size: 12.5px; }
+  #news .news-title { font-size: calc(18px * var(--ts-heading)); margin: 0 0 8px; line-height: 1.35; }
+  #news .news-excerpt { color: var(--muted); font-size: 14.5px; line-height: 1.55; margin-bottom: 14px; flex: 1; }
+  #news .news-item .btn { width: 100%; justify-content: center; padding: 10px 16px; font-size: 14px; }
 </style>
