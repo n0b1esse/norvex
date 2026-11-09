@@ -12,10 +12,36 @@ type MemberTr = { languages_code: string; name?: string; position: string; exper
 type Row = { name: string; photo: string | null; translations: MemberTr[] };
 const rows = await directus<Row[]>(
   `/items/team_members?fields=name,photo,translations.*&${PUBLISHED}`, []);
-const team = rows.map((m) => {
-  const t0 = tr<MemberTr>(m.translations, lang!);
-  return { ...t0, photo: m.photo, name: t0.name ?? m.name };
-});
+
+// Локальный резерв: если CMS недоступна/пуста, превью не должно отдавать
+// пустую страницу. Данные зеркалят прод (norvexhse.com/ru/team): 2 руководителя
+// + 2 специалиста, фото в CMS не загружены (placeholder).
+const FALLBACK_TEAM: Record<string, { name: string; position: string; photo: null }[]> = {
+  ru: [
+    { name: "Абдраимов Тумарбек Абдраимович", position: "Учредитель Стаж: 10 лет", photo: null },
+    { name: "Оморкулов Уланбек Абдраимович", position: "Директор Стаж: 15 лет", photo: null },
+    { name: "Маматов Данияр Талгатович", position: "Эксперт по пожарной безопасности Стаж: 10 лет", photo: null },
+    { name: "Сидьякова Айгуль Нурлановна", position: "Эксперт по охране окружающей среды (Экология) Стаж: 9 лет", photo: null },
+  ],
+  en: [
+    { name: "Abdraimov Tumarbek Abdraimovich", position: "Founder Experience: 10 years", photo: null },
+    { name: "Omorkulov Ulanbek Abdraimovich", position: "Director Experience: 15 years", photo: null },
+    { name: "Mamatov Daniyar Talgatovich", position: "Fire safety expert Experience: 10 years", photo: null },
+    { name: "Sidyakoova Aygul Nurlanovna", position: "Environmental Expert Experience: 9 years", photo: null },
+  ],
+  ky: [
+    { name: "Абдраимов Тумарбек Абдраимович", position: "Уюштуруучу Тажрыйба: 10 жыл", photo: null },
+    { name: "Оморкулов Уланбек Абдраимович", position: "Директор Тажрыйба: 15 жыл", photo: null },
+    { name: "Маматов Данияр Талгатович", position: "Өрт коопсуздугу боюнча эксперт Тажрыйба: 10 жыл", photo: null },
+    { name: "Сидьякова Айгуль Нурлановна", position: "Экология боюнча эксперт Тажрыйба: 9 жыл", photo: null },
+  ],
+};
+const team = rows.length > 0
+  ? rows.map((m) => {
+      const t0 = tr<MemberTr>(m.translations, lang!);
+      return { ...t0, photo: m.photo, name: t0.name ?? m.name };
+    })
+  : (FALLBACK_TEAM[lang ?? "ru"] ?? FALLBACK_TEAM.ru);
 
 // Первые 2 — директор и учредитель (всегда видны, крупные карточки), остальные — специалисты (скрыты до нажатия).
 const LEADERS = 2;
