@@ -73,6 +73,9 @@ const hasMore = specialists.length > 0;
       {/* Группа 2: остальные специалисты — скрыты до нажатия «все специалистов» */}
       {hasMore && (
         <>
+          <div class="section-head-specialists">
+            <h2 class="section-title">{t("team.key_instructors")}</h2>
+          </div>
           <div class="team-cta">
             <button type="button" class="btn btn-primary" data-show-all>{t("cta.all_specialists")}</button>
           </div>
