@@ -231,6 +231,8 @@ a, button { -webkit-tap-highlight-color: transparent; }
 
 /* ==== staging: FAQ (home) ==== */
 .faq-list{display:grid;gap:14px;max-width:780px;margin-inline:auto}
+.faq-group{margin:22px 0 2px;font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--green-700)}
+.faq-group:first-child{margin-top:0}
 .faq-item{padding:0;overflow:hidden}
 .faq-item>summary{display:flex;align-items:center;gap:14px;padding:18px 22px;cursor:pointer;font-weight:700;color:var(--navy);font-size:16.5px;list-style:none}
 .faq-item>summary::-webkit-details-marker{display:none}
@@ -238,5 +240,7 @@ a, button { -webkit-tap-highlight-color: transparent; }
 .faq-item[open] .chev{transform:rotate(90deg);background:#e5f4ea}
 .faq-item .faq-body{padding:2px 22px 20px;color:var(--muted)}
 .faq-item .faq-body p{max-width:680px}
+.faq-item .faq-body ul{margin:8px 0 10px;padding-left:20px;max-width:680px}
+.faq-item .faq-body li{margin:4px 0}
 .faq-cta{display:flex;justify-content:center;flex-wrap:wrap;gap:14px;margin-top:30px}
 @media(max-width:640px){.faq-item>summary{font-size:15.5px;padding:16px 18px}.faq-item .faq-body{padding:2px 18px 18px}}
