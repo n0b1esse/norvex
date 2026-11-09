@@ -8,7 +8,7 @@ const year = new Date().getFullYear();
 
 const menu = [
   ["nav.home", "/"], ["nav.about", "/about"], ["nav.services", "/services"],
-  ["nav.cooperation", "/cooperation"], ["nav.team", "/team"], ["nav.news", "/news"], ["nav.contacts", "/contacts"],
+  ["nav.team", "/team"], ["nav.news", "/news"], ["nav.contacts", "/contacts"],
 ].map(([k, p]) => [t(k), lp(lang, p === "/" ? "" : p)]);
 
 const servicesLinks = lang === "en" ? [

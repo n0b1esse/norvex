@@ -13,11 +13,23 @@ const t = await getT(lang!);
 const about = await directus<{ image?: string | null }>("/items/about_page?fields=image", {});
 const officeImg = asset(about.image) ?? "/newOffice.png";
 
-// Локальный контент услуг — не зависит от CMS.
+// Модели сотрудничества (детально) — бывшая страница /cooperation, перенесена сюда.
+const MODELS = lang === "en" ? [
+  { id: "consulting", icon: "clipboard", image: "/assets/cooperation-consulting.webp", label: "Consulting", desc: "A one-time expert assessment of the current state of safety with specific recommendations. We will conduct an audit, identify risks, and propose a step-by-step action plan.", points: ["Comprehensive audit of OHS, industrial safety and environmental protection", "Identification and assessment of occupational risks", "Development of a corrective action plan", "Preparation of a final report for the client"] },
+  { id: "outsourcing", icon: "building", image: "/assets/cooperation-outsourcing.webp", label: "Outsourcing", desc: "Outsource occupational health and safety, industrial safety and environmental protection to professional support. We will take over the full range of tasks to protect your business from risks and fines.", points: ["Dedicated OHS, industrial safety and environmental expert with on-site visits", "Development and maintenance of all required documentation", "Regular audits and reporting", "Guarantee of full compliance with the legislation of the Kyrgyz Republic"] },
+  { id: "outstaffing", icon: "users", image: "/assets/cooperation-outstaffing.webp", label: "Outstaffing", desc: "Providing qualified specialists in occupational health and safety, industrial safety and environmental protection to work at your sites. We take care of all HR and administrative matters — you manage the process.", points: ["Profile experts with the necessary permits and certificates", "Optimised costs for maintaining a staff position (taxes, leave, sick pay)", "Prompt meeting of specialist needs", "Transparent reporting and quality control of work"] },
+] : lang === "ky" ? [
+  { id: "consulting", icon: "clipboard", image: "/assets/cooperation-consulting.webp", label: "Консалтинг", desc: "Коопсуздук жаатындагы учурдагы абалдын бир жолку эксперттик баасы жана конкреттүү сунуштар менен. Биз аудит жүргүзүп, тобокелдиктерди аныктап, кадам кадам боюнча аракет планын сунуштайбыз.", points: ["ОТ, ПБ жана ООС боюнча комплекстүү аудит", "Кесиптик тобокелдиктерди аныктоо жана баалоо", "Оңдоо иш-чаралары планын иштеп чыгуу", "Кардар үчүн жыйынтык отчетту даярдоо"] },
+  { id: "outsourcing", icon: "building", image: "/assets/cooperation-outsourcing.webp", label: "Аутсорсинг", desc: "Эмгекти коргоо, өнөр жай коопсуздугу жана экологияны професионалдуу коштоого өткөрүп бериңиз. Биз бизнесиңизди тобокелдиктерден жана айып пулдардан коргоо боюнча бардык милдеттерди өзүбүзгө алабыз.", points: ["ОТ, ПБ жана ООС боюнча объектиге чыгуучу выделенный эксперт", "Бардык керектүү документацияны иштеп чыгуу жана жүргүзүү", "Үзгүлтүксүз аудит жана отчет даярдоо", "КР мыйзамдарына толук шайкештикке кепилдик"] },
+  { id: "outstaffing", icon: "users", image: "/assets/cooperation-outstaffing.webp", label: "Аутстаффинг", desc: "ОТ, ПБ жана ООС боюнча квалификациялуу адистерди сиздин объектилериңизде иштөө үчүн берүү. Биз бардык кадрдык жана административдик маселелерди өзүбүзгө алабыз — сиз процессти башкарасыз.", points: ["Керектүү уруксаттар жана сертификаттарга ээ профилдик эксперттер", "Штаттык бирдикти кармоо чыгымдарын оптимизациялоо (салыктар, өргүүлөр, оору баракчалары)", "Адистерге болгон муктаждыкты оперативдүү жабуу", "Айкын отчеттуулук жана аткарылган иштин сапатын көзөмөлдөө"] },
+] : [
+  { id: "consulting", icon: "clipboard", image: "/assets/cooperation-consulting.webp", label: "Консалтинг", desc: "Разовая экспертная оценка текущего состояния в области безопасности с выдачей конкретных рекомендаций. Мы проведем аудит, выявим риски и предложим пошаговый план действий.", points: ["Комплексный аудит по ОТ, ПБ и ООС", "Выявление и оценка профессиональных рисков", "Разработка корректирующего плана мероприятий", "Подготовка итоговой отчетности для заказчика"] },
+  { id: "outsourcing", icon: "building", image: "/assets/cooperation-outsourcing.webp", label: "Аутсорсинг", desc: "Передайте охрану труда, промышленную безопасность и экологию на профессиональное сопровождение. Мы возьмем на себя весь комплекс задач по защите вашего бизнеса от рисков и штрафов.", points: ["Выделенный эксперт по ОТ, ПБ и ООС с выездом на объект", "Разработка и ведение всей необходимой документации", "Регулярный аудит и подготовка отчетности", "Гарантия полного соответствия законодательству КР"] },
+  { id: "outstaffing", icon: "users", image: "/assets/cooperation-outstaffing.webp", label: "Аутстаффинг", desc: "Предоставление квалифицированных специалистов в области ОТ, ПБ и ООС для работы на ваших объектах. Мы берем на себя все кадровые и административные вопросы — вы управляете процессом.", points: ["Профильные эксперты с необходимыми допусками и сертификатами", "Оптимизация затрат на содержание штатной единицы (налоги, отпуска, больничные)", "Оперативное закрытие потребности в специалистах", "Прозрачная отчетность и контроль качества работы"] },
+];
+
+// Дополнительные услуги (кратко).
 const services = [
-  { slug: "consulting", icon: "clipboard", title: lang === "en" ? "HSE consulting" : "Консалтинг в области HSE", description: lang === "en" ? "Full audit and HSE management system development" : "Полный аудит и разработка систем управления HSE" },
-  { slug: "outsourcing", icon: "building", title: lang === "en" ? "HSE outsourcing" : "Аутсорсинг функций HSE", description: lang === "en" ? "Transfer of occupational safety and industrial safety functions to outsourcing" : "Передача функций охраны труда и промышленной безопасности на аутсорсинг" },
-  { slug: "outstaffing", icon: "users", title: lang === "en" ? "Outstaffing of specialists" : "Аутстаффинг специалистов", description: lang === "en" ? "Selection and provision of qualified HSE specialists" : "Подбор и предоставление квалифицированных HSE-специалистов" },
   { slug: "audits", icon: "search", title: lang === "en" ? "Audits and inspections" : "Аудиты и инспекции", description: lang === "en" ? "Comprehensive assessment of occupational health and safety, industrial safety, environmental and fire safety management systems. We identify areas of non-compliance with Kyrgyz legislation, assess occupational risks, and provide a corrective plan for their elimination." : "Комплексная оценка систем управления охраной труда, промышленной, экологической и пожарной безопасностью. Выявляем зоны несоответствия законодательству КР, оцениваем профессиональные риски и предоставляем корректирующий план по их устранению." },
   { slug: "docs", icon: "file-text", title: lang === "en" ? "Documentation development" : "Разработка документации", description: lang === "en" ? "Preparation of a full set of documents in occupational health and safety, industrial safety, fire safety and environmental protection. We develop instructions and regulations in strict compliance with Kyrgyz legislation and international standards." : "Подготовка полного комплекта документов в области охраны труда, промышленной, пожарной и экологической безопасности. Разрабатываем инструкции и регламенты в строгом соответствии с законодательством КР и международными стандартами." },
   { slug: "contractors", icon: "settings", title: lang === "en" ? "Contractor management" : "Управление подрядчиками", description: lang === "en" ? "Comprehensive oversight of contractors at your sites. We assess their qualifications, verify permits and documentation, and ensure compliance with safety requirements during work execution." : "Комплексный контроль подрядных организаций на ваших объектах. Проводим оценку их квалификации, проверяем допуски и документацию, а также обеспечиваем соблюдение требований безопасности при выполнении работ." },
@@ -34,8 +46,39 @@ const services = [
     </div>
   </section>
 
+  <section class="section">
+    <div class="container">
+      <div class="section-head left">
+        <h2 class="section-title">{t("page.cooperation_title")}</h2>
+        <div class="bar"></div>
+        <p class="section-lead">{t("page.cooperation_lead")}</p>
+      </div>
+      <div class="models">
+        {MODELS.map((tab) => (
+          <div class="panel card" id={tab.id}>
+            <div class="panel-text">
+              <h2>{tab.label}</h2>
+              <p>{tab.desc}</p>
+              <ul class="checklist">
+                {tab.points.map((p) => (
+                  <li><span class="check"><Icon name="check" size={16} /></span>{p}</li>
+                ))}
+              </ul>
+              <a href={lp(lang, "/contacts")} class="btn btn-outline-green">{t("cta.learn_more")}</a>
+            </div>
+            <img src={tab.image} alt={tab.label} class="panel-img" width={520} height={320} loading="lazy" />
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
   <section class="section bg-soft fill-to-footer">
     <div class="container">
+      <div class="section-head reveal">
+        <h2 class="section-title">{t("page.services_more")}</h2>
+        <div class="bar"></div>
+      </div>
       <div class="grid grid-3">
         {services.map((s, i) => (
           <article id={s.slug} class="card service reveal" style={`--i:${i}`}>
@@ -51,6 +94,18 @@ const services = [
 </Layout>
 
 <style>
+  .models { display: grid; gap: 32px; margin-top: 36px; }
+  .panel { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; padding: 40px; align-items: center; scroll-margin-top: 100px; }
+  .panel-text h2 { font-size: calc(28px * var(--ts-heading)); margin-bottom: 16px; }
+  .panel-text p { color: var(--ink); font-size: 16px; }
+  .checklist { margin: 24px 0 30px; display: grid; gap: 16px; }
+  .checklist li { display: flex; align-items: center; gap: 14px; font-weight: 600; color: var(--navy); }
+  .check { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: rgba(42,165,74,.14); color: var(--green-600); flex: none; }
+  .panel-img { min-height: 320px; border-radius: var(--radius); object-fit: cover; width: 100%; height: 100%; min-height: 320px; }
+  @media (max-width: 900px) {
+    .panel { grid-template-columns: 1fr; padding: 28px 22px; }
+    .panel-img { order: -1; min-height: 240px; }
+  }
   .service { position: relative; overflow: hidden; padding: 34px 30px; display: flex; flex-direction: column; align-items: center; text-align: center; scroll-margin-top: 100px; }
   .service::before {
     content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: var(--green-500);

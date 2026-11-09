@@ -46,6 +46,10 @@ export default defineConfig({
   site: 'https://norvexhse.com',
   redirects: {
     '/': '/ru',
+    '/cooperation': '/services',
+    '/ru/cooperation': '/ru/services',
+    '/en/cooperation': '/en/services',
+    '/ky/cooperation': '/ky/services',
   },
   integrations: [
     // contentGuard(), // отключено: Directus недоступен на Vercel во время сборки

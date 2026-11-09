@@ -27,17 +27,7 @@ const services = lang === "en" ? [
   ["Аудиты и инспекции", lp(lang, "/services#audits")],
   ["Разработка документации", lp(lang, "/services#docs")],
   ["Управление подрядчиками", lp(lang, "/services#contractors")],
-];
-
-const models = lang === "en" ? [
-  ["Consulting", lp(lang, "/cooperation#consulting")],
-  ["Outsourcing", lp(lang, "/cooperation#outsourcing")],
-  ["Outstaffing", lp(lang, "/cooperation#outstaffing")],
-] : [
-  ["Консалтинг", lp(lang, "/cooperation#consulting")],
-  ["Аутсорсинг", lp(lang, "/cooperation#outsourcing")],
-  ["Аутстаффинг", lp(lang, "/cooperation#outstaffing")],
-];
+]
 ---
 <header class="site-header">
   <div class="bar">
@@ -53,15 +43,6 @@ const models = lang === "en" ? [
         </a>
         <div class="dropdown">
           {services.map(([label, href]) => <a href={href}>{label}</a>)}
-        </div>
-      </div>
-
-      <div class="nav-item has-menu">
-        <a href={lp(lang, "/cooperation")} class:list={["nav-link", { active: is("/cooperation") }]}>
-          {t("nav.cooperation")} <Icon name="chevron-down" size={16} />
-        </a>
-        <div class="dropdown">
-          {models.map(([label, href]) => <a href={href}>{label}</a>)}
         </div>
       </div>
 

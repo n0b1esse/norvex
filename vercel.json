@@ -5,6 +5,26 @@
       "source": "/",
       "destination": "/ru",
       "permanent": false
+    },
+    {
+      "source": "/cooperation",
+      "destination": "/services",
+      "permanent": false
+    },
+    {
+      "source": "/ru/cooperation",
+      "destination": "/ru/services",
+      "permanent": false
+    },
+    {
+      "source": "/en/cooperation",
+      "destination": "/en/services",
+      "permanent": false
+    },
+    {
+      "source": "/ky/cooperation",
+      "destination": "/ky/services",
+      "permanent": false
     }
   ]
 }
