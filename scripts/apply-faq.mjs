@@ -68,7 +68,7 @@ const chev = '<span class="chev" aria-hidden="true"><svg xmlns="http://www.w3.or
 
 function faqHtml(lang, meta) {
   const items = meta.qa.map(([q, a], i) =>
-    `<details class="card faq-item reveal" style="--i:${i + 1}"${i === 0 ? " open" : ""}> <summary>${q}${chev}</summary> <div class="faq-body"><p>${a}</p></div> </details>`
+    `<details class="card faq-item" style="--i:${i + 1}"${i === 0 ? " open" : ""}> <summary>${q}${chev}</summary> <div class="faq-body"><p>${a}</p></div> </details>`
   ).join("");
   const jsonld = JSON.stringify({
     "@context": "https://schema.org",

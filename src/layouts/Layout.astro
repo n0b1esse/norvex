@@ -115,7 +115,7 @@ const typeScaleStyle =
       const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
       const els = document.querySelectorAll(".reveal");
       if (reduce || !("IntersectionObserver" in window)) {
-        els.forEach((el) => els.classList.add("is-visible"));
+        els.forEach((el) => el.classList.add("is-visible"));
       } else {
         const io = new IntersectionObserver((entries) => {
           entries.forEach((e) => {

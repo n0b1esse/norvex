@@ -386,7 +386,7 @@ const faqLd = {
           return (
             <>
               {g && g !== prevG ? <h3 class="faq-group">{g}</h3> : null}
-              <details class="card faq-item reveal" style={`--i:${i + 1}`} open={i === 0 || undefined}>
+              <details class="card faq-item" style={`--i:${i + 1}`} open={i === 0 || undefined}>
                 <summary>{item.q}<span class="chev" aria-hidden="true"><Icon name="chevron-right" size={14} /></span></summary>
                 <div class="faq-body" set:html={item.a.includes("<") ? item.a : `<p>${item.a}</p>`} />
               </details>
