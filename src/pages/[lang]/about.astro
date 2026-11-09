@@ -7,31 +7,40 @@ export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const t = await getT(lang!);
 
-// «Почему выбирают NORVEX» — 5 блоков, 3 локали.
-const BLOCKS: Record<string, { icon: string; title: string; text: string }[]> = {
+// «Почему выбирают NORVEX» — 8 преимуществ, 3 локали.
+const ADV: Record<string, { icon: string; title: string }[]> = {
   ru: [
-    { icon: "shield-check", title: "Наше предназначение", text: "Мы помогаем бизнесу работать без аварий, штрафов и простоев. Наша цель — сделать так, чтобы безопасность стала не обузой, а фундаментом для устойчивого роста и процветания вашей компании." },
-    { icon: "hard-hat", title: "Наши эксперты", text: "Наша команда — это практики с международным опытом и глубоким знанием местного законодательства КР. Мы не теоретики: за плечами наших специалистов — реальные проекты в промышленности и энергетике." },
-    { icon: "award", title: "Международная практика", text: "При основании компании в 2026 году мы внедрили лучшие мировые стандарты менеджмента в области ОТ, ПБ и ООС. Мы приносим на рынок Кыргызстана передовой опыт управления рисками, адаптируя его под местные реалии." },
-    { icon: "settings", title: "Комплексный подход", text: "Мы закрываем весь спектр задач: от консалтинга и аудита до полного аутсорсинга и аутстаффинга. Вы получаете единый центр компетенций по направлениям ОТ, ПБ, ООС и пожарной безопасности." },
-    { icon: "search", title: "Риск-ориентированный подход", text: "Мы не просто проверяем соответствие бумаг. Мы анализируем реальные производственные риски и предлагаем решения, которые защищают ваших сотрудников, активы и репутацию перед инспекторами." },
+    { icon: "award", title: "Практический опыт вместо теории" },
+    { icon: "globe", title: "Опора на мировые стандарты (ISO)" },
+    { icon: "target", title: "Фокус на предотвращении аварий" },
+    { icon: "scale", title: "Объективная оценка без конфликта интересов" },
+    { icon: "shield-check", title: "Гарантия защиты от штрафов" },
+    { icon: "lock", title: "Полная конфиденциальность данных" },
+    { icon: "clipboard-check", title: "Сопровождение «под ключ»" },
+    { icon: "user-check", title: "Решение задач под специфику бизнеса" },
   ],
   en: [
-    { icon: "shield-check", title: "Our purpose", text: "We help businesses work without accidents, fines and downtime. Our goal is to make safety not a burden, but the foundation for sustainable growth and prosperity of your company." },
-    { icon: "hard-hat", title: "Our experts", text: "Our team are practitioners with international experience and in-depth knowledge of local Kyrgyz legislation. We are not theorists: our specialists have real projects in industry and energy behind them." },
-    { icon: "award", title: "International practice", text: "At the founding of the company in 2026, we introduced the best world standards of management in occupational health and safety, industrial safety and environmental protection. We bring advanced risk management experience to the Kyrgyz market, adapting it to local realities." },
-    { icon: "settings", title: "Integrated approach", text: "We cover the full range of tasks: from consulting and auditing to full outsourcing and outstaffing. You get a single centre of expertise in occupational health and safety, industrial safety, environmental protection and fire safety." },
-    { icon: "search", title: "Risk-based approach", text: "We do not just check paperwork compliance. We analyse real production risks and propose solutions that protect your employees, assets and reputation with inspectors." },
+    { icon: "award", title: "Practical experience over theory" },
+    { icon: "globe", title: "Reliance on world standards (ISO)" },
+    { icon: "target", title: "Focus on accident prevention" },
+    { icon: "scale", title: "Objective assessment without conflicts of interest" },
+    { icon: "shield-check", title: "Guarantee of protection from fines" },
+    { icon: "lock", title: "Full data confidentiality" },
+    { icon: "clipboard-check", title: "Turnkey support" },
+    { icon: "user-check", title: "Solutions tailored to your business" },
   ],
   ky: [
-    { icon: "shield-check", title: "Биздин миссиябыз", text: "Биз бизнеске авариясыз, айып пулсуз жана токтоосуз иш жүргүзүүгө жардам беребиз. Биздин максат — коопсуздукту жүк катары эмес, компанияңыздын туруктуу өсүүсү жана бакубаттыгынын пайдубалына айландыруу." },
-    { icon: "hard-hat", title: "Биздин эксперттер", text: "Биздин команда — эл аралык тажрыйбага жана КР жергиликтүү мыйзамдарын терең билген практиктер. Биз теоретик эмеспиз: адистерибиздин артында өнөр жай жана энергетикадагы чыныгы долбоорлор бар." },
-    { icon: "award", title: "Эл аралык практика", text: "2026-жылы компания негизделген учурда ОТ, ПБ жана ООС боюнча башкаруунун мыкты дүйнөлүк стандарттарын киргиздик. Биз Кыргызстан рыногуна тобокелдиктерди башкаруунун алдыңкы тажрыйбасын, аны жергиликтүү шартка ылайыкташтырып алып келебиз." },
-    { icon: "settings", title: "Комплекстүү мамиле", text: "Биз бардык спектрдеги милдеттерди жабабыз: консалтинг жана аудиттен — толук аутсорсинг жана аутстаффингге чейин. Сиз ОТ, ПБ, ООС жана өрт коопсуздугу боюнча бирдиктүү компетенция борборун аласыз." },
-    { icon: "search", title: "Тобокелдикке негизделген мамиле", text: "Биз жөн гана кагаздардын шайкештигин текшербейбиз. Биз чыныгы өндүрүштүк тобокелдиктерди талдап, кызматкерлериңизди, активтериңизди жана инспекторлор алдындагы кадыр-баркыңызды коргой турган чечимдерди сунуштайбыз." },
+    { icon: "award", title: "Теориянын ордуна практикалык тажрыйба" },
+    { icon: "globe", title: "Дүйнөлүк стандарттарга (ISO) таянуу" },
+    { icon: "target", title: "Аварияларды алдын алууга фокус" },
+    { icon: "scale", title: "Кызыкчылыктардын кагылышысыз объективдүү баалоо" },
+    { icon: "shield-check", title: "Айып пулдардан коргоого кепилдик" },
+    { icon: "lock", title: "Маалыматтардын толук купуялыгы" },
+    { icon: "clipboard-check", title: "«Ачкычты тапшырып» колдоо берүү" },
+    { icon: "user-check", title: "Бизнеске өзгөчө ылайык чечимдер" },
   ],
 };
-const advantages = (BLOCKS[lang ?? "ru"] ?? BLOCKS.ru) as { icon: string; title: string; text: string }[];
+const advantages = (ADV[lang ?? "ru"] ?? ADV.ru) as { icon: string; title: string }[];
 
 // Локальный контент страницы — сайт работает без CMS
 const about = {
@@ -114,10 +123,9 @@ const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accen
       </div>
       <div class="why-grid">
         {why.map((w, i) => (
-          <div class="why-item card reveal" style={`--i:${i}`}>
+          <div class="why-item reveal" style={`--i:${i}`}>
             <span class="icon-badge"><Icon name={w.icon} size={30} /></span>
-            <h3>{w.title}</h3>
-            <p>{w.text}</p>
+            <span>{w.title}</span>
           </div>
         ))}
       </div>
@@ -139,10 +147,9 @@ const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accen
   .stat-num { font-size: clamp(34px, 4vw, 48px); font-weight: 800; color: var(--navy); }
   .stat-label { color: var(--muted); margin-top: 6px; font-size: 15px; }
 
-  .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-  .why-item { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; text-align: left; padding: 26px 24px; }
-  .why-item h3 { font-size: 17.5px; line-height: 1.35; }
-  .why-item p { color: var(--muted); font-size: 15px; line-height: 1.6; }
+  .why-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 36px 28px; }
+  .why-item { display: flex; flex-direction: column; gap: 14px; align-items: center; text-align: center; }
+  .why-item span:last-child { font-weight: 700; color: var(--navy); font-size: 16px; }
 
   @media (max-width: 900px) {
     .stats { grid-template-columns: repeat(2, 1fr); gap: 24px 0; transform: translateY(-30px); }
