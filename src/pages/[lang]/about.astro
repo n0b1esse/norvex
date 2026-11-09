@@ -27,10 +27,25 @@ const advantages = ADV_ICONS.map((icon, i) => ({ icon, label: advLabels[i] ?? ""
 const about = {
   title: lang === "en" ? "About the company" : lang === "ky" ? "Компания жөнүндө" : "О компании",
   intro: lang === "en"
-    ? "NORVEX provides professional services in occupational health and safety, industrial safety, environmental protection and risk management. We offer organizations expert support and practical solutions aimed at ensuring safety, meeting legal requirements and improving operational efficiency."
+    ? [
+      "NORVEX LLC is a dynamically developing consulting company founded in 2026. Our goal is to ensure safety, efficiency and sustainable development of organisations in the Kyrgyz Republic and the region.",
+      "We specialise in providing professional services in occupational health and safety, industrial safety, fire safety and environmental protection. Our portfolio of solutions includes consulting, outsourcing and outstaffing, as well as comprehensive management of occupational risks.",
+      "Our main competitive advantage is a synthesis of international experience and deep understanding of local legislation. The founder of the company, Abdraimov Tumarbek Abdraimovich, laid the foundation of a business focused on best world practices. We do not just keep up with change — we help businesses adapt to it.",
+      "The rapid growth of NORVEX LLC is driven by client trust and our striving for continuous improvement. We provide expert support at every stage, guaranteeing compliance with all regulatory requirements and raising the overall safety culture at enterprises.",
+    ]
     : lang === "ky"
-      ? "NORVEX эмгекти коргоо, өнөр жай коопсуздугу, айлана-чөйрөнү коргоо жана тобокелдиктерди башкаруу тармагында кесипкөй кызматтарды көрсөтөт. Уюмдарга коопсуздукту камсыздоого, мыйзам талаптарын сактоого жана иштин натыйжалуулугун жогорулатууга багытталган эксперттик колдоо жана практикалык чечимдерди беребиз."
-      : "NORVEX оказывает профессиональные услуги в области охраны труда, промышленной безопасности, охраны окружающей среды и управления рисками. Предоставляем организациям экспертную поддержку и практические решения, направленные на обеспечение безопасности, соблюдение требований законодательства и повышение эффективности деятельности.",
+      ? [
+        "ОсОО «НОРВЕКС» — 2026-жылы негизделген динамикалуу өсүп жаткан консалтинг компаниясы. Биздин максат — Кыргыз Республикасында жана региондо уюмдардын коопсуздугун, натыйжалуулугун жана туруктуу өнүгүүсүн камсыз кылуу.",
+        "Биз эмгекти коргоо, өнөр жай, өрт жана экологиялык коопсуздук жаатында кесипкөй кызматтарды көрсөтүүгө адистештик. Биздин чечимдер пакетине консалтинг, аутсорсинг жана аутстаффинг, ошондой эле кесиптик тобокелдиктерди комплекстүү башкаруу кирет.",
+        "Биздин негизги артыкчылыгыбыз — эл аралык тажрыйбанын жана жергиликтүү мыйзамдарды терең түшүнүүнүн айкалышы. Компаниянын негиздөөчүсү, Абдраимов Тумарбек Абдраимович, мыкты дүйнөлүк практикаларга багытталган бизнестин пайдубалын түптөдү. Биз жөн гана өзгөрүүлөргө ылайык жүрбөйбүз, бизнеске аларга ыңгайлашууга жардам беребиз.",
+        "ОсОО «НОРВЕКС»тин тез өсүшү кардарлардын ишенимине жана үзгүлтүксүз жакшыртууга умтулууына байланыштуу. Биз ар бир этапта эксперттик колдоону камсыз кылып, бардык нормативдик талаптардын сакталышына кепилдик берип, ишканаларда жалпы коопсуздук маданиятын жогорулатабыз.",
+      ]
+      : [
+        "ОсОО «НОРВЕКС» — динамично развивающаяся консалтинговая компания, основанная в 2026 году. Наша цель — обеспечение безопасности, эффективности и устойчивого развития организаций в Кыргызской Республике и регионе.",
+        "Мы специализируемся на предоставлении профессиональных услуг в области охраны труда, промышленной, пожарной и экологической безопасности. Наш портфель решений включает консалтинг, аутсорсинг и аутстаффинг, а также комплексное управление профессиональными рисками.",
+        "Наше главное конкурентное преимущество — это синтез международного опыта и глубокого понимания местного законодательства. Основатель компании, Абдраимов Тумарбек Абдраимович, заложил фундамент бизнеса, ориентированного на лучшие мировые практики. Мы не просто следуем за изменениями, мы помогаем бизнесу к ним адаптироваться.",
+        "Быстрый рост ОсОО «НОРВЕКС» обусловлен доверием клиентов и нашим стремлением к постоянному совершенствованию. Мы обеспечиваем экспертную поддержку на каждом этапе, гарантируя соблюдение всех нормативных требований и повышая общую культуру безопасности на предприятиях.",
+      ],
   stats: lang === "en" ? [
     { value: "30+", label: "years of team experience" },
     { value: "20+", label: "successful projects" },
@@ -60,7 +75,9 @@ const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accen
     <div class="container">
       <div class="hero-text">
         <h1>{about.title}</h1>
-        <p>{about.intro}</p>
+        {about.intro.map((para) => (
+          <p>{para}</p>
+        ))}
         <a href={lp(lang, "/services")} class="btn btn-primary">{t("cta.about_more")} <Icon name="chevron-right" size={18} /></a>
       </div>
     </div>
@@ -100,7 +117,9 @@ const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accen
 <style>
   /* Hero uses the shared .page-hero treatment in global.css; below is the
      About-page tweak: extra paragraph spacing for the CTA that sits below it. */
-  .page-hero .hero-text p { margin: 22px 0 30px; max-width: 520px; }
+  .page-hero .hero-text p { margin: 16px 0 0; max-width: 620px; }
+  .page-hero .hero-text p:first-of-type { margin-top: 22px; }
+  .page-hero .hero-text p:last-of-type { margin-bottom: 30px; }
 
   .stats-wrap { background: var(--bg); }
   .stats { display: grid; grid-template-columns: repeat(4, 1fr); padding: 36px 20px; transform: translateY(-40px); }
