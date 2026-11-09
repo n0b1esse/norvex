@@ -9,9 +9,9 @@ const { lang } = Astro.params;
 const t = await getT(lang!);
 
 // Локальный контент услуг — не зависит от CMS.
-// Hero-изображение берётся из about_page (Directus).
+// Hero-изображение берётся из about_page (Directus), иначе локальный фон.
 const about = await directus<{ image?: string | null }>("/items/about_page?fields=image", {});
-const officeImg = asset(about.image);
+const officeImg = asset(about.image) ?? "/newOffice.png";
 
 // Локальный контент услуг — не зависит от CMS.
 const services = [

@@ -11,8 +11,9 @@ const t = await getT(lang!);
 
 // Локальный контент главной — сайт работает без Directus CMS.
 // hero_image подтягивается из CMS (Directus), остальное — локальный контент.
+// Если CMS недоступна, подставляем локальный фон, чтобы hero не оставался пустым.
 const raw = await directus<{ hero_image?: string | null }>("/items/home_page?fields=hero_image", {});
-const heroSrc = asset(raw.hero_image);
+const heroSrc = asset(raw.hero_image) ?? "/assets/hero-bg.jpg";
 
 // Локальный контент главной — сайт работает без Directus CMS.
 const CONTENT = {
