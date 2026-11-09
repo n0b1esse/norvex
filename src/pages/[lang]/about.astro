@@ -46,21 +46,26 @@ const advantages = (ADV[lang ?? "ru"] ?? ADV.ru) as { icon: string; title: strin
 const about = {
   title: lang === "en" ? "About the company" : lang === "ky" ? "Компания жөнүндө" : "О компании",
   intro: lang === "en"
+    ? "NORVEX LLC is a dynamically developing consulting company founded in 2026."
+    : lang === "ky"
+      ? "ОсОО «НОРВЕКС» — 2026-жылы негизделген динамикалуу өсүп жаткан консалтинг компаниясы."
+      : "ОсОО «НОРВЕКС» — динамично развивающаяся консалтинговая компания, основанная в 2026 году.",
+  body: lang === "en"
     ? [
-      "NORVEX LLC is a dynamically developing consulting company founded in 2026. Our goal is to ensure safety, efficiency and sustainable development of organisations in the Kyrgyz Republic and the region.",
+      "Our goal is to ensure safety, efficiency and sustainable development of organisations in the Kyrgyz Republic and the region.",
       "We specialise in providing professional services in occupational health and safety, industrial safety, fire safety and environmental protection. Our portfolio of solutions includes consulting, outsourcing and outstaffing, as well as comprehensive management of occupational risks.",
       "Our main competitive advantage is a synthesis of international experience and deep understanding of local legislation. The founder of the company, Abdraimov Tumarbek Abdraimovich, laid the foundation of a business focused on best world practices. We do not just keep up with change — we help businesses adapt to it.",
       "The rapid growth of NORVEX LLC is driven by client trust and our striving for continuous improvement. We provide expert support at every stage, guaranteeing compliance with all regulatory requirements and raising the overall safety culture at enterprises.",
     ]
     : lang === "ky"
       ? [
-        "ОсОО «НОРВЕКС» — 2026-жылы негизделген динамикалуу өсүп жаткан консалтинг компаниясы. Биздин максат — Кыргыз Республикасында жана региондо уюмдардын коопсуздугун, натыйжалуулугун жана туруктуу өнүгүүсүн камсыз кылуу.",
+        "Биздин максат — Кыргыз Республикасында жана региондо уюмдардын коопсуздугун, натыйжалуулугун жана туруктуу өнүгүүсүн камсыз кылуу.",
         "Биз эмгекти коргоо, өнөр жай, өрт жана экологиялык коопсуздук жаатында кесипкөй кызматтарды көрсөтүүгө адистештик. Биздин чечимдер пакетине консалтинг, аутсорсинг жана аутстаффинг, ошондой эле кесиптик тобокелдиктерди комплекстүү башкаруу кирет.",
         "Биздин негизги артыкчылыгыбыз — эл аралык тажрыйбанын жана жергиликтүү мыйзамдарды терең түшүнүүнүн айкалышы. Компаниянын негиздөөчүсү, Абдраимов Тумарбек Абдраимович, мыкты дүйнөлүк практикаларга багытталган бизнестин пайдубалын түптөдү. Биз жөн гана өзгөрүүлөргө ылайык жүрбөйбүз, бизнеске аларга ыңгайлашууга жардам беребиз.",
         "ОсОО «НОРВЕКС»тин тез өсүшү кардарлардын ишенимине жана үзгүлтүксүз жакшыртууга умтулууына байланыштуу. Биз ар бир этапта эксперттик колдоону камсыз кылып, бардык нормативдик талаптардын сакталышына кепилдик берип, ишканаларда жалпы коопсуздук маданиятын жогорулатабыз.",
       ]
       : [
-        "ОсОО «НОРВЕКС» — динамично развивающаяся консалтинговая компания, основанная в 2026 году. Наша цель — обеспечение безопасности, эффективности и устойчивого развития организаций в Кыргызской Республике и регионе.",
+        "Наша цель — обеспечение безопасности, эффективности и устойчивого развития организаций в Кыргызской Республике и регионе.",
         "Мы специализируемся на предоставлении профессиональных услуг в области охраны труда, промышленной, пожарной и экологической безопасности. Наш портфель решений включает консалтинг, аутсорсинг и аутстаффинг, а также комплексное управление профессиональными рисками.",
         "Наше главное конкурентное преимущество — это синтез международного опыта и глубокого понимания местного законодательства. Основатель компании, Абдраимов Тумарбек Абдраимович, заложил фундамент бизнеса, ориентированного на лучшие мировые практики. Мы не просто следуем за изменениями, мы помогаем бизнесу к ним адаптироваться.",
         "Быстрый рост ОсОО «НОРВЕКС» обусловлен доверием клиентов и нашим стремлением к постоянному совершенствованию. Мы обеспечиваем экспертную поддержку на каждом этапе, гарантируя соблюдение всех нормативных требований и повышая общую культуру безопасности на предприятиях.",
@@ -84,6 +89,7 @@ const about = {
   advantages,
 };
 const stats = about.stats;
+const bodyParas = about.body;
 const why = about.advantages;
 const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accent">NORVEX</span>');
 
@@ -94,9 +100,7 @@ const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accen
     <div class="container">
       <div class="hero-text">
         <h1>{about.title}</h1>
-        {about.intro.map((para) => (
-          <p>{para}</p>
-        ))}
+        <p>{about.intro}</p>
         <a href={lp(lang, "/services")} class="btn btn-primary">{t("cta.about_more")} <Icon name="chevron-right" size={18} /></a>
       </div>
     </div>
@@ -110,6 +114,16 @@ const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accen
             <div class="stat-num">{s.value}</div>
             <div class="stat-label">{s.label}</div>
           </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="about-body">
+        {bodyParas.map((para) => (
+          <p>{para}</p>
         ))}
       </div>
     </div>
@@ -142,6 +156,8 @@ const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accen
 
   .stats-wrap { background: var(--bg); }
   .stats { display: grid; grid-template-columns: repeat(4, 1fr); padding: 36px 20px; transform: translateY(-40px); }
+  .about-body { max-width: 820px; margin-inline: auto; display: grid; gap: 20px; color: var(--muted); font-size: 17px; line-height: 1.75; }
+  .about-body p { margin: 0; }
   .stat { text-align: center; padding: 8px 20px; }
   .stat:not(:last-child) { border-right: 1px solid var(--border); }
   .stat-num { font-size: clamp(34px, 4vw, 48px); font-weight: 800; color: var(--navy); }
