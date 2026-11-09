@@ -1,6 +1,6 @@
 // Directus CMS client — shared helpers for fetching content and resolving asset URLs.
 // Reads configuration from environment variables; falls back to sensible defaults.
-export const DIRECTUS_URL = import.meta.env.PUBLIC_DIRECTUS_URL ?? "https://cms.norvexhse.com";
+export const DIRECTUS_URL = import.meta.env.PUBLIC_DIRECTUS_URL ?? "https://temoor.uz/norvex-cms";
 
 export const PUBLISHED = "filter[status][_eq]=published";
 

@@ -16,21 +16,21 @@ const rows = await directus<Row[]>(
 // Локальный резерв: если CMS недоступна/пуста, превью не должно отдавать
 // пустую страницу. Данные зеркалят прод (norvexhse.com/ru/team): 2 руководителя
 // + 2 специалиста, фото в CMS не загружены (placeholder).
-const FALLBACK_TEAM: Record<string, { name: string; position: string; photo: null }[]> = {
+const FALLBACK_TEAM: Record<string, { name: string; position: string; photo: string | null }[]> = {
   ru: [
-    { name: "Абдраимов Тумарбек Абдраимович", position: "Учредитель Стаж: 10 лет", photo: null },
+    { name: "Абдраимов Тумарбек Абдраимович", position: "Учредитель Стаж: 10 лет", photo: "https://temoor.uz/norvex-cms/assets/98fc57b4-8d47-4c56-ab2f-7cf2f9384419" },
     { name: "Оморкулов Уланбек Абдраимович", position: "Директор Стаж: 15 лет", photo: null },
     { name: "Маматов Данияр Талгатович", position: "Эксперт по пожарной безопасности Стаж: 10 лет", photo: null },
     { name: "Сидьякова Айгуль Нурлановна", position: "Эксперт по охране окружающей среды (Экология) Стаж: 9 лет", photo: null },
   ],
   en: [
-    { name: "Abdraimov Tumarbek Abdraimovich", position: "Founder Experience: 10 years", photo: null },
+    { name: "Abdraimov Tumarbek Abdraimovich", position: "Founder Experience: 10 years", photo: "https://temoor.uz/norvex-cms/assets/98fc57b4-8d47-4c56-ab2f-7cf2f9384419" },
     { name: "Omorkulov Ulanbek Abdraimovich", position: "Director Experience: 15 years", photo: null },
     { name: "Mamatov Daniyar Talgatovich", position: "Fire safety expert Experience: 10 years", photo: null },
     { name: "Sidyakoova Aygul Nurlanovna", position: "Environmental Expert Experience: 9 years", photo: null },
   ],
   ky: [
-    { name: "Абдраимов Тумарбек Абдраимович", position: "Уюштуруучу Тажрыйба: 10 жыл", photo: null },
+    { name: "Абдраимов Тумарбек Абдраимович", position: "Уюштуруучу Тажрыйба: 10 жыл", photo: "https://temoor.uz/norvex-cms/assets/98fc57b4-8d47-4c56-ab2f-7cf2f9384419" },
     { name: "Оморкулов Уланбек Абдраимович", position: "Директор Тажрыйба: 15 жыл", photo: null },
     { name: "Маматов Данияр Талгатович", position: "Өрт коопсуздугу боюнча эксперт Тажрыйба: 10 жыл", photo: null },
     { name: "Сидьякова Айгуль Нурлановна", position: "Экология боюнча эксперт Тажрыйба: 9 жыл", photo: null },
