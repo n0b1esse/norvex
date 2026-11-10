@@ -47,7 +47,7 @@ const formatDate = (iso: string) => {
     <div class="container">
       <article class="news-detail" set:html={newsItem.content[lang] || ""}></article>
       <div class="news-detail-back">
-        <a href={lp(lang, "/news")} class="btn btn-outline-green">{t("cta.more")} <Icon name="arrow-left" size={18} /></a>
+        <a href={lp(lang, "/news")} class="btn btn-outline-green"><Icon name="arrow-left" size={18} /> {t("cta.back_news")}</a>
       </div>
     </div>
   </section>
