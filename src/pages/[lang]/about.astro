@@ -1,7 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import Icon from "../../components/Icon.astro";
-import { getT, lp, localeStaticPaths } from "../../i18n";
+import { getT, localeStaticPaths } from "../../i18n";
 
 export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
@@ -126,7 +126,6 @@ const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accen
         {bodyParas.map((para) => (
           <p>{para}</p>
         ))}
-        <a href={lp(lang, "/services")} class="btn btn-primary">{t("cta.about_more")} <Icon name="chevron-right" size={18} /></a>
       </div>
     </div>
   </section>
