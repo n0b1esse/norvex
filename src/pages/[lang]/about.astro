@@ -42,6 +42,28 @@ const ADV: Record<string, { icon: string; title: string }[]> = {
 };
 const advantages = (ADV[lang ?? "ru"] ?? ADV.ru) as { icon: string; title: string }[];
 
+// Пять блоков о компании — сразу под карточкой со статистикой.
+const PILLARS = lang === "en" ? [
+  { icon: "globe", title: "Our purpose", text: "We help businesses operate without accidents, fines and downtime. Our goal is to make safety not a burden but the foundation of sustainable growth and prosperity for your company." },
+  { icon: "users", title: "Our experts", text: "Our team is practitioners with international experience and deep knowledge of the Kyrgyz Republic's legislation. We are not theorists: our specialists have real projects in industry and energy behind them." },
+  { icon: "medal", title: "International practice", text: "When the company was founded in 2026, we implemented the world's best management standards in occupational health, industrial safety and environmental protection. We bring advanced risk-management experience to the Kyrgyz market, adapting it to local realities." },
+  { icon: "puzzle", title: "Integrated approach", text: "We cover the entire range of tasks: from consulting and audit to full outsourcing and outstaffing. You get a single centre of competence for occupational safety, industrial safety, environment and fire safety." },
+  { icon: "search", title: "Risk-based approach", text: "We do not just check paperwork compliance. We analyse real production risks and propose solutions that protect your employees, assets and reputation with inspectors." },
+] : lang === "ky" ? [
+  { icon: "globe", title: "Биздин максат", text: "Биз бизнеске авариясыз, айып пулдарсыз жана токтоосуз иштөөгө жардам беребиз. Максатбыз — коопсуздукту жүк болбостон, компанияңыздын туруктуу өсүшүнүн жана гүлдөшүнүн пайдубалына айландыруу." },
+  { icon: "users", title: "Биздин адистер", text: "Биздин команда — эл аралык тажрыйбалуу жана КР мыйзамдарын терең билген практиктер. Биз теоретиктер эмеспиз: адистерибиздин артында өнөр жай жана энергетика чөйрөсүндөгү чыныгы долбоорлор бар." },
+  { icon: "medal", title: "Эл аралык практика", text: "Компания 2026-жылы негизделгенде биз ОТ, ПБ жана ООС боюнча менеджменттин мыкты дүйнөлүк стандарттарын киргиздик. Кыргызстан рыногуна тобокелдиктерди башкаруунун алдыңкы тажрыйбасын алып келип, аны жергиликтүү шарттарга ыңгайлаштырабыз." },
+  { icon: "puzzle", title: "Комплекстүү мамиле", text: "Биз милдеттердин бүт спектрин камтыйбыз: консалтинг жана аудиттен толук аутсорсинг жана аутстаффингге чейин. Сизге ОТ, ПБ, ООС жана өрт коопсуздугу боюнча бирдиктүү компетенция борбору болот." },
+  { icon: "search", title: "Тобокелдикке багытталган мамиле", text: "Биз кагаздардын шайкештигин гана текшербейбиз. Биз чыныгы өндүрүштүк тобокелдиктерди талдап, кызматкерлерибизди, активдерди жана репутацияны инспекторлордун алдында коргоочу чечимдерди сунуштайбыз." },
+] : [
+  { icon: "globe", title: "Наше предназначение", text: "Мы помогаем бизнесу работать без аварий, штрафов и простоев. Наша цель — сделать так, чтобы безопасность стала не обузой, а фундаментом для устойчивого роста и процветания вашей компании." },
+  { icon: "users", title: "Наши эксперты", text: "Наша команда — это практики с международным опытом и глубоким знанием местного законодательства КР. Мы не теоретики: за плечами наших специалистов — реальные проекты в промышленности и энергетике." },
+  { icon: "medal", title: "Международная практика", text: "При основании компании в 2026 году мы внедрили лучшие мировые стандарты менеджмента в области ОТ, ПБ и ООС. Мы приносим на рынок Кыргызстана передовой опыт управления рисками, адаптируя его под местные реалии." },
+  { icon: "puzzle", title: "Комплексный подход", text: "Мы закрываем весь спектр задач: от консалтинга и аудита до полного аутсорсинга и аутстаффинга. Вы получаете единый центр компетенций по направлениям ОТ, ПБ, ООС и пожарной безопасности." },
+  { icon: "search", title: "Риск-ориентированный подход", text: "Мы не просто проверяем соответствие бумаг. Мы анализируем реальные производственные риски и предлагаем решения, которые защищают ваших сотрудников, активы и репутацию перед инспекторами." },
+];
+const pillars = PILLARS;
+
 // Локальный контент страницы — сайт работает без CMS
 const about = {
   title: lang === "en" ? "About the company" : lang === "ky" ? "Компания жөнүндө" : "О компании",
@@ -124,6 +146,20 @@ const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accen
 
   <section class="section">
     <div class="container">
+      <div class="pillars">
+        {pillars.map((p, i) => (
+          <article class="card pillar reveal" style={`--i:${i}`}>
+            <span class="icon-badge"><Icon name={p.icon} size={30} /></span>
+            <h3>{p.title}</h3>
+            <p>{p.text}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
       <div class="section-head reveal">
         <h2 class="section-title" set:html={whyTitleHtml}></h2>
         <div class="bar"></div>
@@ -158,6 +194,19 @@ const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accen
   .why-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 36px 28px; }
   .why-item { display: flex; flex-direction: column; gap: 14px; align-items: center; text-align: center; }
   .why-item span:last-child { font-weight: 700; color: var(--navy); font-size: 16px; }
+
+  .pillars { display: grid; grid-template-columns: repeat(5, 1fr); gap: 22px; }
+  .pillar { padding: 28px 22px; }
+  .pillar h3 { margin: 16px 0 10px; font-size: calc(17px * var(--ts-heading)); }
+  .pillar p { color: var(--muted); font-size: 15px; line-height: 1.65; }
+
+  @media (max-width: 1100px) {
+    .pillars { grid-template-columns: repeat(2, 1fr); }
+    .pillar:last-child { grid-column: span 2; }
+  }
+  @media (max-width: 560px) {
+    .pillar:last-child { grid-column: auto; }
+  }
 
   @media (max-width: 900px) {
     .stats { grid-template-columns: repeat(2, 1fr); gap: 24px 0; }
