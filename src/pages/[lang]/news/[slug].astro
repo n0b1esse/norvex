@@ -47,7 +47,9 @@ const formatDate = (iso: string) => {
     <div class="container">
       <article class="news-detail" set:html={newsItem.content[lang] || ""}></article>
       <div class="news-detail-back">
-        <a href={lp(lang, "/news")} class="btn btn-outline-green"><Icon name="arrow-left" size={18} /> {t("cta.back_news")}</a>
+        <a href={lp(lang, "/news")} class="btn btn-outline-green" data-back-link data-back-alt={t("cta.back")}>
+          <Icon name="arrow-left" size={18} /> <span>{t("cta.back_news")}</span>
+        </a>
       </div>
     </div>
   </section>
@@ -64,3 +66,22 @@ const formatDate = (iso: string) => {
   .news-detail-back { margin-top: 32px; }
   .news-detail-back .btn { width: auto; }
 </style>
+
+<script>
+  // Кнопка "Назад" ведёт туда, откуда пришли.
+  // По умолчанию (без JS / внешний переход) — страница /news.
+  // Если пользователь пришёл с другой страницы сайта (например, с главной),
+  // ссылка меняется на неё, а подпись — на "Назад".
+  const back = document.querySelector<HTMLAnchorElement>("[data-back-link]");
+  if (back && document.referrer) {
+    try {
+      const ref = new URL(document.referrer);
+      if (ref.origin === location.origin && !/\/news(\/|$)/.test(ref.pathname)) {
+        back.setAttribute("href", ref.pathname + ref.search + ref.hash);
+        const label = back.querySelector("span");
+        const alt = back.getAttribute("data-back-alt");
+        if (label && alt) label.textContent = alt;
+      }
+    } catch { /* referrer unparsable — keep default */ }
+  }
+</script>

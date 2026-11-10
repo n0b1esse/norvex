@@ -45,6 +45,7 @@ const FALLBACK: Record<string, { ru: string; en: string; ky: string }> = {
   "cta.learn_more": { ru: "Узнать больше", en: "Learn more", ky: "Толугураак" },
   "cta.more": { ru: "Подробнее", en: "Learn more", ky: "Толугураак" },
   "cta.back_news": { ru: "Назад к новостям", en: "Back to news", ky: "Жаңылыктарга кайтуу" },
+  "cta.back": { ru: "Назад", en: "Back", ky: "Артка" },
   "cta.all_specialists": { ru: "Все специалисты", en: "All specialists", ky: "Бардык адистер" },
   "cta.about_more": { ru: "Подробнее о нас", en: "More about us", ky: "Биз жөнүндө толугураак" },
   "cta.contact_us": { ru: "Связаться с нами", en: "Contact us", ky: "Биз менен байланышуу" },
