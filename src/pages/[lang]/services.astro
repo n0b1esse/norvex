@@ -53,23 +53,29 @@ const services = [
         <div class="bar"></div>
         <p class="section-lead">{t("page.cooperation_lead")}</p>
       </div>
-      <div class="models">
-        {MODELS.map((tab) => (
-          <div class="panel card" id={tab.id}>
-            <div class="panel-text">
-              <h2>{tab.label}</h2>
-              <p>{tab.desc}</p>
-              <ul class="checklist">
-                {tab.points.map((p) => (
-                  <li><span class="check"><Icon name="check" size={16} /></span>{p}</li>
-                ))}
-              </ul>
-              <a href={lp(lang, "/contacts")} class="btn btn-outline-green">{t("cta.learn_more")}</a>
-            </div>
-            <img src={tab.image} alt={tab.label} class="panel-img" width={520} height={320} loading="lazy" />
-          </div>
+      <div class="tabs" role="tablist">
+        {MODELS.map((tab, i) => (
+          <button class:list={["tab", { active: i === 0 }]} type="button" role="tab" data-tab={tab.id}>
+            <Icon name={tab.icon} size={22} /> {tab.label}
+          </button>
         ))}
       </div>
+
+      {MODELS.map((tab, i) => (
+        <div class:list={["panel card", { active: i === 0 }]} data-panel={tab.id} id={tab.id}>
+          <div class="panel-text">
+            <h2>{tab.label}</h2>
+            <p>{tab.desc}</p>
+            <ul class="checklist">
+              {tab.points.map((p) => (
+                <li><span class="check"><Icon name="check" size={16} /></span>{p}</li>
+              ))}
+            </ul>
+            <a href={lp(lang, "/contacts")} class="btn btn-outline-green">{t("cta.learn_more")}</a>
+          </div>
+          <img src={tab.image} alt={tab.label} class="panel-img" width={520} height={320} loading="lazy" />
+        </div>
+      ))}
     </div>
   </section>
 
@@ -93,9 +99,27 @@ const services = [
   </section>
 </Layout>
 
+<script>
+  const tabs = Array.from(document.querySelectorAll<HTMLElement>("[data-tab]"));
+  const panels = Array.from(document.querySelectorAll<HTMLElement>("[data-panel]"));
+  const activate = (id: string) => {
+    tabs.forEach((t) => t.classList.toggle("active", t.dataset.tab === id));
+    panels.forEach((p) => p.classList.toggle("active", p.dataset.panel === id));
+  };
+  tabs.forEach((t) => t.addEventListener("click", () => activate(t.dataset.tab!)));
+</script>
+
 <style>
-  .models { display: grid; gap: 32px; margin-top: 36px; }
-  .panel { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; padding: 40px; align-items: center; scroll-margin-top: 100px; }
+  .tabs { display: flex; gap: 14px; flex-wrap: wrap; margin: 36px 0 28px; }
+  .tab {
+    display: inline-flex; align-items: center; gap: 10px; padding: 16px 26px; cursor: pointer;
+    font-weight: 700; font-size: 16px; color: var(--navy); background: #fff;
+    border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow-sm); transition: .16s;
+  }
+  .tab:hover { border-color: var(--green-500); }
+  .tab.active { background: var(--green-500); color: #fff; border-color: var(--green-500); }
+  .panel { display: none; grid-template-columns: 1fr 1fr; gap: 40px; padding: 40px; align-items: center; scroll-margin-top: 100px; }
+  .panel.active { display: grid; }
   .panel-text h2 { font-size: calc(28px * var(--ts-heading)); margin-bottom: 16px; }
   .panel-text p { color: var(--ink); font-size: 16px; }
   .checklist { margin: 24px 0 30px; display: grid; gap: 16px; }
