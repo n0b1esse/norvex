@@ -142,8 +142,9 @@ const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accen
 
 <style>
   /* Hero uses the shared .page-hero treatment in global.css; below is the
-     About-page tweak: extra paragraph spacing for the CTA that sits below it. */
-  .page-hero .hero-text p { margin: 16px 0 0; max-width: 620px; }
+     About-page tweak: paragraphs run the full container width. */
+  .page-hero .hero-text { max-width: none; }
+  .page-hero .hero-text p { margin: 16px 0 0; max-width: none; }
   .page-hero .hero-text p:first-of-type { margin-top: 22px; }
   .page-hero .hero-text p:last-of-type { margin-bottom: 30px; }
 
