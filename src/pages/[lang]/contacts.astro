@@ -2,10 +2,16 @@
 import Layout from "../../layouts/Layout.astro";
 import Icon from "../../components/Icon.astro";
 import { getT, lp, localeStaticPaths } from "../../i18n";
+import { directus, asset } from "../../lib/directus";
 
 export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const t = await getT(lang!);
+
+// Hero-фон — тот же, что на «Услугах» и «О компании»: из about_page (Directus),
+// иначе локальное изображение (страница остаётся работоспособной без CMS).
+const about = await directus<{ image?: string | null }>("/items/about_page?fields=image", {});
+const officeImg = asset(about.image) ?? "/newOffice.png";
 
 // Локальные контакты — сайт работает без CMS
 const phone = "+996 550 209 209";
@@ -31,13 +37,18 @@ const info = [
 ];
 ---
 <Layout lang={lang} title={t("seo.contacts.title")} description={t("seo.contacts.desc")}>
+  <section class="page-hero">
+    {officeImg && <img class="hero-bg" src={officeImg} alt="" aria-hidden="true" />}
+    <div class="container">
+      <div class="hero-text">
+        <h1>{t("page.contacts_title")}</h1>
+        <p>{t("page.contacts_lead")}</p>
+      </div>
+    </div>
+  </section>
+
   <section class="section">
     <div class="container">
-      <div class="section-head left">
-        <h1 class="section-title">{t("page.contacts_title")}</h1>
-        <p class="section-lead">{t("page.contacts_lead")}</p>
-      </div>
-
       <div class="contacts-grid">
         <ul class="info">
           {info.map((row) => (
