@@ -6,7 +6,7 @@ export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const t = await getT(lang!);
 
-// ponytail: legal text lives here in the repo, not Directus — lawyers hand over
+// ponytail: legal text lives here in the repo — lawyers hand over
 // final wording and it changes ~never; move to a CMS singleton if editors ask.
 type Section = { h: string; ps: string[] };
 const CONTENT: Record<Locale, { title: string; updated: string; sections: Section[] }> = {
@@ -139,15 +139,15 @@ const CONTENT: Record<Locale, { title: string; updated: string; sections: Sectio
 };
 const c = CONTENT[lang as Locale];
 ---
-<Layout lang={lang} title={t("seo.privacy.title")} description={t("seo.privacy.desc")}>
+<Layout lang={lang} title={t("seo.privacy.title")} description={t("seo.privacy.desc")} livePage={"privacy"}>
   <section class="section">
-    <div class="container privacy">
-      <h1 class="section-title">{c.title}</h1>
-      <p class="updated">{c.updated}</p>
+    <div class="container privacy" data-c-list="privacy.sections">
+      <h1 class="section-title" data-c="privacy.misc.title">{c.title}</h1>
+      <p class="updated" data-c="privacy.misc.updated">{c.updated}</p>
       {c.sections.map((s) => (
-        <section>
-          <h2>{s.h}</h2>
-          {s.ps.map((p) => <p>{p}</p>)}
+        <section data-c-item data-c-list="ps">
+          <h2 data-c-field="h">{s.h}</h2>
+          {s.ps.map((p) => <p data-c-item>{p}</p>)}
         </section>
       ))}
     </div>

@@ -7,124 +7,129 @@ export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const t = await getT(lang!);
 
-// «Почему выбирают NORVEX» — 8 преимуществ, 3 локали.
-const ADV: Record<string, { icon: string; title: string }[]> = {
-  ru: [
-    { icon: "award", title: "Практический опыт вместо теории" },
-    { icon: "globe", title: "Опора на мировые стандарты (ISO)" },
-    { icon: "target", title: "Фокус на предотвращении аварий" },
-    { icon: "scale", title: "Объективная оценка без конфликта интересов" },
-    { icon: "shield-check", title: "Гарантия защиты от штрафов" },
-    { icon: "lock", title: "Полная конфиденциальность данных" },
-    { icon: "clipboard-check", title: "Сопровождение «под ключ»" },
-    { icon: "user-check", title: "Решение задач под специфику бизнеса" },
-  ],
-  en: [
-    { icon: "award", title: "Practical experience over theory" },
-    { icon: "globe", title: "Reliance on world standards (ISO)" },
-    { icon: "target", title: "Focus on accident prevention" },
-    { icon: "scale", title: "Objective assessment without conflicts of interest" },
-    { icon: "shield-check", title: "Guarantee of protection from fines" },
-    { icon: "lock", title: "Full data confidentiality" },
-    { icon: "clipboard-check", title: "Turnkey support" },
-    { icon: "user-check", title: "Solutions tailored to your business" },
-  ],
-  ky: [
-    { icon: "award", title: "Теориянын ордуна практикалык тажрыйба" },
-    { icon: "globe", title: "Дүйнөлүк стандарттарга (ISO) таянуу" },
-    { icon: "target", title: "Аварияларды алдын алууга фокус" },
-    { icon: "scale", title: "Кызыкчылыктардын кагылышысыз объективдүү баалоо" },
-    { icon: "shield-check", title: "Айып пулдардан коргоого кепилдик" },
-    { icon: "lock", title: "Маалыматтардын толук купуялыгы" },
-    { icon: "clipboard-check", title: "«Ачкычты тапшырып» колдоо берүү" },
-    { icon: "user-check", title: "Бизнеске өзгөчө ылайык чечимдер" },
-  ],
-};
-const advantages = (ADV[lang ?? "ru"] ?? ADV.ru) as { icon: string; title: string }[];
-
-// Пять блоков о компании — сразу под карточкой со статистикой.
-const PILLARS = lang === "en" ? [
-  { icon: "globe", title: "Our purpose", text: "We help businesses operate without accidents, fines and downtime. Our goal is to make safety not a burden but the foundation of sustainable growth and prosperity for your company." },
-  { icon: "users", title: "Our experts", text: "Our team is practitioners with international experience and deep knowledge of the Kyrgyz Republic's legislation. We are not theorists: our specialists have real projects in industry and energy behind them." },
-  { icon: "medal", title: "International practice", text: "When the company was founded in 2026, we implemented the world's best management standards in occupational health, industrial safety and environmental protection. We bring advanced risk-management experience to the Kyrgyz market, adapting it to local realities." },
-  { icon: "puzzle", title: "Integrated approach", text: "We cover the entire range of tasks: from consulting and audit to full outsourcing and outstaffing. You get a single centre of competence for occupational safety, industrial safety, environment and fire safety." },
-  { icon: "search", title: "Risk-based approach", text: "We do not just check paperwork compliance. We analyse real production risks and propose solutions that protect your employees, assets and reputation with inspectors." },
-] : lang === "ky" ? [
-  { icon: "globe", title: "Биздин максат", text: "Биз бизнеске авариясыз, айып пулдарсыз жана токтоосуз иштөөгө жардам беребиз. Максатбыз — коопсуздукту жүк болбостон, компанияңыздын туруктуу өсүшүнүн жана гүлдөшүнүн пайдубалына айландыруу." },
-  { icon: "users", title: "Биздин адистер", text: "Биздин команда — эл аралык тажрыйбалуу жана КР мыйзамдарын терең билген практиктер. Биз теоретиктер эмеспиз: адистерибиздин артында өнөр жай жана энергетика чөйрөсүндөгү чыныгы долбоорлор бар." },
-  { icon: "medal", title: "Эл аралык практика", text: "Компания 2026-жылы негизделгенде биз ОТ, ПБ жана ООС боюнча менеджменттин мыкты дүйнөлүк стандарттарын киргиздик. Кыргызстан рыногуна тобокелдиктерди башкаруунун алдыңкы тажрыйбасын алып келип, аны жергиликтүү шарттарга ыңгайлаштырабыз." },
-  { icon: "puzzle", title: "Комплекстүү мамиле", text: "Биз милдеттердин бүт спектрин камтыйбыз: консалтинг жана аудиттен толук аутсорсинг жана аутстаффингге чейин. Сизге ОТ, ПБ, ООС жана өрт коопсуздугу боюнча бирдиктүү компетенция борбору болот." },
-  { icon: "search", title: "Тобокелдикке багытталган мамиле", text: "Биз кагаздардын шайкештигин гана текшербейбиз. Биз чыныгы өндүрүштүк тобокелдиктерди талдап, кызматкерлерибизди, активдерди жана репутацияны инспекторлордун алдында коргоочу чечимдерди сунуштайбыз." },
-] : [
-  { icon: "globe", title: "Наше предназначение", text: "Мы помогаем бизнесу работать без аварий, штрафов и простоев. Наша цель — сделать так, чтобы безопасность стала не обузой, а фундаментом для устойчивого роста и процветания вашей компании." },
-  { icon: "users", title: "Наши эксперты", text: "Наша команда — это практики с международным опытом и глубоким знанием местного законодательства КР. Мы не теоретики: за плечами наших специалистов — реальные проекты в промышленности и энергетике." },
-  { icon: "medal", title: "Международная практика", text: "При основании компании в 2026 году мы внедрили лучшие мировые стандарты менеджмента в области ОТ, ПБ и ООС. Мы приносим на рынок Кыргызстана передовой опыт управления рисками, адаптируя его под местные реалии." },
-  { icon: "puzzle", title: "Комплексный подход", text: "Мы закрываем весь спектр задач: от консалтинга и аудита до полного аутсорсинга и аутстаффинга. Вы получаете единый центр компетенций по направлениям ОТ, ПБ, ООС и пожарной безопасности." },
-  { icon: "search", title: "Риск-ориентированный подход", text: "Мы не просто проверяем соответствие бумаг. Мы анализируем реальные производственные риски и предлагаем решения, которые защищают ваших сотрудников, активы и репутацию перед инспекторами." },
-];
-const pillars = PILLARS;
-
-// Локальный контент страницы — сайт работает без CMS
-const about = {
-  title: lang === "en" ? "About the company" : lang === "ky" ? "Компания жөнүндө" : "О компании",
-  intro: lang === "en"
-    ? "NORVEX LLC is a dynamically developing consulting company founded in 2026."
-    : lang === "ky"
-      ? "ОсОО «НОРВЕКС» — 2026-жылы негизделген динамикалуу өсүп жаткан консалтинг компаниясы."
-      : "ОсОО «НОРВЕКС» — динамично развивающаяся консалтинговая компания, основанная в 2026 году.",
-  body: lang === "en"
-    ? [
+const CONTENT = {
+  ru: {
+    title: "О компании",
+    intro: "ОсОО «НОРВЕКС» — динамично развивающаяся консалтинговая компания, основанная в 2026 году.",
+    body: [
+      "Наша цель — обеспечение безопасности, эффективности и устойчивого развития организаций в Кыргызской Республике и регионе.",
+      "Мы специализируемся на предоставлении профессиональных услуг в области охраны труда, промышленной, пожарной и экологической безопасности. Наш портфель решений включает консалтинг, аутсорсинг и аутстаффинг, а также комплексное управление профессиональными рисками.",
+      "Наше главное конкурентное преимущество — это синтез международного опыта и глубокого понимания местного законодательства. Основатель компании, Абдраимов Тумарбек Абдраимович, заложил фундамент бизнеса, ориентированного на лучшие мировые практики. Мы не просто следуем за изменениями, мы помогаем бизнесу к ним адаптироваться.",
+      "Быстрый рост ОсОО «НОРВЕКС» обусловлен доверием клиентов и нашим стремлением к постоянному совершенствованию. Мы обеспечиваем экспертную поддержку на каждом этапе, гарантируя соблюдение всех нормативных требований и повышая общую культуру безопасности на предприятиях.",
+    ],
+    stats: [
+      { value: "30+", label: "лет опыта команды" },
+      { value: "20+", label: "успешных проектов" },
+      { value: "10+", label: "отраслей экспертизы" },
+      { value: "4", label: "языка обслуживания" },
+    ],
+    pillars: [
+      { icon: "globe", title: "Наше предназначение", text: "Мы помогаем бизнесу работать без аварий, штрафов и простоев. Наша цель — сделать так, чтобы безопасность стала не обузой, а фундаментом для устойчивого роста и процветания вашей компании." },
+      { icon: "users", title: "Наши эксперты", text: "Наша команда — это практики с международным опытом и глубоким знанием местного законодательства КР. Мы не теоретики: за плечами наших специалистов — реальные проекты в промышленности и энергетике." },
+      { icon: "medal", title: "Международная практика", text: "При основании компании в 2026 году мы внедрили лучшие мировые стандарты менеджмента в области ОТ, ПБ и ООС. Мы приносим на рынок Кыргызстана передовой опыт управления рисками, адаптируя его под местные реалии." },
+      { icon: "puzzle", title: "Комплексный подход", text: "Мы закрываем весь спектр задач: от консалтинга и аудита до полного аутсорсинга и аутстаффинга. Вы получаете единый центр компетенций по направлениям ОТ, ПБ, ООС и пожарной безопасности." },
+      { icon: "search", title: "Риск-ориентированный подход", text: "Мы не просто проверяем соответствие бумаг. Мы анализируем реальные производственные риски и предлагаем решения, которые защищают ваших сотрудников, активы и репутацию перед инспекторами." },
+    ],
+    why: [
+      { icon: "award", title: "Практический опыт вместо теории" },
+      { icon: "globe", title: "Опора на мировые стандарты (ISO)" },
+      { icon: "target", title: "Фокус на предотвращении аварий" },
+      { icon: "scale", title: "Объективная оценка без конфликта интересов" },
+      { icon: "shield-check", title: "Гарантия защиты от штрафов" },
+      { icon: "lock", title: "Полная конфиденциальность данных" },
+      { icon: "clipboard-check", title: "Сопровождение «под ключ»" },
+      { icon: "user-check", title: "Решение задач под специфику бизнеса" },
+    ],
+  },
+  en: {
+    title: "About the company",
+    intro: "NORVEX LLC is a dynamically developing consulting company founded in 2026.",
+    body: [
       "Our goal is to ensure safety, efficiency and sustainable development of organisations in the Kyrgyz Republic and the region.",
       "We specialise in providing professional services in occupational health and safety, industrial safety, fire safety and environmental protection. Our portfolio of solutions includes consulting, outsourcing and outstaffing, as well as comprehensive management of occupational risks.",
       "Our main competitive advantage is a synthesis of international experience and deep understanding of local legislation. The founder of the company, Abdraimov Tumarbek Abdraimovich, laid the foundation of a business focused on best world practices. We do not just keep up with change — we help businesses adapt to it.",
       "The rapid growth of NORVEX LLC is driven by client trust and our striving for continuous improvement. We provide expert support at every stage, guaranteeing compliance with all regulatory requirements and raising the overall safety culture at enterprises.",
-    ]
-    : lang === "ky"
-      ? [
-        "Биздин максат — Кыргыз Республикасында жана региондо уюмдардын коопсуздугун, натыйжалуулугун жана туруктуу өнүгүүсүн камсыз кылуу.",
-        "Биз эмгекти коргоо, өнөр жай, өрт жана экологиялык коопсуздук жаатында кесипкөй кызматтарды көрсөтүүгө адистештик. Биздин чечимдер пакетине консалтинг, аутсорсинг жана аутстаффинг, ошондой эле кесиптик тобокелдиктерди комплекстүү башкаруу кирет.",
-        "Биздин негизги артыкчылыгыбыз — эл аралык тажрыйбанын жана жергиликтүү мыйзамдарды терең түшүнүүнүн айкалышы. Компаниянын негиздөөчүсү, Абдраимов Тумарбек Абдраимович, мыкты дүйнөлүк практикаларга багытталган бизнестин пайдубалын түптөдү. Биз жөн гана өзгөрүүлөргө ылайык жүрбөйбүз, бизнеске аларга ыңгайлашууга жардам беребиз.",
-        "ОсОО «НОРВЕКС»тин тез өсүшү кардарлардын ишенимине жана үзгүлтүксүз жакшыртууга умтулууына байланыштуу. Биз ар бир этапта эксперттик колдоону камсыз кылып, бардык нормативдик талаптардын сакталышына кепилдик берип, ишканаларда жалпы коопсуздук маданиятын жогорулатабыз.",
-      ]
-      : [
-        "Наша цель — обеспечение безопасности, эффективности и устойчивого развития организаций в Кыргызской Республике и регионе.",
-        "Мы специализируемся на предоставлении профессиональных услуг в области охраны труда, промышленной, пожарной и экологической безопасности. Наш портфель решений включает консалтинг, аутсорсинг и аутстаффинг, а также комплексное управление профессиональными рисками.",
-        "Наше главное конкурентное преимущество — это синтез международного опыта и глубокого понимания местного законодательства. Основатель компании, Абдраимов Тумарбек Абдраимович, заложил фундамент бизнеса, ориентированного на лучшие мировые практики. Мы не просто следуем за изменениями, мы помогаем бизнесу к ним адаптироваться.",
-        "Быстрый рост ОсОО «НОРВЕКС» обусловлен доверием клиентов и нашим стремлением к постоянному совершенствованию. Мы обеспечиваем экспертную поддержку на каждом этапе, гарантируя соблюдение всех нормативных требований и повышая общую культуру безопасности на предприятиях.",
-      ],
-  stats: lang === "en" ? [
-    { value: "30+", label: "years of team experience" },
-    { value: "20+", label: "successful projects" },
-    { value: "10+", label: "industries of expertise" },
-    { value: "4", label: "languages of service" },
-  ] : lang === "ky" ? [
-    { value: "30+", label: "жылдык команда тажрыйбасы" },
-    { value: "20+", label: "ийгиликтүү долбоорлор" },
-    { value: "10+", label: "экспертиза тармактары" },
-    { value: "4", label: "тейлөө тили" },
-  ] : [
-    { value: "30+", label: "лет опыта команды" },
-    { value: "20+", label: "успешных проектов" },
-    { value: "10+", label: "отраслей экспертизы" },
-    { value: "4", label: "языка обслуживания" },
-  ],
-  advantages,
+    ],
+    stats: [
+      { value: "30+", label: "years of team experience" },
+      { value: "20+", label: "successful projects" },
+      { value: "10+", label: "industries of expertise" },
+      { value: "4", label: "languages of service" },
+    ],
+    pillars: [
+      { icon: "globe", title: "Our purpose", text: "We help businesses operate without accidents, fines and downtime. Our goal is to make safety not a burden but the foundation of sustainable growth and prosperity for your company." },
+      { icon: "users", title: "Our experts", text: "Our team is practitioners with international experience and deep knowledge of the Kyrgyz Republic's legislation. We are not theorists: our specialists have real projects in industry and energy behind them." },
+      { icon: "medal", title: "International practice", text: "When the company was founded in 2026, we implemented the world's best management standards in occupational health, industrial safety and environmental protection. We bring advanced risk-management experience to the Kyrgyz market, adapting it to local realities." },
+      { icon: "puzzle", title: "Integrated approach", text: "We cover the entire range of tasks: from consulting and audit to full outsourcing and outstaffing. You get a single centre of competence for occupational safety, industrial safety, environment and fire safety." },
+      { icon: "search", title: "Risk-based approach", text: "We do not just check paperwork compliance. We analyse real production risks and propose solutions that protect your employees, assets and reputation with inspectors." },
+    ],
+    why: [
+      { icon: "award", title: "Practical experience over theory" },
+      { icon: "globe", title: "Reliance on world standards (ISO)" },
+      { icon: "target", title: "Focus on accident prevention" },
+      { icon: "scale", title: "Objective assessment without conflicts of interest" },
+      { icon: "shield-check", title: "Guarantee of protection from fines" },
+      { icon: "lock", title: "Full data confidentiality" },
+      { icon: "clipboard-check", title: "Turnkey support" },
+      { icon: "user-check", title: "Solutions tailored to your business" },
+    ],
+  },
+  ky: {
+    title: "Компания жөнүндө",
+    intro: "ОсОО «НОРВЕКС» — 2026-жылы негизделген динамикалуу өсүп жаткан консалтинг компаниясы.",
+    body: [
+      "Биздин максат — Кыргыз Республикасында жана региондо уюмдардын коопсуздугун, натыйжалуулугун жана туруктуу өнүгүүсүн камсыз кылуу.",
+      "Биз эмгекти коргоо, өнөр жай, өрт жана экологиялык коопсуздук жаатында кесипкөй кызматтарды көрсөтүүгө адистештик. Биздин чечимдер пакетине консалтинг, аутсорсинг жана аутстаффинг, ошондой эле кесиптик тобокелдиктерди комплекстүү башкаруу кирет.",
+      "Биздин негизги артыкчылыгыбыз — эл аралык тажрыйбанын жана жергиликтүү мыйзамдарды терең түшүнүүнүн айкалышы. Компаниянын негиздөөчүсү, Абдраимов Тумарбек Абдраимович, мыкты дүйнөлүк практикаларга багытталган бизнестин пайдубалын түптөдү. Биз жөн гана өзгөрүүлөргө ылайык жүрбөйбүз, бизнеске аларга ыңгайлашууга жардам беребиз.",
+      "ОсОО «НОРВЕКС»тин тез өсүшү кардарлардын ишенимине жана үзгүлтүксүз жакшыртууга умтулууына байланыштуу. Биз ар бир этапта эксперттик колдоону камсыз кылып, бардык нормативдик талаптардын сакталышына кепилдик берип, ишканаларда жалпы коопсуздук маданиятын жогорулатабыз.",
+    ],
+    stats: [
+      { value: "30+", label: "жылдык команда тажрыйбасы" },
+      { value: "20+", label: "ийгиликтүү долбоорлор" },
+      { value: "10+", label: "экспертиза тармактары" },
+      { value: "4", label: "тейлөө тили" },
+    ],
+    pillars: [
+      { icon: "globe", title: "Биздин максат", text: "Биз бизнеске авариясыз, айып пулдарсыз жана токтоосуз иштөөгө жардам беребиз. Максатбыз — коопсуздукту жүк болбостон, компанияңыздын туруктуу өсүшүнүн жана гүлдөшүнүн пайдубалына айландыруу." },
+      { icon: "users", title: "Биздин адистер", text: "Биздин команда — эл аралык тажрыйбалуу жана КР мыйзамдарын терең билген практиктер. Биз теоретиктер эмеспиз: адистерибиздин артында өнөр жай жана энергетика чөйрөсүндөгү чыныгы долбоорлор бар." },
+      { icon: "medal", title: "Эл аралык практика", text: "Компания 2026-жылы негизделгенде биз ОТ, ПБ жана ООС боюнча менеджменттин мыкты дүйнөлүк стандарттарын киргиздик. Кыргызстан рыногуна тобокелдиктерди башкаруунун алдыңкы тажрыйбасын алып келип, аны жергиликтүү шарттарга ыңгайлаштырабыз." },
+      { icon: "puzzle", title: "Комплекстүү мамиле", text: "Биз милдеттердин бүт спектрин камтыйбыз: консалтинг жана аудиттен толук аутсорсинг жана аутстаффингге чейин. Сизге ОТ, ПБ, ООС жана өрт коопсуздугу боюнча бирдиктүү компетенция борбору болот." },
+      { icon: "search", title: "Тобокелдикке багытталган мамиле", text: "Биз кагамдардын шайкештигин гана текшербейбиз. Биз чыныгы өндүрүштүк тобокелдиктерди талдап, кызматкерлерибизди, активдерди жана репутацияны инспекторлордун алдында коргоочу чечимдерди сунуштайбыз." },
+    ],
+    why: [
+      { icon: "award", title: "Теориянын ордуна практикалык тажрыйба" },
+      { icon: "globe", title: "Дүйнөлүк стандарттарга (ISO) таянуу" },
+      { icon: "target", title: "Аварияларды алдын алууга фокус" },
+      { icon: "scale", title: "Кызыкчылыктардын кагылышысыз объективдүү баалоо" },
+      { icon: "shield-check", title: "Айып пулдардан коргоого кепилдик" },
+      { icon: "lock", title: "Маалыматтардын толук купуялыгы" },
+      { icon: "clipboard-check", title: "«Ачкычты тапшырып» колдоо берүү" },
+      { icon: "user-check", title: "Бизнеске өзгөчө ылайык чечимдер" },
+    ],
+  },
 };
-const stats = about.stats;
-const bodyParas = about.body;
-const why = about.advantages;
+const c = CONTENT[lang ?? "ru"] ?? CONTENT.ru;
+
+// Локальный контент страницы «О компании» — единый источник и для сборки,
+// и для автоматического переноса текстов в админку (таблица content).
+
+const stats = c.stats;
+const bodyParas = c.body;
+const pillars = c.pillars;
+const why = c.why;
+// Заголовок блока «Почему выбирают NORVEX» — из словаря, но с акцентом на NORVEX.
 const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accent">NORVEX</span>');
 
 ---
-<Layout lang={lang} title={t("seo.about.title")} description={t("seo.about.desc")}>
+<Layout lang={lang} title={t("seo.about.title")} description={t("seo.about.desc")} livePage={"about"}>
   <section class="page-hero">
-    <img class="hero-bg" src="/norvexOffice.jpg" alt="" aria-hidden="true" />
+    <img class="hero-bg" src="/norvexOffice.jpg" alt="" aria-hidden="true" data-live-hero="about_image" data-c-img="about.hero.image" />
     <div class="container">
-      <div class="hero-text">
-        <h1>{about.title}</h1>
-        <p>{about.intro}</p>
+      <div class="hero-text" data-c-list="about.body">
+        <h1 data-c="about.misc.title">{c.title}</h1>
+        <p data-c="about.misc.intro">{c.intro}</p>
         {bodyParas.map((para) => (
-          <p>{para}</p>
+          <p data-c-item>{para}</p>
         ))}
       </div>
     </div>
@@ -132,11 +137,11 @@ const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accen
 
   <section class="stats-wrap">
     <div class="container">
-      <div class="stats card">
+      <div class="stats card" data-c-list="about.stats">
         {stats.map((s, i) => (
-          <div class="stat reveal" style={`--i:${i}`}>
-            <div class="stat-num">{s.value}</div>
-            <div class="stat-label">{s.label}</div>
+          <div class="stat reveal" style={`--i:${i}`} data-c-item>
+            <div class="stat-num" data-c-field="value">{s.value}</div>
+            <div class="stat-label" data-c-field="label">{s.label}</div>
           </div>
         ))}
       </div>
@@ -145,12 +150,12 @@ const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accen
 
   <section class="section">
     <div class="container">
-      <div class="pillars">
+      <div class="pillars" data-c-list="about.pillars">
         {pillars.map((p, i) => (
-          <article class="card pillar reveal" style={`--i:${i}`}>
+          <article class="card pillar reveal" style={`--i:${i}`} data-c-item>
             <span class="icon-badge"><Icon name={p.icon} size={30} /></span>
-            <h3>{p.title}</h3>
-            <p>{p.text}</p>
+            <h3 data-c-field="title">{p.title}</h3>
+            <p data-c-field="text">{p.text}</p>
           </article>
         ))}
       </div>
@@ -160,14 +165,14 @@ const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accen
   <section class="section">
     <div class="container">
       <div class="section-head reveal">
-        <h2 class="section-title" set:html={whyTitleHtml}></h2>
+        <h2 class="section-title" data-c-html="global.about.why_title" set:html={whyTitleHtml}></h2>
         <div class="bar"></div>
       </div>
-      <div class="why-grid">
+      <div class="why-grid" data-c-list="about.why">
         {why.map((w, i) => (
-          <div class="why-item reveal" style={`--i:${i}`}>
+          <div class="why-item reveal" style={`--i:${i}`} data-c-item>
             <span class="icon-badge"><Icon name={w.icon} size={30} /></span>
-            <span>{w.title}</span>
+            <span data-c-field="title">{w.title}</span>
           </div>
         ))}
       </div>
@@ -220,10 +225,12 @@ const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accen
 </style>
 
 <script>
-  // Count the stat numbers up from 0 when the band scrolls into view. The final
-  // CMS value is server-rendered, so no-JS / reduced-motion users see it as-is.
+  // Count the stat numbers up from 0 when the band scrolls into view. The CMS
+  // value may be swapped in by the live overlay — so start the animation only
+  // once the overlay has applied (or a fallback timeout proves it never will).
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const nums = document.querySelectorAll(".stat-num");
+  const start = () => {
   if (!reduce && "IntersectionObserver" in window && nums.length) {
     const run = (el) => {
       const raw = el.textContent.trim();
@@ -246,5 +253,16 @@ const whyTitleHtml = t("about.why_title").replace(/NORVEX/g, '<span class="accen
       entries.forEach((e) => { if (e.isIntersecting) { run(e.target); io.unobserve(e.target); } });
     }, { threshold: 0.5 });
     nums.forEach((el) => io.observe(el));
+  }
+  };
+  // Стартуем после применения оверлея (или fallback, если API недоступен)
+  const liveW = window;
+  if (liveW.__liveTexts && Object.keys(liveW.__liveTexts).length) {
+    start();
+  } else {
+    let started = false;
+    const once = () => { if (!started) { started = true; start(); } };
+    window.addEventListener("live:content", once, { once: true });
+    setTimeout(once, 1500);
   }
 </script>

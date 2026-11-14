@@ -2,41 +2,15 @@
 import Layout from "../../layouts/Layout.astro";
 import Icon from "../../components/Icon.astro";
 import { getT, lp, localeStaticPaths } from "../../i18n";
+import { api, asset } from "../../lib/api";
 
 export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const t = await getT(lang!);
 
-// Локальный контент документов — не зависит от CMS
-const allCategories = lang === "en" ? [
-  { slug: "policies", icon: "file-text", title: "Policies", heading: "Policies and regulations", lead: "Official corporate policies of NORVEX LLC in occupational health and safety, environmental protection and risk management. Our commitments to clients, employees and society.", docs: [
-    { file: null, file_size: "PDF", title: "Occupational Safety Policy" },
-    { file: null, file_size: "PDF", title: "Environmental Policy" },
-    { file: null, file_size: "PDF", title: "Risk Management Policy" },
-  ] },
-  { slug: "procedures", icon: "clipboard", title: "Procedures", heading: "Work procedures and instructions", lead: "Procedures of NORVEX LLC confirming a systematic approach to work organisation and a high corporate safety culture.", docs: [
-    { file: null, file_size: "PDF", title: "Work Safety Procedure" },
-    { file: null, file_size: "PDF", title: "Incident Response Procedure" },
-  ] },
-  { slug: "checklists", icon: "check-square", title: "Checklists", heading: "Checklists and inspection forms", lead: "Methodological materials and checklists developed by NORVEX LLC to assess compliance with OHS, industrial safety and environmental requirements.", docs: [
-    { file: null, file_size: "PDF", title: "HSE Inspection Checklist" },
-    { file: null, file_size: "PDF", title: "Audit Report Form" },
-  ] },
-] : lang === "ky" ? [
-  { slug: "policies", icon: "file-text", title: "Саясаттар", heading: "Саясат жана жобалар", lead: "ОсОО «НОРВЕКС» расмий корпоративдик саясаттары: эмгекти коргоо, экология жана тобокелдиктерди башкаруу жаатында. Клиенттер, кызматкерлер жана коом алдындагы милдеттенмелерибизибиз.", docs: [
-    { file: null, file_size: "PDF", title: "Эмгекти коргоо саясаты" },
-    { file: null, file_size: "PDF", title: "Айлана-чөйрөнү коргоо саясаты" },
-    { file: null, file_size: "PDF", title: "Тобокелдиктерди башкаруу саясаты" },
-  ] },
-  { slug: "procedures", icon: "clipboard", title: "Процедуралар", heading: "Иш процедуралары жана нускамалар", lead: "ОсОО «НОРВЕКС» процедуралары, эмгекти уюштурууга системалык мамиле жана жогорку корпоративдик коопсуздук маданиятын ырастайт.", docs: [
-    { file: null, file_size: "PDF", title: "Жумуш коопсуздугу процедураси" },
-    { file: null, file_size: "PDF", title: "Окуя жооп берүү процедураси" },
-  ] },
-  { slug: "checklists", icon: "check-square", title: "Чек-листтер", heading: "Чек-листтер жана аудит формалары", lead: "ОсОО «НОРВЕКС» тарабынан ОТ, ПБ жана ООС талаптарына шайкештикти баалоо үчүн иштелип чыккан методикалык материалдар жана чек-листтер.", docs: [
-    { file: null, file_size: "PDF", title: "HSE текшерүү чек-листи" },
-    { file: null, file_size: "PDF", title: "Аудит отчетунун формасы" },
-  ] },
-] : [
+const CONTENT = {
+  ru: {
+    categories: [
   { slug: "policies", icon: "file-text", title: "Политики", heading: "Политики", lead: "Официальные корпоративные политики ОсОО «НОРВЕКС» в области охраны труда, экологии и управления рисками. Наши обязательства перед клиентами, сотрудниками и обществом.", docs: [
     { file: null, file_size: "PDF", title: "Политика охраны труда" },
     { file: null, file_size: "PDF", title: "Экологическая политика" },
@@ -50,34 +24,132 @@ const allCategories = lang === "en" ? [
     { file: null, file_size: "PDF", title: "Чек-лист инспекции HSE" },
     { file: null, file_size: "PDF", title: "Форма аудита" },
   ] },
-];
-const categories = allCategories;
+],
+  },
+  en: {
+    categories: [
+  { slug: "policies", icon: "file-text", title: "Policies", heading: "Policies and regulations", lead: "Official corporate policies of NORVEX LLC in occupational health and safety, environmental protection and risk management. Our commitments to clients, employees and society.", docs: [
+    { file: null, file_size: "PDF", title: "Occupational Safety Policy" },
+    { file: null, file_size: "PDF", title: "Environmental Policy" },
+    { file: null, file_size: "PDF", title: "Risk Management Policy" },
+  ] },
+  { slug: "procedures", icon: "clipboard", title: "Procedures", heading: "Work procedures and instructions", lead: "Procedures of NORVEX LLC confirming a systematic approach to work organisation and a high corporate safety culture.", docs: [
+    { file: null, file_size: "PDF", title: "Work Safety Procedure" },
+    { file: null, file_size: "PDF", title: "Incident Response Procedure" },
+  ] },
+  { slug: "checklists", icon: "check-square", title: "Checklists", heading: "Checklists and inspection forms", lead: "Methodological materials and checklists developed by NORVEX LLC to assess compliance with OHS, industrial safety and environmental requirements.", docs: [
+    { file: null, file_size: "PDF", title: "HSE Inspection Checklist" },
+    { file: null, file_size: "PDF", title: "Audit Report Form" },
+  ] },
+],
+  },
+  ky: {
+    categories: [
+  { slug: "policies", icon: "file-text", title: "Саясаттар", heading: "Саясат жана жобалар", lead: "ОсОО «НОРВЕКС» расмий корпоративдик саясаттары: эмгекти коргоо, экология жана тобокелдиктерди башкаруу жаатында. Клиенттер, кызматкерлер жана коом алдындагы милдеттенмелерибизибиз.", docs: [
+    { file: null, file_size: "PDF", title: "Эмгекти коргоо саясаты" },
+    { file: null, file_size: "PDF", title: "Айлана-чөйрөнү коргоо саясаты" },
+    { file: null, file_size: "PDF", title: "Тобокелдиктерди башкаруу саясаты" },
+  ] },
+  { slug: "procedures", icon: "clipboard", title: "Процедуралар", heading: "Иш процедуралары жана нускамалар", lead: "ОсОО «НОРВЕКС» процедуралары, эмгекти уюштурууга системалык мамиле жана жогорку корпоративдик коопсуздук маданиятын ырастайт.", docs: [
+    { file: null, file_size: "PDF", title: "Жумуш коопсуздугу процедураси" },
+    { file: null, file_size: "PDF", title: "Окуя жооп берүү процедураси" },
+  ] },
+  { slug: "checklists", icon: "check-square", title: "Чек-листтер", heading: "Чек-листтер жана аудит формалары", lead: "ОсОО «НОРВЕКС» тарабынан ОТ, ПБ жана ООС талаптарына шайкештикти баалоо үчүн иштелип чыккан методикалык материалдар жана чек-листтер.", docs: [
+    { file: null, file_size: "PDF", title: "HSE текшерүү чек-листи" },
+    { file: null, file_size: "PDF", title: "Аудит отчетунун формасы" },
+  ] },
+],
+  },
+};
+const c = CONTENT[lang ?? "ru"] ?? CONTENT.ru;
+
+// Локальный контент документов — не зависит от CMS
+;
+const allCategories = c.categories;
+// Документы из MySQL (через /api.php) — полный список, а не хардкод
+type Doc = { id?: number; title: string; category?: string | null; file_url?: string | null; description?: string | null };
+const dbDocs = await api<Doc[]>("documents", { lang });
+
+// Категории: заголовки/описания оставляем локальными, состав документов — из БД
+const CATEGORY_SLUGS: Record<string, string> = {
+  "Политики": "policies",
+  "Процедуры": "procedures",
+  "Чек-листы": "checklists",
+  "Policies": "policies",
+  "Procedures": "procedures",
+  "Checklists": "checklists",
+  "Саясаттар": "policies",
+  "Процедуралар": "procedures",
+  "Чек-листтер": "checklists",
+};
+
+const docByCategory = (slug: string): Doc[] =>
+  dbDocs.filter((d) => {
+    const cat = String(d.category ?? "").trim();
+    return (CATEGORY_SLUGS[cat] ?? "") === slug;
+  });
+
+// Если в БД есть документы без известной категории — показываем их в «Политиках»,
+// чтобы ничего не потерялось
+const knownSlugs = new Set(Object.values(CATEGORY_SLUGS));
+const orphanDocs = dbDocs.filter((d) => !knownSlugs.has(String(d.category ?? "").trim()));
+
+const categories = allCategories.map((c) => {
+  const fromDb = docByCategory(c.slug);
+  const docs = fromDb.length
+    ? fromDb.map((d) => ({
+        title: d.title,
+        file: d.file_url || null,
+        file_size: "",
+        desc: d.description || "",
+      }))
+    : c.docs;
+  return { ...c, docs: c.slug === "policies" ? [...docs, ...orphanDocs.map((d) => ({ title: d.title, file: d.file_url || null, file_size: "", desc: d.description || "" }))] : docs };
+});
+
+const totalDocs = categories.reduce((n, c) => n + c.docs.length, 0);
+
 ---
-<Layout lang={lang} title={t("seo.documents.title")} description={t("seo.documents.desc")}>
+<Layout lang={lang} title={t("seo.documents.title")} description={t("seo.documents.desc")} livePage={"documents"}>
   <section class="section bg-soft fill-to-footer">
-    <div class="container docs-layout">
-      <aside class="docs-side">
+    <div class="container docs-layout" data-live-root>
+      <aside class="docs-side" data-c-list="documents.categories">
         {categories.map((c, i) => (
-          <button class:list={["cat", { active: i === 2 }]} data-cat={c.slug}>
-            <Icon name={c.icon} size={20} /> {c.title}
+          <button class:list={["cat", { active: i === 2 }]} data-cat={c.slug} data-c-item>
+            <Icon name={c.icon} size={20} /> <span data-c-field="title">{c.title}</span>
           </button>
         ))}
       </aside>
 
-      <div class="docs-main">
+      <div class="docs-main" data-c-list="documents.categories">
         {categories.map((c, i) => (
-          <div class:list={["docs-panel", { active: i === 2 }]} data-catpanel={c.slug}>
-            <h1>{c.heading}</h1>
-            <p class="docs-lead">{c.lead}</p>
-            <ul class="doc-list">
-              {c.docs.map((d) => (
-                <li class="card doc-row">
+          <div class:list={["docs-panel", { active: i === 2 }]} data-catpanel={c.slug} data-c-item>
+            <h1><span data-c-field="heading">{c.heading}</span> <span class="docs-count">{c.docs.length}</span></h1>
+            <p class="docs-lead" data-c-field="lead">{c.lead}</p>
+            <ul class="doc-list" data-live-type="documents" data-live-category={c.slug} data-live-template={`#tpl-doc-${c.slug}`}>
+              <template id={`tpl-doc-${c.slug}`}>
+                <li class="card doc-row" data-live-key="">
                   <span class="pdf-badge">PDF</span>
                   <div class="doc-meta">
-                    <span class="doc-name">{d.title}</span>
-                    <span class="doc-sub">PDF{d.file_size ? `, ${d.file_size}` : ""}</span>
+                    <span class="doc-name" data-live-name></span>
+                    <span class="doc-sub" data-live-desc></span>
                   </div>
-
+                </li>
+              </template>
+              {c.docs.map((d) => (
+                <li class:list={["card doc-row", { "has-file": !!d.file }]} data-live-key={d.title}>
+                  <span class="pdf-badge">PDF</span>
+                  <div class="doc-meta">
+                    <span class="doc-name" data-live-name>{d.title}</span>
+                    <span class="doc-sub" data-live-desc>
+                      {d.file ? "Нажмите, чтобы скачать" : "PDF"}
+                    </span>
+                  </div>
+                  {d.file && (
+                    <a class="doc-download" href={d.file} download target="_blank" rel="noopener" aria-label={`Скачать ${d.title}`}>
+                      <Icon name="download" size={20} />
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>
@@ -87,10 +159,10 @@ const categories = allCategories;
         <div class="help card">
           <span class="help-icon"><Icon name="info" size={26} /></span>
           <div class="help-text">
-            <strong>{t("docs.help_title")}</strong>
-            <span>{t("docs.help_text")}</span>
+            <strong data-c="global.docs.help_title">{t("docs.help_title")}</strong>
+            <span data-c="global.docs.help_text">{t("docs.help_text")}</span>
           </div>
-          <a href={lp(lang, "/contacts")} class="btn btn-primary">{t("cta.contact_us")}</a>
+          <a href={lp(lang, "/contacts")} class="btn btn-primary" data-c="global.cta.contact_us">{t("cta.contact_us")}</a>
         </div>
       </div>
     </div>
@@ -99,6 +171,18 @@ const categories = allCategories;
 
 <style>
   .docs-layout { display: grid; grid-template-columns: 260px 1fr; gap: 40px; align-items: start; }
+  /* Документ с файлом — кликабельный */
+  .doc-row.has-file { cursor: pointer; transition: border-color .16s, box-shadow .16s, transform .16s; }
+  .doc-row.has-file:hover { border-color: var(--green-500); box-shadow: var(--shadow); transform: translateY(-2px); }
+  .doc-row.has-file .doc-name { color: var(--navy); }
+  .doc-row.has-file:hover .doc-name { color: var(--green-700); }
+  .doc-download {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; border-radius: 10px; flex: 0 0 auto;
+    background: var(--green-500); color: #fff; text-decoration: none; transition: background .16s;
+  }
+  .doc-download:hover { background: var(--green-700); }
+  .docs-count { color: var(--muted); font-size: .55em; vertical-align: super; }
   .docs-side { display: flex; flex-direction: column; gap: 10px; position: sticky; top: 96px; }
   .cat {
     display: flex; align-items: center; gap: 12px; padding: 16px 18px; cursor: pointer;
@@ -141,6 +225,7 @@ const categories = allCategories;
 <script>
   const cats = Array.from(document.querySelectorAll<HTMLElement>("[data-cat]"));
   const panels = Array.from(document.querySelectorAll<HTMLElement>("[data-catpanel]"));
+
   cats.forEach((c) =>
     c.addEventListener("click", () => {
       cats.forEach((x) => x.classList.toggle("active", x === c));
@@ -148,3 +233,4 @@ const categories = allCategories;
     })
   );
 </script>
+

@@ -54,24 +54,24 @@ const socials = [
       </div>
 
       <div class="footer-col">
-        <h4>{t("footer.menu")}</h4>
+        <h4 data-c="global.footer.menu">{t("footer.menu")}</h4>
         <ul>{menu.map(([l, h]) => <li><a href={h}>{l}</a></li>)}</ul>
       </div>
 
       <div class="footer-col">
-        <h4>{t("footer.services")}</h4>
+        <h4 data-c="global.footer.services">{t("footer.services")}</h4>
         <ul>{servicesLinks.map(([l, h]) => <li><a href={h}>{l}</a></li>)}</ul>
       </div>
 
       <div class="footer-col">
-        <h4>{t("footer.documents")}</h4>
+        <h4 data-c="global.footer.documents">{t("footer.documents")}</h4>
         <ul>{docsLinks.map((l) => <li><a href={lp(lang, "/documents")}>{l}</a></li>)}</ul>
       </div>
     </div>
 
     <div class="footer-bottom">
-      <span>{t("footer.rights", { year })}</span>
-      <a href={lp(lang, "/privacy")}>{t("footer.privacy")}</a>
+      <span data-c="global.footer.rights">{t("footer.rights", { year })}</span>
+      <a href={lp(lang, "/privacy")} data-c="global.footer.privacy">{t("footer.privacy")}</a>
     </div>
   </div>
 </footer>

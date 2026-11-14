@@ -2,18 +2,34 @@
 import "../styles/global.css";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import { directus, asset, DIRECTUS_URL } from "../lib/directus";
+import { apiOne, asset } from "../lib/api";
 import { favicon } from "../generated/favicon";
 import { HTML_LANG, LOCALES, type Locale } from "../i18n";
 import { realUrl } from "../lib/social";
 
-interface Props { title?: string; description?: string; lang?: Locale; }
+interface Props {
+  title?: string;
+  description?: string;
+  lang?: Locale;
+  /** Ключ страницы для live-оверлера: home|about|team|services|contacts|documents|news|privacy */
+  livePage?: string;
+  /** Путь canonical/alternates (без языкового префикса), например /news/slug/ — для PHP-шаблона статьи */
+  canonicalPath?: string;
+  /** Версия og:image — относительный путь; абсолютный соберётся от site */
+  ogImagePath?: string;
+  /** noindex для служебных страниц (PHP-шаблон статьи) */
+  noindex?: boolean;
+}
 const {
   title = "NORVEX — Надежный партнер в области HSE",
   description = "NORVEX — охрана труда, промышленная безопасность и экология: от консалтинга до полного аутсорсинга функций HSE.",
   lang = "ru",
+  livePage = "",
+  canonicalPath,
+  ogImagePath,
+  noindex = false,
 } = Astro.props;
-const settings = await directus<{
+const settings = await apiOne<{
   og_image?: string | null;
   email?: string | null;
   phone?: string | null;
@@ -23,19 +39,20 @@ const settings = await directus<{
   type_scale_hero?: number | null;
   type_scale_heading?: number | null;
   type_scale_body?: number | null;
-}>("/items/site_settings?fields=og_image,email,phone,social_instagram,social_telegram,social_linkedin,type_scale_hero,type_scale_heading,type_scale_body", {});
+}>("site_settings", { lang });
 
 // --- SEO: canonical, hreflang alternates, OG/Twitter, Organization JSON-LD ---
 // All absolute URLs resolve against `site` (astro.config → https://norvexhse.com).
 const site = Astro.site!;
 // Path without the /ru|/en|/ky prefix, so we can swap in each locale for hreflang.
+// canonicalPath перекрывает его для служебных шаблонов (PHP-публикация новостей).
 const rest = Astro.url.pathname.replace(/^\/(ru|en|ky)/, "").replace(/\/$/, "");
 // Trailing slash to match Astro's emitted URLs + the generated sitemap, so canonical,
 // hreflang and sitemap all agree (no near-duplicate URL variants for crawlers).
-const altUrl = (loc: string) => new URL(`/${loc}${rest}/`, site).href;
+const altUrl = (loc: string) => new URL(canonicalPath ? `/${loc}${canonicalPath}` : `/${loc}${rest}/`, site).href;
 const canonical = altUrl(lang);
 const OG_LOCALE: Record<string, string> = { ru: "ru_RU", en: "en_US", ky: "ky_KG" };
-const ogImage = new URL(asset(settings.og_image) ?? "/norvexHero.jpg", site).href;
+const ogImage = new URL(ogImagePath ?? asset(settings.og_image) ?? "/norvexHero.jpg", site).href;
 const firstLine = (v?: string | null) => (v ?? "").split(/\r?\n/)[0].trim();
 const sameAs = [settings.social_instagram, settings.social_telegram, settings.social_linkedin]
   .map(realUrl).filter((u): u is string => !!u);
@@ -60,7 +77,7 @@ const typeScaleStyle =
   `--ts-body:${tsClamp(settings.type_scale_body)}`;
 ---
 <!doctype html>
-<html lang={HTML_LANG[lang]} style={typeScaleStyle}>
+<html lang={HTML_LANG[lang]} data-lang={lang} style={typeScaleStyle}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -72,7 +89,7 @@ const typeScaleStyle =
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
 
     {/* hreflang: tell search engines about the ru/en/ky versions of this page. */}
     {LOCALES.map((loc) => <link rel="alternate" hreflang={loc} href={altUrl(loc)} />)}
@@ -103,12 +120,15 @@ const typeScaleStyle =
       rel="stylesheet"
     />
   </head>
-  <body>
+  <body data-live-page={livePage}>
     <Header lang={lang} />
     <main>
       <slot />
     </main>
     <Footer lang={lang} />
+    <!-- Live-оверлей: подтягивает свежий контент из /api.php (тексты, фото, списки).
+         Подключён здесь — работает на всех страницах и всех языках сразу. -->
+    <script src="../scripts/live-content.ts"></script>
     <script>
       // Reveal-on-scroll: add .is-visible as each .reveal enters the viewport.
       // Skipped entirely under reduced-motion (CSS keeps everything visible).
@@ -126,33 +146,6 @@ const typeScaleStyle =
       }
     </script>
 
-    <script define:vars={{ ENDPOINT: `${DIRECTUS_URL}/items/page_views`, LANG: lang }}>
-      // Anonymous page-view beacon → Directus `page_views` (see directus/setup_analytics.py).
-      // One row per page load; keepalive fetch survives navigation. Skips localhost.
-      (() => {
-        const h = location.hostname;
-        if (h === "localhost" || h === "127.0.0.1" || h.endsWith(".local")) return;
-        let visitor = "";
-        try {
-          visitor = localStorage.getItem("nv_vid") || "";
-          if (!visitor) {
-            visitor = (crypto.randomUUID && crypto.randomUUID()) || Date.now().toString(36) + Math.random().toString(36).slice(2);
-            localStorage.setItem("nv_vid", visitor);
-          }
-        } catch (e) {}
-        const isBot = /bot|crawl|spider|slurp|bingpreview|facebookexternal|embedly|pinterest|headless|lighthouse|gtmetrix|pingdom|monitor|preview|scan/i.test(navigator.userAgent || "");
-        let referrer = "";
-        try { referrer = document.referrer ? new URL(document.referrer).hostname : ""; } catch (e) {}
-        try {
-          fetch(ENDPOINT, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ path: location.pathname, lang: LANG, referrer, visitor, is_bot: isBot }),
-            keepalive: true,
-            mode: "cors",
-          }).catch(() => {});
-        } catch (e) {}
-      })();
-    </script>
+
   </body>
 </html>

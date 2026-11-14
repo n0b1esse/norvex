@@ -1,6 +1,25 @@
+# dependencies & build output
 node_modules/
 dist/
+
+# env & logs
 .env
 .env.local
 *.log
 .DS_Store
+
+# local editor/build state — never commit
+.astro/
+.vercel/
+.vscode/
+_astro/
+
+# generated sitemap (rebuilt on every build)
+sitemap-0.xml
+sitemap-index.xml
+
+# PHP secrets and one-time scripts — never commit
+php/config.php
+php/install.php
+php/migrate-*.php
+php/import-*.php

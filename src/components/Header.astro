@@ -34,31 +34,31 @@ const services = lang === "en" ? [
     <div class="logo-slot"><Logo height={60} href={lp(lang)} /></div>
 
     <nav class="nav" data-nav>
-      <a href={lp(lang)} class:list={["nav-link", { active: is("/") }]}>{t("nav.home")}</a>
-      <a href={lp(lang, "/about")} class:list={["nav-link", { active: is("/about") }]}>{t("nav.about")}</a>
+      <a href={lp(lang)} class:list={["nav-link", { active: is("/") }]} data-c="global.nav.home">{t("nav.home")}</a>
+      <a href={lp(lang, "/about")} class:list={["nav-link", { active: is("/about") }]} data-c="global.nav.about">{t("nav.about")}</a>
 
       <div class="nav-item has-menu">
         <a href={lp(lang, "/services")} class:list={["nav-link", { active: is("/services") }]}>
-          {t("nav.services")} <Icon name="chevron-down" size={16} />
+          <span data-c="global.nav.services">{t("nav.services")}</span> <Icon name="chevron-down" size={16} />
         </a>
         <div class="dropdown">
           {services.map(([label, href]) => <a href={href}>{label}</a>)}
         </div>
       </div>
 
-      <a href={lp(lang, "/team")} class:list={["nav-link", { active: is("/team") }]}>{t("nav.team")}</a>
-      <a href={lp(lang, "/documents")} class:list={["nav-link", { active: is("/documents") }]}>{t("nav.documents")}</a>
-      <a href={lp(lang, "/news")} class:list={["nav-link", { active: is("/news") }]}>{t("nav.news")}</a>
-      <a href={lp(lang, "/contacts")} class:list={["nav-link", { active: is("/contacts") }]}>{t("nav.contacts")}</a>
+      <a href={lp(lang, "/team")} class:list={["nav-link", { active: is("/team") }]} data-c="global.nav.team">{t("nav.team")}</a>
+      <a href={lp(lang, "/documents")} class:list={["nav-link", { active: is("/documents") }]} data-c="global.nav.documents">{t("nav.documents")}</a>
+      <a href={lp(lang, "/news")} class:list={["nav-link", { active: is("/news") }]} data-c="global.nav.news">{t("nav.news")}</a>
+      <a href={lp(lang, "/contacts")} class:list={["nav-link", { active: is("/contacts") }]} data-c="global.nav.contacts">{t("nav.contacts")}</a>
 
       <div class="nav-mobile-extra">
-        <a href={lp(lang, "/contacts")} class="btn btn-primary">{t("cta.consult")}</a>
+        <a href={lp(lang, "/contacts")} class="btn btn-primary" data-c="global.cta.consult">{t("cta.consult")}</a>
       </div>
     </nav>
 
     <div class="header-right">
       <LangSwitch lang={lang} switchPath={switchPath} />
-      <a href={lp(lang, "/contacts")} class="btn btn-primary cta">{t("cta.consult")}</a>
+      <a href={lp(lang, "/contacts")} class="btn btn-primary cta" data-c="global.cta.consult">{t("cta.consult")}</a>
       <button class="burger" aria-label="Menu" aria-expanded="false" data-burger>
         <Icon name="menu" />
       </button>

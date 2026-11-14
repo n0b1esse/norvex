@@ -1,51 +1,52 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import Figure from "../../components/Figure.astro";
-import { directus, PUBLISHED, asset } from "../../lib/directus";
-import { getT, localeStaticPaths, tr } from "../../i18n";
+import { api, apiOne, asset } from "../../lib/api";
+import { getT, localeStaticPaths } from "../../i18n";
 
 export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const t = await getT(lang!);
 
-// Hero-фон — тот же, что на «Услугах» и «О компании»: из about_page (Directus),
+// Hero-фон — тот же, что на «Услугах» и «О компании»: из настроек сайта,
 // иначе локальное изображение (сборка без сети не должна остаться без фона).
-const about = await directus<{ image?: string | null }>("/items/about_page?fields=image", {});
-const officeImg = asset(about.image) ?? "/newOffice.png";
+const about = await apiOne<{ about_image?: string | null }>("site_settings", { lang });
+const officeImg = asset(about.about_image) ?? "/newOffice.png";
 
-type MemberTr = { languages_code: string; name?: string; position: string; experience: string };
-type Row = { name: string; photo: string | null; translations: MemberTr[] };
-const rows = await directus<Row[]>(
-  `/items/team_members?fields=name,photo,translations.*&${PUBLISHED}`, []);
+// Члены команды из MySQL (админка → таблица team). Поля: name, position, photo.
+type Row = { name: string; position?: string | null; experience?: string | null; photo?: string | null; is_active?: number };
+const rows = await api<Row[]>("team", { lang });
 
-// Локальный резерв: если CMS недоступна/пуста, превью не должно отдавать
+// Локальный резерв: если база недоступна или пуста, превью не должно отдавать
 // пустую страницу. Данные зеркалят прод (norvexhse.com/ru/team): 2 руководителя
-// + 2 специалиста, фото в CMS не загружены (placeholder).
+// + 2 специалиста, фото загружены только у руководителя.
 const FALLBACK_TEAM: Record<string, { name: string; position: string; photo: string | null }[]> = {
   ru: [
-    { name: "Абдраимов Тумарбек Абдраимович", position: "Учредитель Стаж: 10 лет", photo: "https://temoor.uz/norvex-cms/assets/98fc57b4-8d47-4c56-ab2f-7cf2f9384419" },
-    { name: "Оморкулов Уланбек Абдраимович", position: "Директор Стаж: 15 лет", photo: null },
-    { name: "Маматов Данияр Талгатович", position: "Эксперт по пожарной безопасности Стаж: 10 лет", photo: null },
-    { name: "Сидьякова Айгуль Нурлановна", position: "Эксперт по охране окружающей среды (Экология) Стаж: 9 лет", photo: null },
+    { name: "Абдраимов Тумарбек Абдраимович", position: "Учредитель", experience: "Стаж: 10 лет", photo: "/assets/team-abdraimov.jpeg" },
+    { name: "Оморкулов Уланбек Абдраимович", position: "Директор", experience: "Стаж: 15 лет", photo: null },
+    { name: "Маматов Данияр Талгатович", position: "Эксперт по пожарной безопасности", experience: "Стаж: 10 лет", photo: null },
+    { name: "Сидьякова Айгуль Нурлановна", position: "Эксперт по охране окружающей среды (Экология)", experience: "Стаж: 9 лет", photo: null },
   ],
   en: [
-    { name: "Abdraimov Tumarbek Abdraimovich", position: "Founder Experience: 10 years", photo: "https://temoor.uz/norvex-cms/assets/98fc57b4-8d47-4c56-ab2f-7cf2f9384419" },
-    { name: "Omorkulov Ulanbek Abdraimovich", position: "Director Experience: 15 years", photo: null },
-    { name: "Mamatov Daniyar Talgatovich", position: "Fire safety expert Experience: 10 years", photo: null },
-    { name: "Sidyakoova Aygul Nurlanovna", position: "Environmental Expert Experience: 9 years", photo: null },
+    { name: "Abdraimov Tumarbek Abdraimovich", position: "Founder", experience: "Experience: 10 years", photo: "/assets/team-abdraimov.jpeg" },
+    { name: "Omorkulov Ulanbek Abdraimovich", position: "Director", experience: "Experience: 15 years", photo: null },
+    { name: "Mamatov Daniyar Talgatovich", position: "Fire safety expert", experience: "Experience: 10 years", photo: null },
+    { name: "Sidyakoova Aygul Nurlanovna", position: "Environmental Expert", experience: "Experience: 9 years", photo: null },
   ],
   ky: [
-    { name: "Абдраимов Тумарбек Абдраимович", position: "Уюштуруучу Тажрыйба: 10 жыл", photo: "https://temoor.uz/norvex-cms/assets/98fc57b4-8d47-4c56-ab2f-7cf2f9384419" },
-    { name: "Оморкулов Уланбек Абдраимович", position: "Директор Тажрыйба: 15 жыл", photo: null },
-    { name: "Маматов Данияр Талгатович", position: "Өрт коопсуздугу боюнча эксперт Тажрыйба: 10 жыл", photo: null },
-    { name: "Сидьякова Айгуль Нурлановна", position: "Экология боюнча эксперт Тажрыйба: 9 жыл", photo: null },
+    { name: "Абдраимов Тумарбек Абдраимович", position: "Уюштуруучу", experience: "Тажрыйба: 10 жыл", photo: "/assets/team-abdraimov.jpeg" },
+    { name: "Оморкулов Уланбек Абдраимович", position: "Директор", experience: "Тажрыйба: 15 жыл", photo: null },
+    { name: "Маматов Данияр Талгатович", position: "Өрт коопсуздугу боюнча эксперт", experience: "Тажрыйба: 10 жыл", photo: null },
+    { name: "Сидьякова Айгуль Нурлановна", position: "Экология боюнча эксперт", experience: "Тажрыйба: 9 жыл", photo: null },
   ],
 };
 const team = rows.length > 0
-  ? rows.map((m) => {
-      const t0 = tr<MemberTr>(m.translations, lang!);
-      return { ...t0, photo: m.photo, name: t0.name ?? m.name };
-    })
+  ? rows.map((m) => ({
+      name: m.name,
+      position: m.position ?? "",
+      experience: m.experience ?? "",
+      photo: m.photo ?? null,
+    }))
   : (FALLBACK_TEAM[lang ?? "ru"] ?? FALLBACK_TEAM.ru);
 
 // Первые 2 — директор и учредитель (всегда видны, крупные карточки), остальные — специалисты (скрыты до нажатия).
@@ -54,27 +55,30 @@ const leaders = team.slice(0, LEADERS);
 const specialists = team.slice(LEADERS);
 const hasMore = specialists.length > 0;
 ---
-<Layout lang={lang} title={t("seo.team.title")} description={t("seo.team.desc")}>
+<Layout lang={lang} title={t("seo.team.title")} description={t("seo.team.desc")} livePage={"team"}>
   <section class="page-hero">
-    {officeImg && <img class="hero-bg" src={officeImg} alt="" aria-hidden="true" />}
+    {officeImg && <img class="hero-bg" src={officeImg} alt="" aria-hidden="true" data-live-hero="about_image" data-c-img="team.hero.image" />}
     <div class="container">
       <div class="hero-text">
-        <h1>{t("page.team_title")}</h1>
-        <p>{t("page.team_lead")}</p>
+        <h1 data-c="global.page.team_title">{t("page.team_title")}</h1>
+        <p data-c="global.page.team_lead">{t("page.team_lead")}</p>
       </div>
     </div>
   </section>
 
   <section class="section">
-    <div class="container">
+    <div class="container" data-live-root data-live-leaders={LEADERS}>
       {/* Группа 1: директор + учредитель — первая строка, крупные карточки (2 в ряд) */}
-      <div class="grid grid-2 team-grid leaders-grid">
+      <div class="grid grid-2 team-grid leaders-grid" data-live-type="team" data-live-role="leaders" data-live-template="#tpl-member">
         {leaders.map((m) => (
-          <article class="member leader">
-            <Figure id={m.photo} label="Фото сотрудника" alt={m.name} class="photo" width={420} height={330} />
+          <article class="member leader" data-live-key={m.name} data-live-w="420" data-live-h="330">
+            <div data-live-photo>
+              <Figure id={m.photo} label="Фото сотрудника" alt={m.name} class="photo" width={420} height={330} />
+            </div>
             <div class="member-body">
-              <h3>{m.name}</h3>
-              <p class="role">{m.position}</p>
+              <h3 data-live-name>{m.name}</h3>
+              <p class="role" data-live-position>{m.position}</p>
+              <p class="exp" data-live-experience hidden={!m.experience}>{m.experience}</p>
             </div>
           </article>
         ))}
@@ -84,18 +88,21 @@ const hasMore = specialists.length > 0;
       {hasMore && (
         <>
           <div class="section-head-specialists">
-            <h2 class="section-title">{t("team.key_instructors")}</h2>
+            <h2 class="section-title" data-c="global.team.key_instructors">{t("team.key_instructors")}</h2>
           </div>
           <div class="team-cta">
-            <button type="button" class="btn btn-primary" data-show-all>{t("cta.all_specialists")}</button>
+            <button type="button" class="btn btn-primary" data-show-all data-c="global.cta.all_specialists">{t("cta.all_specialists")}</button>
           </div>
-          <div class:list={["grid grid-4 team-grid specialists-grid", { hidden: true }]}>
+          <div class:list={["grid grid-4 team-grid specialists-grid", { hidden: true }]} data-live-type="team" data-live-role="specialists" data-live-template="#tpl-member">
             {specialists.map((m) => (
-              <article class:list={["member", { "is-hidden": true }]}>
-                <Figure id={m.photo} label="Фото сотрудника" alt={m.name} class="photo" width={300} height={240} />
+              <article class:list={["member", { "is-hidden": true }]} data-live-key={m.name} data-live-w="300" data-live-h="240">
+                <div data-live-photo>
+                  <Figure id={m.photo} label="Фото сотрудника" alt={m.name} class="photo" width={300} height={240} />
+                </div>
                 <div class="member-body">
-                  <h3>{m.name}</h3>
-                  <p class="role">{m.position}</p>
+                  <h3 data-live-name>{m.name}</h3>
+                  <p class="role" data-live-position>{m.position}</p>
+                  <p class="exp" data-live-experience hidden={!m.experience}>{m.experience}</p>
                 </div>
               </article>
             ))}
@@ -132,11 +139,16 @@ const hasMore = specialists.length > 0;
   .member-body { padding: 20px 20px 24px; display: flex; flex-direction: column; flex: 1; }
   .member-body h3 { font-size: calc(18px * var(--ts-heading)); line-height: 1.3; color: #ea8c00; margin-bottom: 6px; }
   .role { color: var(--muted); font-size: 14px; margin-top: 0; margin-bottom: 16px; }
+  /* Опыт — отдельная строка под должностью */
+  .exp { color: var(--muted); font-size: 14px; margin: -10px 0 16px; opacity: 0.85; }
+  .exp[hidden] { display: none; }
+  .member-body .role:empty { display: none; }
 
   /* Лидеры — крупные карточки в первой строке */
   .member.leader .photo { min-height: 330px; }
   .member.leader .member-body h3 { font-size: calc(20px * var(--ts-heading)); margin-bottom: 8px; }
   .member.leader .member-body .role { font-size: 15px; margin-bottom: 20px; }
+  .member.leader .member-body .exp { font-size: 15px; margin-top: -12px; margin-bottom: 20px; }
 
   /* Заголовок второй группы («Ключевые специалисты») — серый, как на референсе */
   .section-head-specialists { text-align: left; margin: 48px 0 24px 0; }
@@ -204,3 +216,22 @@ const hasMore = specialists.length > 0;
     btn.closest(".team-cta")?.remove();
   });
 </script>
+
+<!-- Шаблон карточки сотрудника: используется live-оверлеем, когда в админке
+     появляется новый сотрудник — карточка клонируется из этого шаблона. -->
+<template id="tpl-member">
+  <article class="member" data-live-key="" data-live-w="420" data-live-h="330">
+    <div data-live-photo>
+      <div class="placeholder photo" role="img" aria-label="Фото сотрудника">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" /><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" /></svg>
+        <span>Фото сотрудника</span>
+      </div>
+    </div>
+    <div class="member-body">
+      <h3 data-live-name></h3>
+      <p class="role" data-live-position></p>
+      <p class="exp" data-live-experience hidden></p>
+    </div>
+  </article>
+</template>
+

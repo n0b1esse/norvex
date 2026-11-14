@@ -15,8 +15,19 @@ export function localeStaticPaths() {
   return LOCALES.map((lang) => ({ params: { lang } }));
 }
 
+// Внутренние ссылки — со завершающим слэшем: nginx на хостинге отвечает на пути без
+// слэша редиректом 301, у которого Location ошибочно построен с http://, и браузер
+// срезает Referer при понижение схемы (и SEO-вес теряется). Слэш = без редиректа.
+const FILE_EXT_RE = /\.(php|html|xml|json|txt|pdf|png|jpe?g|webp|avif|gif|svg|ico|css|js|map|woff2?|ttf|eot)([?#]|$)/i;
+
 export function lp(lang: string, path = ""): string {
-  return `/${lang}${path}`;
+  const url = `/${lang}${path}`;
+  if (path === "") return `/${lang}/`;
+  if (FILE_EXT_RE.test(path)) return url;
+  const cut = path.search(/[?#]/);
+  const head = cut >= 0 ? path.slice(0, cut) : path;
+  const tail = cut >= 0 ? path.slice(cut) : "";
+  return `/${lang}${head.endsWith("/") ? head : head + "/"}${tail}`;
 }
 
 export function tr<T = Record<string, any>>(

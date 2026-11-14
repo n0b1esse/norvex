@@ -2,17 +2,64 @@
 import Layout from "../../../layouts/Layout.astro";
 import Icon from "../../../components/Icon.astro";
 import { getT, lp, localeStaticPaths } from "../../../i18n";
+import { api, asset } from "../../../lib/api";
 import { NEWS } from "../../../data/news";
 
+// Страницы статей генерируются из MySQL (новые новости из админки появляются сразу).
+// Если API недоступен (сборка без сети) — используем локальный список.
 export const getStaticPaths = async () => {
-  const paths = NEWS.flatMap((n) => ["ru", "en", "ky"].map((lang) => ({ params: { lang, slug: n.slug } })));
-  return paths;
+  const langs = ["ru", "en", "ky"] as const;
+  const slugs = new Set<string>();
+
+  for (const lang of langs) {
+    try {
+      const rows = await api<{ slug: string }[]>("news", { lang });
+      rows.forEach((r) => r.slug && slugs.add(r.slug));
+    } catch { /* API недоступен — ниже возьмём локальный список */ }
+  }
+  NEWS.forEach((n) => slugs.add(n.slug));
+
+  return [...slugs].flatMap((slug) => langs.map((lang) => ({ params: { lang, slug } })));
 };
 
 const { lang, slug } = Astro.params as { lang: string; slug: string };
 const t = await getT(lang);
 
-const newsItem = NEWS.find((n) => n.slug === slug);
+type DbNews = {
+  id?: number; slug: string; news_date?: string | null; category?: string | null;
+  title: string; excerpt?: string | null; content?: string | null; image?: string | null;
+};
+
+let dbItem: DbNews | null = null;
+try {
+  const rows = await api<DbNews[]>("news_one", { lang, slug });
+  dbItem = rows && !Array.isArray(rows) ? rows : null;
+} catch { /* fallback ниже */ }
+
+const localItem = NEWS.find((n) => n.slug === slug);
+
+const newsItem = dbItem
+  ? {
+      slug: dbItem.slug,
+      date: dbItem.news_date || "",
+      category: dbItem.category || "",
+      title: dbItem.title,
+      excerpt: dbItem.excerpt || "",
+      content: dbItem.content || "",
+      image: asset(dbItem.image) ?? null,
+    }
+  : localItem
+    ? {
+        slug: localItem.slug,
+        date: localItem.date,
+        category: localItem.category,
+        title: localItem.title[lang] ?? localItem.title.ru,
+        excerpt: localItem.excerpt[lang] ?? localItem.excerpt.ru,
+        content: localItem.content[lang] ?? localItem.content.ru,
+        image: localItem.image ?? null,
+      }
+    : null;
+
 if (!newsItem) {
   return new Response(null, { status: 404 });
 }
@@ -29,7 +76,7 @@ const formatDate = (iso: string) => {
   return lang === "ky" ? d.toLocaleDateString("ky-KG", opts) : d.toLocaleDateString(lang === "en" ? "en-US" : "ru-RU", opts);
 };
 ---
-<Layout lang={lang} title={newsItem.title[lang]} description={newsItem.excerpt[lang]}>
+<Layout lang={lang} title={newsItem.title} description={newsItem.excerpt} livePage={"news"}>
   <section class="page-hero">
     {newsItem.image ? (
       <img class="hero-bg" src={newsItem.image} alt="" aria-hidden="true" />
@@ -37,7 +84,7 @@ const formatDate = (iso: string) => {
     <div class="container">
       <div class="hero-text">
         <span class="news-detail-category">{categoryLabel[newsItem.category]}</span>
-        <h1>{newsItem.title[lang]}</h1>
+        <h1>{newsItem.title}</h1>
         <p class="news-detail-date">{formatDate(newsItem.date)}</p>
       </div>
     </div>
@@ -45,10 +92,10 @@ const formatDate = (iso: string) => {
 
   <section class="section bg-soft fill-to-footer">
     <div class="container">
-      <article class="news-detail" set:html={newsItem.content[lang] || ""}></article>
+      <article class="news-detail" set:html={newsItem.content || ""}></article>
       <div class="news-detail-back">
         <a href={lp(lang, "/news")} class="btn btn-outline-green" data-back-link data-back-alt={t("cta.back")}>
-          <Icon name="arrow-left" size={18} /> <span>{t("cta.back_news")}</span>
+          <Icon name="arrow-left" size={18} /> <span data-c="global.cta.back_news">{t("cta.back_news")}</span>
         </a>
       </div>
     </div>
@@ -72,8 +119,10 @@ const formatDate = (iso: string) => {
   // По умолчанию (без JS / внешний переход) — страница /news.
   // Если пользователь пришёл с другой страницы сайта (например, с главной),
   // ссылка меняется на неё, а подпись — на "Назад".
-  const back = document.querySelector<HTMLAnchorElement>("[data-back-link]");
-  if (back && document.referrer) {
+  // Ждём live-оверлей (он перезаписывает data-c слоты), иначе подпись слетит обратно.
+  const apply = () => {
+    const back = document.querySelector<HTMLAnchorElement>("[data-back-link]");
+    if (!back || !document.referrer) return;
     try {
       const ref = new URL(document.referrer);
       if (ref.origin === location.origin && !/\/news(\/|$)/.test(ref.pathname)) {
@@ -83,5 +132,11 @@ const formatDate = (iso: string) => {
         if (label && alt) label.textContent = alt;
       }
     } catch { /* referrer unparsable — keep default */ }
+  };
+  const liveW = window as unknown as { __liveTexts?: unknown };
+  if (liveW.__liveTexts) apply();
+  else {
+    window.addEventListener("live:content", apply, { once: true });
+    setTimeout(apply, 1500);
   }
 </script>

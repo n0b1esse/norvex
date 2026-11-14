@@ -2,46 +2,74 @@
 import Layout from "../../layouts/Layout.astro";
 import Icon from "../../components/Icon.astro";
 import { getT, lp, localeStaticPaths } from "../../i18n";
-import { directus, asset } from "../../lib/directus";
+import { api, apiOne, asset } from "../../lib/api";
 
 export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const t = await getT(lang!);
 
-// Локальный контент услуг — не зависит от CMS.
-// Hero-изображение берётся из about_page (Directus), иначе локальный фон.
-const about = await directus<{ image?: string | null }>("/items/about_page?fields=image", {});
-const officeImg = asset(about.image) ?? "/newOffice.png";
-
-// Модели сотрудничества (детально) — бывшая страница /cooperation, перенесена сюда.
-const MODELS = lang === "en" ? [
-  { id: "consulting", icon: "clipboard", image: "/assets/cooperation-consulting.webp", label: "Consulting", desc: "A one-time expert assessment of the current state of safety with specific recommendations. We will conduct an audit, identify risks, and propose a step-by-step action plan.", points: ["Comprehensive audit of OHS, industrial safety and environmental protection", "Identification and assessment of occupational risks", "Development of a corrective action plan", "Preparation of a final report for the client"] },
-  { id: "outsourcing", icon: "building", image: "/assets/cooperation-outsourcing.webp", label: "Outsourcing", desc: "Outsource occupational health and safety, industrial safety and environmental protection to professional support. We will take over the full range of tasks to protect your business from risks and fines.", points: ["Dedicated OHS, industrial safety and environmental expert with on-site visits", "Development and maintenance of all required documentation", "Regular audits and reporting", "Guarantee of full compliance with the legislation of the Kyrgyz Republic"] },
-  { id: "outstaffing", icon: "users", image: "/assets/cooperation-outstaffing.webp", label: "Outstaffing", desc: "Providing qualified specialists in occupational health and safety, industrial safety and environmental protection to work at your sites. We take care of all HR and administrative matters — you manage the process.", points: ["Profile experts with the necessary permits and certificates", "Optimised costs for maintaining a staff position (taxes, leave, sick pay)", "Prompt meeting of specialist needs", "Transparent reporting and quality control of work"] },
-] : lang === "ky" ? [
-  { id: "consulting", icon: "clipboard", image: "/assets/cooperation-consulting.webp", label: "Консалтинг", desc: "Коопсуздук жаатындагы учурдагы абалдын бир жолку эксперттик баасы жана конкреттүү сунуштар менен. Биз аудит жүргүзүп, тобокелдиктерди аныктап, кадам кадам боюнча аракет планын сунуштайбыз.", points: ["ОТ, ПБ жана ООС боюнча комплекстүү аудит", "Кесиптик тобокелдиктерди аныктоо жана баалоо", "Оңдоо иш-чаралары планын иштеп чыгуу", "Кардар үчүн жыйынтык отчетту даярдоо"] },
-  { id: "outsourcing", icon: "building", image: "/assets/cooperation-outsourcing.webp", label: "Аутсорсинг", desc: "Эмгекти коргоо, өнөр жай коопсуздугу жана экологияны професионалдуу коштоого өткөрүп бериңиз. Биз бизнесиңизди тобокелдиктерден жана айып пулдардан коргоо боюнча бардык милдеттерди өзүбүзгө алабыз.", points: ["ОТ, ПБ жана ООС боюнча объектиге чыгуучу выделенный эксперт", "Бардык керектүү документацияны иштеп чыгуу жана жүргүзүү", "Үзгүлтүксүз аудит жана отчет даярдоо", "КР мыйзамдарына толук шайкештикке кепилдик"] },
-  { id: "outstaffing", icon: "users", image: "/assets/cooperation-outstaffing.webp", label: "Аутстаффинг", desc: "ОТ, ПБ жана ООС боюнча квалификациялуу адистерди сиздин объектилериңизде иштөө үчүн берүү. Биз бардык кадрдык жана административдик маселелерди өзүбүзгө алабыз — сиз процессти башкарасыз.", points: ["Керектүү уруксаттар жана сертификаттарга ээ профилдик эксперттер", "Штаттык бирдикти кармоо чыгымдарын оптимизациялоо (салыктар, өргүүлөр, оору баракчалары)", "Адистерге болгон муктаждыкты оперативдүү жабуу", "Айкын отчеттуулук жана аткарылган иштин сапатын көзөмөлдөө"] },
-] : [
+const CONTENT = {
+  ru: {
+    models: [
   { id: "consulting", icon: "clipboard", image: "/assets/cooperation-consulting.webp", label: "Консалтинг", desc: "Разовая экспертная оценка текущего состояния в области безопасности с выдачей конкретных рекомендаций. Мы проведем аудит, выявим риски и предложим пошаговый план действий.", points: ["Комплексный аудит по ОТ, ПБ и ООС", "Выявление и оценка профессиональных рисков", "Разработка корректирующего плана мероприятий", "Подготовка итоговой отчетности для заказчика"] },
   { id: "outsourcing", icon: "building", image: "/assets/cooperation-outsourcing.webp", label: "Аутсорсинг", desc: "Передайте охрану труда, промышленную безопасность и экологию на профессиональное сопровождение. Мы возьмем на себя весь комплекс задач по защите вашего бизнеса от рисков и штрафов.", points: ["Выделенный эксперт по ОТ, ПБ и ООС с выездом на объект", "Разработка и ведение всей необходимой документации", "Регулярный аудит и подготовка отчетности", "Гарантия полного соответствия законодательству КР"] },
   { id: "outstaffing", icon: "users", image: "/assets/cooperation-outstaffing.webp", label: "Аутстаффинг", desc: "Предоставление квалифицированных специалистов в области ОТ, ПБ и ООС для работы на ваших объектах. Мы берем на себя все кадровые и административные вопросы — вы управляете процессом.", points: ["Профильные эксперты с необходимыми допусками и сертификатами", "Оптимизация затрат на содержание штатной единицы (налоги, отпуска, больничные)", "Оперативное закрытие потребности в специалистах", "Прозрачная отчетность и контроль качества работы"] },
-];
+],
+  },
+  en: {
+    models: [
+  { id: "consulting", icon: "clipboard", image: "/assets/cooperation-consulting.webp", label: "Consulting", desc: "A one-time expert assessment of the current state of safety with specific recommendations. We will conduct an audit, identify risks, and propose a step-by-step action plan.", points: ["Comprehensive audit of OHS, industrial safety and environmental protection", "Identification and assessment of occupational risks", "Development of a corrective action plan", "Preparation of a final report for the client"] },
+  { id: "outsourcing", icon: "building", image: "/assets/cooperation-outsourcing.webp", label: "Outsourcing", desc: "Outsource occupational health and safety, industrial safety and environmental protection to professional support. We will take over the full range of tasks to protect your business from risks and fines.", points: ["Dedicated OHS, industrial safety and environmental expert with on-site visits", "Development and maintenance of all required documentation", "Regular audits and reporting", "Guarantee of full compliance with the legislation of the Kyrgyz Republic"] },
+  { id: "outstaffing", icon: "users", image: "/assets/cooperation-outstaffing.webp", label: "Outstaffing", desc: "Providing qualified specialists in occupational health and safety, industrial safety and environmental protection to work at your sites. We take care of all HR and administrative matters — you manage the process.", points: ["Profile experts with the necessary permits and certificates", "Optimised costs for maintaining a staff position (taxes, leave, sick pay)", "Prompt meeting of specialist needs", "Transparent reporting and quality control of work"] },
+],
+  },
+  ky: {
+    models: [
+  { id: "consulting", icon: "clipboard", image: "/assets/cooperation-consulting.webp", label: "Консалтинг", desc: "Коопсуздук жаатындагы учурдагы абалдын бир жолку эксперттик баасы жана конкреттүү сунуштар менен. Биз аудит жүргүзүп, тобокелдиктерди аныктап, кадам кадам боюнча аракет планын сунуштайбыз.", points: ["ОТ, ПБ жана ООС боюнча комплекстүү аудит", "Кесиптик тобокелдиктерди аныктоо жана баалоо", "Оңдоо иш-чаралары планын иштеп чыгуу", "Кардар үчүн жыйынтык отчетту даярдоо"] },
+  { id: "outsourcing", icon: "building", image: "/assets/cooperation-outsourcing.webp", label: "Аутсорсинг", desc: "Эмгекти коргоо, өнөр жай коопсуздугу жана экологияны професионалдуу коштоого өткөрүп бериңиз. Биз бизнесиңизди тобокелдиктерден жана айып пулдардан коргоо боюнча бардык милдеттерди өзүбүзгө алабыз.", points: ["ОТ, ПБ жана ООС боюнча объектиге чыгуучу выделенный эксперт", "Бардык керектүү документацияны иштеп чыгуу жана жүргүзүү", "Үзгүлтүксүз аудит жана отчет даярдоо", "КР мыйзамдарына толук шайкештикке кепилдик"] },
+  { id: "outstaffing", icon: "users", image: "/assets/cooperation-outstaffing.webp", label: "Аутстаффинг", desc: "ОТ, ПБ жана ООС боюнча квалификациялуу адистерди сиздин объектилериңизде иштөө үчүн берүү. Биз бардык кадрдык жана административдик маселелерди өзүбүзгө алабыз — сиз процессти башкарасыз.", points: ["Керектүү уруксаттар жана сертификаттарга ээ профилдик эксперттер", "Штаттык бирдикти кармоо чыгымдарын оптимизациялоо (салыктар, өргүүлөр, оору баракчалары)", "Адистерге болгон муктаждыкты оперативдүү жабуу", "Айкын отчеттуулук жана аткарылган иштин сапатын көзөмөлдөө"] },
+],
+  },
+};
+const c = CONTENT[lang ?? "ru"] ?? CONTENT.ru;
+
+// Локальный контент услуг — не зависит от CMS.
+// Hero-изображение берётся из настроек сайта, иначе локальный фон.
+const about = await apiOne<{ about_image?: string | null }>("site_settings", { lang });
+const officeImg = asset(about.about_image) ?? "/newOffice.png";
+
+// Модели сотрудничества (детально) — бывшая страница /cooperation, перенесена сюда.
+const MODELS = c.models;
 
 // Дополнительные услуги (кратко).
-const services = [
+const FALLBACK_SERVICES = [
   { slug: "audits", icon: "search", title: lang === "en" ? "Audits and inspections" : "Аудиты и инспекции", description: lang === "en" ? "Comprehensive assessment of occupational health and safety, industrial safety, environmental and fire safety management systems. We identify areas of non-compliance with Kyrgyz legislation, assess occupational risks, and provide a corrective plan for their elimination." : "Комплексная оценка систем управления охраной труда, промышленной, экологической и пожарной безопасностью. Выявляем зоны несоответствия законодательству КР, оцениваем профессиональные риски и предоставляем корректирующий план по их устранению." },
   { slug: "docs", icon: "file-text", title: lang === "en" ? "Documentation development" : "Разработка документации", description: lang === "en" ? "Preparation of a full set of documents in occupational health and safety, industrial safety, fire safety and environmental protection. We develop instructions and regulations in strict compliance with Kyrgyz legislation and international standards." : "Подготовка полного комплекта документов в области охраны труда, промышленной, пожарной и экологической безопасности. Разрабатываем инструкции и регламенты в строгом соответствии с законодательством КР и международными стандартами." },
   { slug: "contractors", icon: "settings", title: lang === "en" ? "Contractor management" : "Управление подрядчиками", description: lang === "en" ? "Comprehensive oversight of contractors at your sites. We assess their qualifications, verify permits and documentation, and ensure compliance with safety requirements during work execution." : "Комплексный контроль подрядных организаций на ваших объектах. Проводим оценку их квалификации, проверяем допуски и документацию, а также обеспечиваем соблюдение требований безопасности при выполнении работ." },
 ];
+// Услуги из MySQL (админка → таблица services). Локальный массив — фолбэк,
+// если БД недоступна или пуста.
+type SvcRow = {
+  id?: number; slug: string; title: string;
+  description?: string | null; icon?: string | null;
+  sort_order?: number; is_active?: number;
+};
+const dbServices = await api<SvcRow[]>("services", { lang });
+const services = dbServices.length
+  ? dbServices
+      .filter((s) => s.is_active !== 0)
+      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+      .map((s) => ({ slug: s.slug, icon: s.icon || "file-text", title: s.title, description: s.description || "" }))
+  : FALLBACK_SERVICES;
+
 ---
-<Layout lang={lang} title={t("seo.services.title")} description={t("seo.services.desc")}>
+<Layout lang={lang} title={t("seo.services.title")} description={t("seo.services.desc")} livePage={"services"}>
   <section class="page-hero">
-    {officeImg && <img class="hero-bg" src={officeImg} alt="" aria-hidden="true" />}
+    {officeImg && <img class="hero-bg" src={officeImg} alt="" aria-hidden="true" data-live-hero="about_image" data-c-img="services.hero.image" />}
     <div class="container">
       <div class="hero-text">
-        <h1>{t("page.services_title")}</h1>
-        <p>{t("page.services_lead")}</p>
+        <h1 data-c="global.page.services_title">{t("page.services_title")}</h1>
+        <p data-c="global.page.services_lead">{t("page.services_lead")}</p>
       </div>
     </div>
   </section>
@@ -49,49 +77,51 @@ const services = [
   <section class="section">
     <div class="container">
       <div class="section-head left">
-        <h2 class="section-title">{t("page.cooperation_title")}</h2>
+        <h2 class="section-title" data-c="global.page.cooperation_title">{t("page.cooperation_title")}</h2>
         <div class="bar"></div>
-        <p class="section-lead">{t("page.cooperation_lead")}</p>
+        <p class="section-lead" data-c="global.page.cooperation_lead">{t("page.cooperation_lead")}</p>
       </div>
-      <div class="tabs" role="tablist">
+      <div class="tabs" role="tablist" data-c-list="services.models">
         {MODELS.map((tab, i) => (
-          <button class:list={["tab", { active: i === 0 }]} type="button" role="tab" data-tab={tab.id}>
-            <Icon name={tab.icon} size={22} /> {tab.label}
+          <button class:list={["tab", { active: i === 0 }]} type="button" role="tab" data-tab={tab.id} data-c-item>
+            <Icon name={tab.icon} size={22} /> <span data-c-field="label">{tab.label}</span>
           </button>
         ))}
       </div>
 
+      <div class="panels" data-c-list="services.models">
       {MODELS.map((tab, i) => (
-        <div class:list={["panel card", { active: i === 0 }]} data-panel={tab.id} id={tab.id}>
+        <div class:list={["panel card", { active: i === 0 }]} data-panel={tab.id} id={tab.id} data-c-item>
           <div class="panel-text">
-            <h2>{tab.label}</h2>
-            <p>{tab.desc}</p>
-            <ul class="checklist">
+            <h2 data-c-field="label">{tab.label}</h2>
+            <p data-c-field="desc">{tab.desc}</p>
+            <ul class="checklist" data-c-list="points">
               {tab.points.map((p) => (
-                <li><span class="check"><Icon name="check" size={16} /></span>{p}</li>
+                <li data-c-item><span class="check"><Icon name="check" size={16} /></span><span data-c-field="text">{p}</span></li>
               ))}
             </ul>
-            <a href={lp(lang, "/contacts")} class="btn btn-outline-green">{t("cta.learn_more")}</a>
+            <a href={lp(lang, "/contacts")} class="btn btn-outline-green" data-c="global.cta.learn_more">{t("cta.learn_more")}</a>
           </div>
           <img src={tab.image} alt={tab.label} class="panel-img" width={520} height={320} loading="lazy" />
         </div>
       ))}
+      </div>
     </div>
   </section>
 
   <section class="section bg-soft fill-to-footer">
     <div class="container">
       <div class="section-head reveal">
-        <h2 class="section-title">{t("page.services_more")}</h2>
+        <h2 class="section-title" data-c="global.page.services_more">{t("page.services_more")}</h2>
         <div class="bar"></div>
       </div>
-      <div class="grid grid-3">
+      <div class="grid grid-3" data-live-type="services" data-live-template="#tpl-service">
         {services.map((s, i) => (
-          <article id={s.slug} class="card service reveal" style={`--i:${i}`}>
+          <article id={s.slug} class="card service reveal" style={`--i:${i}`} data-live-key={s.slug}>
             <span class="icon-badge"><Icon name={s.icon} size={36} /></span>
-            <h3>{s.title}</h3>
-            <p>{s.description}</p>
-            <a href={lp(lang, "/contacts")} class="more">{t("cta.more")} <Icon name="arrow-right" size={18} /></a>
+            <h3 data-live-title>{s.title}</h3>
+            <p data-live-desc>{s.description}</p>
+            <a href={lp(lang, "/contacts")} class="more" data-c="global.cta.more">{t("cta.more")} <Icon name="arrow-right" size={18} /></a>
           </article>
         ))}
       </div>
@@ -108,6 +138,17 @@ const services = [
   };
   tabs.forEach((t) => t.addEventListener("click", () => activate(t.dataset.tab!)));
 </script>
+
+<!-- Шаблон карточки услуги: используется live-оверлеем, когда в админке
+     появляется новая услуга — карточка клонируется из этого шаблона. -->
+<template id="tpl-service">
+  <article class="card service reveal" data-live-key="">
+    <span class="icon-badge"><Icon name="file-text" size={36} /></span>
+    <h3 data-live-title></h3>
+    <p data-live-desc></p>
+    <a href="/ru/contacts" class="more" data-live-url></a>
+  </article>
+</template>
 
 <style>
   .tabs { display: flex; gap: 14px; flex-wrap: wrap; margin: 36px 0 28px; }

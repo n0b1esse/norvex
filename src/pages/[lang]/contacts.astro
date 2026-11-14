@@ -2,16 +2,32 @@
 import Layout from "../../layouts/Layout.astro";
 import Icon from "../../components/Icon.astro";
 import { getT, lp, localeStaticPaths } from "../../i18n";
-import { directus, asset } from "../../lib/directus";
+import { apiOne, asset } from "../../lib/api";
 
 export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const t = await getT(lang!);
 
-// Hero-фон — тот же, что на «Услугах» и «О компании»: из about_page (Directus),
+const CONTENT = {
+  ru: {
+    address: "Кыргызская Республика, город Бишкек, улица Анкара, 223",
+    hours: "Понедельник – Суббота, 09:00 – 20:00",
+  },
+  en: {
+    address: "Kyrgyz Republic, Bishkek City, 7 Ankara Street, 223",
+    hours: "Monday – Saturday, 09:00 – 20:00",
+  },
+  ky: {
+    address: "Кыргыз Республикасы, Бишкек шаары, Анкара көчөсү, 223",
+    hours: "Дүйшөмбү – Ишемби, 09:00 – 20:00",
+  },
+};
+const c = CONTENT[lang ?? "ru"] ?? CONTENT.ru;
+
+// Hero-фон — тот же, что на «Услугах» и «О компании»: из настроек сайта,
 // иначе локальное изображение (страница остаётся работоспособной без CMS).
-const about = await directus<{ image?: string | null }>("/items/about_page?fields=image", {});
-const officeImg = asset(about.image) ?? "/newOffice.png";
+const about = await apiOne<{ about_image?: string | null }>("site_settings", { lang });
+const officeImg = asset(about.about_image) ?? "/newOffice.png";
 
 // Локальные контакты — сайт работает без CMS
 const phone = "+996 550 209 209";
@@ -22,27 +38,30 @@ const socials = {
   instagram: "https://www.instagram.com/norvex.hse/",
   linkedin: "https://www.linkedin.com/company/norvex-hse",
 };
-const address = lang === "en" ? "Kyrgyz Republic, Bishkek City, 7 Ankara Street, 223" : lang === "ky" ? "Кыргыз Республикасы, Бишкек шаары, Анкара көчөсү, 223" : "Кыргызская Республика, город Бишкек, улица Анкара, 223";
-const workingHours = lang === "en" ? "Monday – Saturday, 09:00 – 20:00" : lang === "ky" ? "Дүйшөмбү – Ишемби, 09:00 – 20:00" : "Понедельник – Суббота, 09:00 – 20:00";
+;
+const address = c.address;
+;
+const workingHours = c.hours;
 const mapSrc = `https://maps.google.com/maps?q=${encodeURIComponent(address)}&z=15&output=embed`;
 const info = [
-  { icon: "phone", label: t("contacts.phone"), values: [{ text: phone, href: `tel:${phone.replace(/\s|\(/g, "").replace(/\)/g, "")}` }] },
+  { icon: "phone", label: t("contacts.phone"), labelSlot: "global.contacts.phone", values: [{ text: phone, href: `tel:${phone.replace(/\s|\(/g, "").replace(/\)/g, "")}` }] },
   { icon: "whatsapp", label: "WhatsApp", values: [{ text: phone, href: socials.whatsapp }] },
   { icon: "telegram", label: "Telegram", values: [{ text: "NORVEX_HSE", href: socials.telegram }] },
   { icon: "instagram", label: "Instagram", values: [{ text: "@norvex.hse", href: socials.instagram }] },
   { icon: "linkedin", label: "LinkedIn", values: [{ text: "NORVEX", href: socials.linkedin }] },
   { icon: "mail", label: "Email", values: [{ text: email, href: `mailto:${email}` }] },
-  { icon: "map-pin", label: t("contacts.address"), values: [{ text: address }] },
-  { icon: "clock", label: t("contacts.hours"), values: [{ text: workingHours }] },
+  { icon: "map-pin", label: t("contacts.address"), labelSlot: "global.contacts.address", values: [{ text: address, slot: "contacts.misc.address" }] },
+  { icon: "clock", label: t("contacts.hours"), labelSlot: "global.contacts.hours", values: [{ text: workingHours, slot: "contacts.misc.hours" }] },
 ];
+
 ---
-<Layout lang={lang} title={t("seo.contacts.title")} description={t("seo.contacts.desc")}>
+<Layout lang={lang} title={t("seo.contacts.title")} description={t("seo.contacts.desc")} livePage={"contacts"}>
   <section class="page-hero">
-    {officeImg && <img class="hero-bg" src={officeImg} alt="" aria-hidden="true" />}
+    {officeImg && <img class="hero-bg" src={officeImg} alt="" aria-hidden="true" data-live-hero="about_image" data-c-img="contacts.hero.image" />}
     <div class="container">
       <div class="hero-text">
-        <h1>{t("page.contacts_title")}</h1>
-        <p>{t("page.contacts_lead")}</p>
+        <h1 data-c="global.page.contacts_title">{t("page.contacts_title")}</h1>
+        <p data-c="global.page.contacts_lead">{t("page.contacts_lead")}</p>
       </div>
     </div>
   </section>
@@ -55,12 +74,12 @@ const info = [
             <li>
               <span class="icon-badge icon-circle"><Icon name={row.icon} size={24} /></span>
               <div>
-                <span class="info-label">{row.label}</span>
+                <span class="info-label" data-c={row.labelSlot}>{row.label}</span>
                 {row.values.map((v) => {
                   const external = !!v.href && v.href.startsWith("http");
                   return v.href
-                    ? <a class="info-value" href={v.href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined}>{v.text}</a>
-                    : <span class="info-value">{v.text}</span>;
+                    ? <a class="info-value" href={v.href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} data-c={v.slot}>{v.text}</a>
+                    : <span class="info-value" data-c={v.slot}>{v.text}</span>;
                 })}
               </div>
             </li>
@@ -68,16 +87,17 @@ const info = [
         </ul>
 
         <form class="form card" data-form>
-          <input type="text" name="name" placeholder={t("form.name")} required />
-          <input type="text" name="company" placeholder={t("form.company")} />
-          <input type="tel" name="phone" placeholder={t("form.phone")} required />
-          <input type="email" name="email" placeholder={t("form.email")} />
-          <textarea name="message" rows="4" placeholder={t("form.message")}></textarea>
+          <input type="hidden" name="lang" value={lang} />
+          <input type="text" name="name" placeholder={t("form.name")} required data-c-attr="placeholder:global.form.name" />
+          <input type="text" name="company" placeholder={t("form.company")} data-c-attr="placeholder:global.form.company" />
+          <input type="tel" name="phone" placeholder={t("form.phone")} required data-c-attr="placeholder:global.form.phone" />
+          <input type="email" name="email" placeholder={t("form.email")} data-c-attr="placeholder:global.form.email" />
+          <textarea name="message" rows="4" placeholder={t("form.message")} data-c-attr="placeholder:global.form.message"></textarea>
           <label class="consent">
             <input type="checkbox" required data-consent />
-            <span>{t("form.consent")} <a href={lp(lang, "/privacy")} target="_blank">{t("form.consent_link")}</a></span>
+            <span><span data-c="global.form.consent">{t("form.consent")}</span> <a href={lp(lang, "/privacy")} target="_blank" data-c="global.form.consent_link">{t("form.consent_link")}</a></span>
           </label>
-          <button type="submit" class="btn btn-primary" disabled>{t("cta.send")}</button>
+          <button type="submit" class="btn btn-primary" disabled data-c="global.cta.send">{t("cta.send")}</button>
           <p class="form-note" data-note hidden></p>
         </form>
 
@@ -94,10 +114,10 @@ const info = [
       <div class="consult card">
         <span class="help-icon"><Icon name="phone" size={26} /></span>
         <div class="consult-text">
-          <strong>{t("contacts.consult_title")}</strong>
-          <span>{t("contacts.consult_text")}</span>
+          <strong data-c="global.contacts.consult_title">{t("contacts.consult_title")}</strong>
+          <span data-c="global.contacts.consult_text">{t("contacts.consult_text")}</span>
         </div>
-        <a href={`tel:+996550209209`} class="btn btn-outline-green">{t("cta.consult")}</a>
+        <a href={`tel:+996550209209`} class="btn btn-outline-green" data-c="global.cta.consult">{t("cta.consult")}</a>
       </div>
     </div>
   </section>
@@ -145,20 +165,46 @@ const info = [
   }
 </style>
 
-<script define:vars={{ msg: { sending: t("form.sending"), send: t("cta.send"), phone: "+996 550 209 209" } }}>
-  // Форма работает без сервера: отправка на email/телефон будет добавлена позже;
-  // пока сразу предлагаем позвонить по номеру, который виден на странице.
+<script define:vars={{ msg: { sending: t("form.sending"), send: t("cta.send"), success: t("form.success"), error: t("form.error") } }}>
+  // Строки статуса формы могут быть переопределены live-оверлеем из админки.
+  const liveText = (key: string, fallback: string) =>
+    ((window as unknown as { __liveTexts?: Record<string, string | null> }).__liveTexts?.[key]) || fallback;
+  // Форма отправляет заявку на /send-inquiry.php (PHP на этом же хостинге):
+  // скрипт пишет заявку в MySQL и отправляет письмо владельцу.
   const form = document.querySelector("[data-form]");
   const note = document.querySelector("[data-note]");
   const btn = form?.querySelector("button[type=submit]");
   const consent = form?.querySelector("[data-consent]");
   consent?.addEventListener("change", () => { if (btn) btn.disabled = !consent.checked; });
-  form?.addEventListener("submit", (e) => {
+  form?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (note) {
-      note.hidden = false;
-      note.style.color = "var(--green-700)";
-      note.textContent = msg.phone;
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = liveText("global.form.sending", msg.sending);
+    }
+    const fd = new FormData(form);
+    try {
+      const res = await fetch("/send-inquiry.php", { method: "POST", body: fd });
+      const data = await res.json();
+      if (note) {
+        note.hidden = false;
+        note.style.color = data.ok ? "var(--green-700)" : "var(--red-700)";
+        note.textContent = data.ok
+          ? (data.msg ?? liveText("global.form.success", msg.success))
+          : (data.error ?? liveText("global.form.error", msg.error));
+      }
+      if (data.ok && form) form.reset();
+    } catch (err) {
+      if (note) {
+        note.hidden = false;
+        note.style.color = "var(--red-700)";
+        note.textContent = liveText("global.form.error", msg.error);
+      }
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = liveText("global.cta.send", msg.send);
+      }
     }
   });
 </script>

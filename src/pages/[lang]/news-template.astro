@@ -1,0 +1,81 @@
+---
+// news-template.astro — служебный шаблон страницы статьи для PHP-публикации из админки.
+// Собирается в /ru|/en/ky/news-template/ с плейсхолдерами %%TOKEN%%.
+// При нажатии «Опубликовать» админка читает файл, подставляет данные из БД
+// и пишет результат в /<lang>/news/<slug>/index.html. Сама страница не нужна для людей,
+// поэтому она noindex и не связана ссылками.
+import Layout from "../../layouts/Layout.astro";
+import Icon from "../../components/Icon.astro";
+import { getT, lp, localeStaticPaths } from "../../i18n";
+
+export const getStaticPaths = localeStaticPaths;
+const { lang } = Astro.params;
+const t = await getT(lang);
+---
+<Layout
+  lang={lang}
+  title="%%TITLE%%"
+  description="%%EXCERPT_TEXT%%"
+  livePage="news"
+  canonicalPath="/news/%%SLUG%%/"
+  ogImagePath="%%IMAGE%%"
+  noindex={true}
+>
+  <section class="page-hero">
+    <img class="hero-bg" src="%%IMAGE%%" alt="" aria-hidden="true" />
+    <div class="container">
+      <div class="hero-text">
+        <span class="news-detail-category">%%CATEGORY_LABEL%%</span>
+        <h1>%%TITLE%%</h1>
+        <p class="news-detail-date">%%DATE%%</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-soft fill-to-footer">
+    <div class="container">
+      <article class="news-detail" set:html={"%%BODY%%"}></article>
+      <div class="news-detail-back">
+        <a href={lp(lang, "/news")} class="btn btn-outline-green" data-back-link data-back-alt={t("cta.back")}>
+          <Icon name="arrow-left" size={18} /> <span data-c="global.cta.back_news">{t("cta.back_news")}</span>
+        </a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .news-detail-category { display: inline-block; background: #e5f4ea; color: var(--green-700); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 12px; }
+  .news-detail-date { color: var(--muted); font-size: 15px; margin-top: 6px; }
+  .news-detail { font-size: calc(16px * var(--ts-body)); line-height: 1.8; color: var(--ink); margin-bottom: 32px; }
+  .news-detail p { margin-bottom: 18px; }
+  .news-detail ul, .news-detail ol { margin: 12px 0 18px 24px; padding-left: 18px; }
+  .news-detail li { margin-bottom: 8px; color: var(--ink); }
+  .news-detail strong { color: var(--navy); }
+  .news-detail-back { margin-top: 32px; }
+  .news-detail-back .btn { width: auto; }
+</style>
+
+<script>
+  // Кнопка "Назад" ведёт туда, откуда пришли.
+  // Ждём live-оверлей (он перезаписывает data-c слоты), иначе подпись слетит обратно.
+  const apply = () => {
+    const back = document.querySelector<HTMLAnchorElement>("[data-back-link]");
+    if (!back || !document.referrer) return;
+    try {
+      const ref = new URL(document.referrer);
+      if (ref.origin === location.origin && !/\/news(\/|$)/.test(ref.pathname)) {
+        back.setAttribute("href", ref.pathname + ref.search + ref.hash);
+        const label = back.querySelector("span");
+        const alt = back.getAttribute("data-back-alt");
+        if (label && alt) label.textContent = alt;
+      }
+    } catch { /* referrer unparsable — keep default */ }
+  };
+  const liveW = window as unknown as { __liveTexts?: unknown };
+  if (liveW.__liveTexts) apply();
+  else {
+    window.addEventListener("live:content", apply, { once: true });
+    setTimeout(apply, 1500);
+  }
+</script>

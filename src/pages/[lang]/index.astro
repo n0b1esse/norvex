@@ -3,19 +3,12 @@ import Layout from "../../layouts/Layout.astro";
 import Icon from "../../components/Icon.astro";
 import { getT, lp, localeStaticPaths } from "../../i18n";
 import { NEWS } from "../../data/news";
-import { directus, asset } from "../../lib/directus";
+import { api, apiOne, asset } from "../../lib/api";
 
 export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const t = await getT(lang!);
 
-// Локальный контент главной — сайт работает без Directus CMS.
-// hero_image подтягивается из CMS (Directus), остальное — локальный контент.
-// Если CMS недоступна, подставляем локальный фон, чтобы hero не оставался пустым.
-const raw = await directus<{ hero_image?: string | null }>("/items/home_page?fields=hero_image", {});
-const heroSrc = asset(raw.hero_image) ?? "/assets/hero-bg.jpg";
-
-// Локальный контент главной — сайт работает без Directus CMS.
 const CONTENT = {
   ru: {
     hero: {
@@ -46,7 +39,7 @@ const CONTENT = {
       { file: "real_caterpillar.svg", name: "Катерпиллар", cat: "Тяжёлая техника" },
       { file: "real_honeywell.svg", name: "Хонейвелл", cat: "Логистика" },
       { file: "real_gazprom.svg", name: "Газпром", cat: "Нефтегаз" },
-      { file: "real_total.svg", name: "Тотал Энерги", cat: "Энергетика" },
+      { file: "real_total.svg", name: "Тотал Энержи", cat: "Энергетика" },
       { file: "real_beeline.svg", name: "Билайн", cat: "Телеком" },
     ],
     faqTitle: 'Частые <span class="accent">вопросы</span>',    faqLead: "Коротко о том, как устроено сотрудничество. Не нашли свой вопрос — напишите нам, ответим в течение рабочего дня.",
@@ -230,7 +223,23 @@ const CONTENT = {
     faqCta: "Суроо берүү",
   },
 } as const;
+
+// Локальный контент главной — сайт работает без внешней CMS.
+// hero_image подтягивается из настроек сайта, остальное — локальный контент.
+// Если CMS недоступна, подставляем локальный фон, чтобы hero не оставался пустым.
+const raw = await apiOne<{ hero_image?: string | null }>("site_settings", { lang });
+const heroSrc = asset(raw.hero_image) ?? "/assets/hero-bg.jpg";
+
+// Локальный контент главной — сайт работает без внешней CMS.
 const c = CONTENT[lang as keyof typeof CONTENT] ?? CONTENT.ru;
+
+// Клиенты («Нам доверяют») из MySQL — с фолбэком на локальный список
+type ClientRow = { id?: number; name: string; logo?: string | null; category?: string | null; url?: string | null };
+const dbClients = await api<ClientRow[]>("clients", { lang });
+const trusted = dbClients.length
+  ? dbClients.map((cl) => ({ file: "", name: cl.name, logo: asset(cl.logo) ?? "", cat: cl.category ?? "", url: cl.url ?? "" }))
+  : (c.trusted ?? []).map((b) => ({ file: b.file, name: b.name, logo: `/assets/logos/${b.file}`, cat: b.cat, url: "" }));
+
 
 // Последние новости для главной (3 свежих)
 const latestNews = [...NEWS].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 3);
@@ -257,24 +266,24 @@ const faqLd = {
   })),
 };
 ---
-<Layout lang={lang} title={t("seo.home.title")} description={t("seo.home.desc")}>
+<Layout lang={lang} title={t("seo.home.title")} description={t("seo.home.desc")} livePage={"home"}>
   <section class="hero">
-    {heroSrc && <img class="hero-bg" src={heroSrc} alt="" aria-hidden="true" />}
+    {heroSrc && <img class="hero-bg" src={heroSrc} alt="" aria-hidden="true" data-live-hero="hero_image" data-c-img="home.hero.image" />}
     <div class="container">
       <div class="hero-text">
-        <h1>{c.hero.title}</h1>
-        <p>{c.hero.subtitle}</p>
+        <h1 data-c="home.hero.title">{c.hero.title}</h1>
+        <p data-c="home.hero.subtitle">{c.hero.subtitle}</p>
         <div class="hero-cta">
-          <a href={lp(lang, "/contacts")} class="btn btn-primary">{t("cta.consult")}</a>
-          <a href={lp(lang, "/about")} class="btn btn-outline">{t("cta.learn_more")}</a>
+          <a href={lp(lang, "/contacts")} class="btn btn-primary" data-c="global.cta.consult">{t("cta.consult")}</a>
+          <a href={lp(lang, "/about")} class="btn btn-outline" data-c="global.cta.learn_more">{t("cta.learn_more")}</a>
         </div>
       </div>
 
-      <div class="hero-features">
+      <div class="hero-features" data-c-list="home.hero.features">
         {c.hero.features.map((f) => (
-          <div class="hero-feature">
+          <div class="hero-feature" data-c-item>
             <span class="icon-badge icon-circle on-dark"><Icon name="shield-check" size={28} /></span>
-            <span>{f}</span>
+            <span data-c-field="text">{f}</span>
           </div>
         ))}
       </div>
@@ -284,17 +293,17 @@ const faqLd = {
   <section class="section bg-soft fill-to-footer">
     <div class="container">
       <div class="section-head reveal">
-        <h2 class="section-title">{c.trioTitle}</h2>
+        <h2 class="section-title" data-c="home.misc.trioTitle">{c.trioTitle}</h2>
         <div class="bar"></div>
       </div>
-      <div class="trio">
+      <div class="trio" data-c-list="home.trio">
         {c.trio.map((item, i) => (
-          <div class="trio-item reveal" style={`--i:${i}`}>
+          <div class="trio-item reveal" style={`--i:${i}`} data-c-item>
             <div class="trio-head">
               <span class="icon-badge"><Icon name={item.icon} size={34} /></span>
-              <h3>{item.title}</h3>
+              <h3 data-c-field="title">{item.title}</h3>
             </div>
-            <p>{item.text}</p>
+            <p data-c-field="text">{item.text}</p>
           </div>
         ))}
       </div>
@@ -304,37 +313,43 @@ const faqLd = {
   <section class="section" id="process">
     <div class="container">
       <div class="section-head reveal" style="--i:0">
-        <h2 class="section-title" set:html={c.processTitle}></h2>
+        <h2 class="section-title" data-c-html="home.misc.processTitle"set:html={c.processTitle}></h2>
         <div class="bar"></div>
-        <p class="section-lead">{c.processLead}</p>
+        <p class="section-lead" data-c="home.misc.processLead">{c.processLead}</p>
       </div>
-      <div class="process-steps">
+      <div class="process-steps" data-c-list="home.process">
         {c.process.map((step, i) => (
-          <div class="card process-step reveal" style={`--i:${i + 1}`}>
+          <div class="card process-step reveal" style={`--i:${i + 1}`} data-c-item>
             <div class="process-top">
               <span class="icon-badge"><Icon name={step.icon} size={30} /></span>
               <span class="step-no">0{i + 1}</span>
             </div>
-            <h3 class="process-title">{step.title}</h3>
-            <p>{step.text}</p>
+            <h3 class="process-title" data-c-field="title">{step.title}</h3>
+            <p data-c-field="text">{step.text}</p>
           </div>
         ))}
       </div>
     </div>
   </section>
 
-  <section class="section" id="trusted">
+  <section class="section" id="trusted" data-live-root>
     <div class="container">
       <div class="section-head reveal" style="--i:0">
-        <h2 class="section-title" set:html={c.trustedTitle}></h2>
+        <h2 class="section-title" data-c-html="home.misc.trustedTitle"set:html={c.trustedTitle}></h2>
         <div class="bar"></div>
-        <p class="section-lead">{c.trustedLead}</p>
+        <p class="section-lead" data-c="home.misc.trustedLead">{c.trustedLead}</p>
       </div>
-      <div class="trusted-grid">
-        {c.trusted.map((brand, i) => (
-          <div class="trust-card reveal" style={`--i:${i + 1}`}>
-            <img src={`/assets/logos/${brand.file}`} alt={brand.name} width="160" height="160" />
-            <p class="trust-name">{brand.name}<br /><span style="font-weight:400;font-size:11px;opacity:.7;text-transform:uppercase">{brand.cat}</span></p>
+      <div class="trusted-grid" data-live-type="clients" data-live-template="#tpl-client">
+        <template id="tpl-client">
+          <div class="trust-card reveal">
+            <img src="" alt="" width="160" height="160" data-live-logo loading="lazy" hidden />
+            <p class="trust-name"><span data-live-name></span><br /><span style="font-weight:400;font-size:11px;opacity:.7;text-transform:uppercase" data-live-category></span></p>
+          </div>
+        </template>
+        {trusted.map((brand, i) => (
+          <div class="trust-card reveal" style={`--i:${i + 1}`} data-live-key={brand.name}>
+            <img src={brand.logo} alt={brand.name} width="160" height="160" data-live-logo />
+            <p class="trust-name"><span data-live-name>{brand.name}</span><br /><span style="font-weight:400;font-size:11px;opacity:.7;text-transform:uppercase" data-live-category>{brand.cat}</span></p>
           </div>
         ))}
       </div>
@@ -344,9 +359,9 @@ const faqLd = {
   <section class="section bg-soft fill-to-footer" id="news">
     <div class="container">
       <div class="section-head reveal">
-        <h2 class="section-title">{t("news_section_title")}</h2>
+        <h2 class="section-title" data-c="global.misc.news_section_title">{t("news_section_title")}</h2>
         <div class="bar"></div>
-        <p class="section-lead">{t("news_section_lead")}</p>
+        <p class="section-lead" data-c="global.misc.news_section_lead">{t("news_section_lead")}</p>
       </div>
       <div class="grid grid-3">
         {latestNews.map((n, i) => (
@@ -365,7 +380,7 @@ const faqLd = {
               </div>
               <h3 class="news-title">{n.title[lang]}</h3>
               <p class="news-excerpt">{n.excerpt[lang]}</p>
-              <a href={lp(lang, `/news/${n.slug}`)} class="btn btn-outline-green">{t("cta.more")} <Icon name="arrow-right" size={16} /></a>
+              <a href={lp(lang, `/news/${n.slug}`)} class="btn btn-outline-green" data-c="global.cta.more">{t("cta.more")} <Icon name="arrow-right" size={16} /></a>
             </div>
           </article>
         ))}
@@ -376,27 +391,33 @@ const faqLd = {
   <section class="section bg-soft" id="faq">
     <div class="container">
       <div class="section-head reveal" style="--i:0">
-        <h2 class="section-title" set:html={c.faqTitle}></h2>
+        <h2 class="section-title" data-c-html="home.misc.faqTitle"set:html={c.faqTitle}></h2>
         <div class="bar"></div>
-        <p class="section-lead">{c.faqLead}</p>
+        <p class="section-lead" data-c="home.misc.faqLead">{c.faqLead}</p>
       </div>
-      <div class="faq-list">
+      <div class="faq-list" data-live-type="faq" data-live-page="home" data-live-template="#tpl-faq">
+        <template id="tpl-faq">
+          <details class="card faq-item" data-live-key="">
+            <summary><span data-live-question></span><span class="chev" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span></summary>
+            <div class="faq-body" data-live-answer></div>
+          </details>
+        </template>
         {c.faq.map((item, i) => {
           const g = (item as unknown as { group?: string }).group ?? "";
           const prevG = i > 0 ? ((c.faq[i - 1] as unknown as { group?: string }).group ?? "") : "";
           return (
             <>
               {g && g !== prevG ? <h3 class="faq-group">{g}</h3> : null}
-              <details class="card faq-item" style={`--i:${i + 1}`} open={i === 0 || undefined}>
-                <summary>{item.q}<span class="chev" aria-hidden="true"><Icon name="chevron-right" size={14} /></span></summary>
-                <div class="faq-body" set:html={item.a.includes("<") ? item.a : `<p>${item.a}</p>`} />
+              <details class="card faq-item" style={`--i:${i + 1}`} open={i === 0 || undefined} data-live-key={item.q}>
+                <summary><span data-live-question>{item.q}</span><span class="chev" aria-hidden="true"><Icon name="chevron-right" size={14} /></span></summary>
+                <div class="faq-body" data-live-answer set:html={item.a.includes("<") ? item.a : `<p>${item.a}</p>`} />
               </details>
             </>
           );
         })}
       </div>
       <div class="faq-cta reveal" style="--i:0">
-        <a class="btn btn-primary" href={lp(lang, "/contacts")}>{c.faqCta}</a>
+        <a class="btn btn-primary" href={lp(lang, "/contacts")} data-c="home.misc.faqCta">{c.faqCta}</a>
       </div>
     </div>
     <script type="application/ld+json" set:html={JSON.stringify(faqLd)} is:inline />
@@ -469,3 +490,4 @@ const faqLd = {
   #news .news-excerpt { color: var(--muted); font-size: 14.5px; line-height: 1.55; margin-bottom: 14px; flex: 1; }
   #news .news-item .btn { width: 100%; justify-content: center; padding: 10px 16px; font-size: 14px; }
 </style>
+

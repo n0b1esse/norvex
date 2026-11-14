@@ -2,14 +2,44 @@
 import Layout from "../../layouts/Layout.astro";
 import Icon from "../../components/Icon.astro";
 import { getT, lp, localeStaticPaths } from "../../i18n";
+import { api, asset } from "../../lib/api";
 import { NEWS } from "../../data/news";
 
 export const getStaticPaths = localeStaticPaths;
 const { lang } = Astro.params;
 const t = await getT(lang!);
 
-// Новости, отсортированные по дате (новые сверху)
-const news = [...NEWS].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+// Новости из MySQL (через /api.php), с фолбэком на локальный список
+type DbNews = {
+  id?: number; slug: string; news_date?: string | null; category?: string | null;
+  title: string; excerpt?: string | null; content?: string | null; image?: string | null;
+};
+const dbNews = await api<DbNews[]>("news", { lang });
+
+// Локальный фолбэк (на случай недоступного API при сборке)
+const localNews = [...NEWS].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+const news = dbNews.length
+  ? dbNews.map((n) => ({
+      slug: n.slug,
+      date: n.news_date || "",
+      category: n.category || "",
+      title: n.title,
+      excerpt: n.excerpt || "",
+      content: n.content || "",
+      image: asset(n.image) ?? null,
+      fromDb: true,
+    }))
+  : localNews.map((n) => ({
+      slug: n.slug,
+      date: n.date,
+      category: n.category,
+      title: n.title[lang] ?? n.title.ru,
+      excerpt: n.excerpt[lang] ?? n.excerpt.ru,
+      content: n.content[lang] ?? n.content.ru,
+      image: n.image ?? null,
+      fromDb: false,
+    }));
 
 const categoryLabel = {
   ru: { "Законодательство": "Законодательство", "Компания": "Компания", "Экспертиза": "Экспертиза", "События": "События" },
@@ -23,39 +53,57 @@ const formatDate = (iso: string) => {
   return lang === "ky" ? d.toLocaleDateString("ky-KG", opts) : d.toLocaleDateString(lang === "en" ? "en-US" : "ru-RU", opts);
 };
 ---
-<Layout lang={lang} title={t("seo.news.title")} description={t("seo.news.desc")}>
+<Layout lang={lang} title={t("seo.news.title")} description={t("seo.news.desc")} livePage={"news"}>
   <section class="page-hero">
-    <img class="hero-bg" src="/assets/hero-bg.jpg" alt="" aria-hidden="true" />
+    <img class="hero-bg" src="/assets/hero-bg.jpg" alt="" aria-hidden="true" data-live-hero="hero_image" data-c-img="news.hero.image" />
     <div class="container">
       <div class="hero-text">
-        <h1>{t("page.news_title")}</h1>
-        <p>{t("page.news_lead")}</p>
+        <h1 data-c="global.page.news_title">{t("page.news_title")}</h1>
+        <p data-c="global.page.news_lead">{t("page.news_lead")}</p>
       </div>
     </div>
   </section>
 
   <section class="section bg-soft fill-to-footer">
     <div class="container">
+      <div class="news-list" data-live-type="news" data-live-template="#tpl-news">
+      <template id="tpl-news">
+        <article class="article-item reveal" style="--i:1" data-live-key="">
+          <div class="article-media" data-live-image>
+            <img src="" alt="" class="article-img" loading="lazy" width="900" height="500" data-live-logo hidden />
+          </div>
+          <div class="article-body">
+            <div class="article-meta">
+              <span class="article-category" data-live-category></span>
+              <span class="article-date" data-live-date></span>
+            </div>
+            <h2 class="article-title" data-live-name></h2>
+            <p class="article-excerpt" data-live-desc></p>
+            <a href="#" class="btn btn-outline-green" data-live-url data-c="global.cta.more"></a>
+          </div>
+        </article>
+      </template>
       {news.map((n, i) => (
-        <article class="article-item reveal" style={`--i:${i}`}>
-          <div class="article-media">
+        <article class="article-item reveal" style={`--i:${i}`} data-live-key={n.slug}>
+          <div class="article-media" data-live-image>
             {n.image ? (
-              <img src={n.image} alt="" class="article-img" loading="lazy" width={900} height={500} />
+              <img src={n.image} alt="" class="article-img" loading="lazy" width={900} height={500} data-live-logo />
             ) : (
               <div class="placeholder" style="min-height:320px"><Icon name="newspaper" size={56} /></div>
             )}
           </div>
           <div class="article-body">
             <div class="article-meta">
-              <span class="article-category">{categoryLabel[n.category]}</span>
-              <span class="article-date">{formatDate(n.date)}</span>
+              <span class="article-category" data-live-category>{categoryLabel[n.category] ?? n.category}</span>
+              <span class="article-date" data-live-date>{n.date ? formatDate(n.date) : ""}</span>
             </div>
-            <h2 class="article-title">{n.title[lang]}</h2>
-            <p class="article-excerpt">{n.excerpt[lang]}</p>
-            <a href={lp(lang, `/news/${n.slug}`)} class="btn btn-outline-green">{t("cta.more")} <Icon name="arrow-right" size={18} /></a>
+            <h2 class="article-title" data-live-name>{n.title}</h2>
+            <p class="article-excerpt" data-live-desc>{n.excerpt}</p>
+            <a href={lp(lang, `/news/${n.slug}`)} class="btn btn-outline-green" data-live-url data-c="global.cta.more">{t("cta.more")} <Icon name="arrow-right" size={18} /></a>
           </div>
         </article>
       ))}
+      </div>
     </div>
   </section>
 </Layout>
@@ -109,3 +157,4 @@ const formatDate = (iso: string) => {
     .article-title { font-size: calc(22px * var(--ts-heading)); }
   }
 </style>
+
