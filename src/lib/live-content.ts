@@ -193,9 +193,13 @@ function syncGroup(group: HTMLElement, items: LiveItem[], slots?: Record<string,
   });
 
   // 1. Обновляем существующие, удаляем те, которых больше нет в БД
+  //    (и выкидываем одинаковые дубликаты в статике — первая копия остаётся)
   const seen = new Set<string>();
+  const cardKeysSeen = new Set<string>();
   cards.forEach((card) => {
     const k = norm(card.getAttribute("data-live-key") || "");
+    if (!k || cardKeysSeen.has(k)) { card.remove(); return; }
+    cardKeysSeen.add(k);
     const item = byKey.get(k);
     if (!item) {
       card.remove();
